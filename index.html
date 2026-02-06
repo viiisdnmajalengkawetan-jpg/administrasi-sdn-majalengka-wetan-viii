@@ -398,8 +398,9 @@
     let tempAgendaPhoto = "";
     let tempKegiatanPhoto = "";
     
-    const SEKO_LAT = -6.1751; 
-    const SEKO_LNG = 106.8272;
+    // PEMBARUAN LOKASI SEKOLAH
+    const SEKO_LAT = -6.8352517; 
+    const SEKO_LNG = 108.2408433;
     const MAX_DISTANCE = 100;
 
     const mapelData = {
@@ -472,7 +473,6 @@
     function selectRole(role, title, name) {
         // CEK PASSWORD SEBELUM MASUK
         const guruData = allGurus.find(g => g.id === role);
-        // Memunculkan ketik pasword di atas nama yang dipilih
         const inputPw = prompt(`Ketik Password di bawah ini\nUntuk Akun: ${name}\n----------------------------------`);
         
         if (inputPw !== guruData.pw) {
@@ -828,5 +828,4 @@
     }
 </script>
 </body>
-
 </html>
