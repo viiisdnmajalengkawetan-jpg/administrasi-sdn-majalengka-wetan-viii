@@ -398,7 +398,6 @@
     let tempAgendaPhoto = "";
     let tempKegiatanPhoto = "";
     
-    // PEMBARUAN LOKASI SEKOLAH
     const SEKO_LAT = -6.8352517; 
     const SEKO_LNG = 108.2408433;
     const MAX_DISTANCE = 100;
@@ -428,64 +427,50 @@
         "Sudah hampir jam 06.30, jangan biarkan namamu 'nongkrong' di HP Kepala Sekolah."
     ];
 
+    // --- FUNGSI PEMBANTU WAKTU ---
+    function getTodayISO() {
+        return new Date().toLocaleDateString('en-CA'); 
+    }
+
+    function getNamaHari(tglStr) {
+        const hari = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+        const d = tglStr ? new Date(tglStr) : new Date();
+        return hari[d.getDay()];
+    }
+
     function updateMapelFilter(elementId, kls) {
         const select = document.getElementById(elementId);
         if(!select) return;
-        
         let list = [];
-        if(currentRole === 'PJOK') {
-            list = ["PJOK"];
-        } else if(currentRole === 'PAI') {
-            list = ["PAI"];
-        } else {
-            list = (kls == 1 || kls == 2) ? mapelData.rendah : mapelData.tinggi;
-        }
-        
+        if(currentRole === 'PJOK') { list = ["PJOK"]; } 
+        else if(currentRole === 'PAI') { list = ["PAI"]; } 
+        else { list = (kls == 1 || kls == 2) ? mapelData.rendah : mapelData.tinggi; }
         select.innerHTML = list.map(m => `<option value="${m}">${m}</option>`).join('');
     }
 
-    // FUNGSI FILTER KELAS OTOMATIS BERDASARKAN ROLE
     function filterKelasBerdasarkanRole(role) {
         const listSelectKelas = ['rpKls', 'masterKls', 'swKls', 'mdKls', 'agKls', 'abKls', 'rekKls'];
-        
         listSelectKelas.forEach(id => {
             const select = document.getElementById(id);
             if (!select) return;
-
-            // Jika Guru Kelas (GK1 - GK6)
             if (role.startsWith('GK')) {
                 const klsTujuan = role.replace('GK', ''); 
                 select.innerHTML = `<option value="${klsTujuan}">Kelas ${klsTujuan}</option>`;
                 select.disabled = true; 
-            } 
-            // Jika PJOK, PAI, atau KEPSEK
-            else {
-                select.innerHTML = `
-                    <option value="1">Kelas 1</option><option value="2">Kelas 2</option>
-                    <option value="3">Kelas 3</option><option value="4">Kelas 4</option>
-                    <option value="5">Kelas 5</option><option value="6">Kelas 6</option>
-                `;
+            } else {
+                select.innerHTML = `<option value="1">Kelas 1</option><option value="2">Kelas 2</option><option value="3">Kelas 3</option><option value="4">Kelas 4</option><option value="5">Kelas 5</option><option value="6">Kelas 6</option>`;
                 select.disabled = false;
             }
         });
     }
 
     function selectRole(role, title, name) {
-        // CEK PASSWORD SEBELUM MASUK
         const guruData = allGurus.find(g => g.id === role);
         const inputPw = prompt(`Ketik Password di bawah ini\nUntuk Akun: ${name}\n----------------------------------`);
-        
-        if (inputPw !== guruData.pw) {
-            alert("Password Salah!");
-            return;
-        }
-
+        if (inputPw !== guruData.pw) { alert("Password Salah!"); return; }
         currentRole = role;
         document.getElementById('main-title').innerText = title + " - " + name;
-        
-        // JALANKAN FILTER KELAS
         filterKelasBerdasarkanRole(role);
-
         if(role === 'KEPSEK') {
             document.getElementById('guru-menu').style.display = 'none';
             document.getElementById('kepsek-menu').style.display = 'grid';
@@ -496,14 +481,11 @@
             loadDB(name);
             startReminderSystem();
         }
-
-        // Jalankan update mapel default setelah filter kelas
         const defaultKls = role.startsWith('GK') ? role.replace('GK', '') : '1';
         updateMapelFilter('masterMapel', defaultKls);
         updateMapelFilter('rpMapel', defaultKls);
         updateMapelFilter('mdMapel', defaultKls);
         updateMapelFilter('agMapel', defaultKls);
-        
         switchTab('tab-home');
     }
 
@@ -514,25 +496,33 @@
         renderRaport();
     }
 
+    // UPDATE: MODAL CEKLOK DENGAN HARI & JAM REALTIME
     function openModalCeklok() {
         document.getElementById('overlayCeklok').style.display = 'block';
         document.getElementById('modalCeklok').style.display = 'block';
         document.getElementById('statusLokasi').innerText = "Sedang mencari GPS...";
         document.getElementById('btnKirimAbsen').disabled = true;
+        
         const skrg = new Date();
-        document.getElementById('infoWaktu').innerText = "Waktu: " + skrg.getHours().toString().padStart(2,'0') + ":" + skrg.getMinutes().toString().padStart(2,'0');
+        const tglISO = getTodayISO();
+        const jam = skrg.getHours().toString().padStart(2,'0');
+        const menit = skrg.getMinutes().toString().padStart(2,'0');
+        
+        document.getElementById('infoWaktu').innerHTML = `
+            <div style="font-size:14px;">${getNamaHari(tglISO)}, ${tglISO}</div>
+            <div style="font-size:24px; margin-top:5px;">${jam}:${menit} WIB</div>
+        `;
+
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(pos => {
                 const dist = calculateDistance(pos.coords.latitude, pos.coords.longitude, SEKO_LAT, SEKO_LNG);
                 if(dist <= MAX_DISTANCE) {
-                    document.getElementById('statusLokasi').innerHTML = `<span style="color:green">Lokasi Ditemukan (${Math.round(dist)}m dari sekolah)</span>`;
+                    document.getElementById('statusLokasi').innerHTML = `<span style="color:green">📍 Lokasi Sesuai (${Math.round(dist)}m)</span>`;
                     document.getElementById('btnKirimAbsen').disabled = false;
                 } else {
-                    document.getElementById('statusLokasi').innerHTML = `<span style="color:red">Terlalu jauh! Anda berada ${Math.round(dist)}m dari sekolah.</span>`;
+                    document.getElementById('statusLokasi').innerHTML = `<span style="color:red">📍 Terlalu jauh! (${Math.round(dist)}m dari sekolah)</span>`;
                 }
-            }, err => {
-                document.getElementById('statusLokasi').innerText = "Gagal akses GPS. Aktifkan lokasi HP!";
-            });
+            }, err => { document.getElementById('statusLokasi').innerText = "Gagal akses GPS. Aktifkan lokasi HP!"; });
         }
     }
 
@@ -553,7 +543,7 @@
 
     async function submitCeklok() {
         const skrg = new Date();
-        const tgl = skrg.toISOString().split('T')[0];
+        const tgl = getTodayISO();
         const jam = skrg.getHours();
         const menit = skrg.getMinutes();
         let statusAbsen = "HADIR";
@@ -576,9 +566,8 @@
         if (st !== "SAKIT" && st !== "IZIN") { alert("Hanya ketik SAKIT atau IZIN"); return; }
         const ket = prompt("Masukkan alasan:");
         if (!ket) return;
-        const skrg = new Date();
-        const tgl = skrg.toISOString().split('T')[0];
-        const dataAbsen = { nama: db.cfg.guru, waktu: skrg.toLocaleTimeString(), status: st, ket: ket };
+        const tgl = getTodayISO();
+        const dataAbsen = { nama: db.cfg.guru, waktu: new Date().toLocaleTimeString(), status: st, ket: ket };
         await rtdb.ref(`presensi_guru/${tgl}/${currentRole}`).set(dataAbsen);
         alert(`Berhasil mengirim laporan ${st}.`);
         closeModalCeklok();
@@ -589,7 +578,7 @@
             const skrg = new Date();
             const jam = skrg.getHours();
             const menit = skrg.getMinutes();
-            const tgl = skrg.toISOString().split('T')[0];
+            const tgl = getTodayISO();
             if (jam === 6 && menit >= 15 && menit <= 30) {
                 rtdb.ref(`presensi_guru/${tgl}/${currentRole}`).once('value', snapshot => {
                     if (!snapshot.exists() && menit % 5 === 0) {
@@ -612,10 +601,7 @@
                 if(!db.cfg) db.cfg = {sekolah:'', guru: name, nipGuru:'', waGuru:'', kepsek:'KARYADI, S.Pd', nipKepsek:'', waKepsek:''};
                 fillSetupForm();
             } else {
-                db = { 
-                    cfg: { sekolah: '', guru: name, nipGuru: '', waGuru:'', kepsek: 'KARYADI, S.Pd', nipKepsek: '', waKepsek:'' },
-                    siswa: [], cp: [], agenda: [], absensi: {}, nilai: {}, modul: [], kegiatan:[], kosp:[]
-                };
+                db = { cfg: { sekolah: '', guru: name, nipGuru: '', waGuru:'', kepsek: 'KARYADI, S.Pd', nipKepsek: '', waKepsek:'' }, siswa: [], cp: [], agenda: [], absensi: {}, nilai: {}, modul: [], kegiatan:[], kosp:[] };
                 fillSetupForm();
             }
         });
@@ -662,18 +648,35 @@
 
     function saveToFirebase() { if(!currentRole) return; rtdb.ref('sekolah_wetan/' + currentRole.toLowerCase()).set(db); }
 
+    // UPDATE: SWITCH TAB UNTUK OTOMATIS TANGGAL HARI INI
     function switchTab(id) {
         document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
         document.getElementById(id).style.display = 'block';
         document.getElementById('back-area').style.display = (id === 'tab-login' ? 'none' : 'block');
+        
+        const tglHariIni = getTodayISO();
+
         if(id==='tab-siswa') renderSiswa();
         if(id==='tab-master') renderSemuaMaster();
         if(id==='tab-modul') updateMdTP();
-        if(id==='tab-agenda') { updateAgTP(); renderAgenda(); }
-        if(id==='tab-absensi') renderAbsensi();
-        if(id==='tab-rekap-absen') renderRekapAbsen();
+        if(id==='tab-agenda') { 
+            document.getElementById('agTgl').value = tglHariIni; 
+            updateAgTP(); renderAgenda(); 
+        }
+        if(id==='tab-absensi') { 
+            document.getElementById('abTgl').value = tglHariIni; 
+            renderAbsensi(); 
+        }
+        if(id==='tab-rekap-absen') {
+            const bln = tglHariIni.substring(0,7);
+            document.getElementById('rekBulan').value = bln;
+            renderRekapAbsen();
+        }
         if(id==='tab-raport') renderRaport();
-        if(id==='tab-kegiatan') renderKegiatan();
+        if(id==='tab-kegiatan') { 
+            document.getElementById('kgTgl').value = tglHariIni;
+            renderKegiatan(); 
+        }
         if(id==='tab-kosp') renderKosp();
     }
 
@@ -717,13 +720,10 @@
         const listSiswa = db.siswa ? db.siswa.filter(s => s.kls == k) : [];
         let semKey = 'S' + currentSemester;
         let sumatifLabel = currentSemester === 1 ? 'SAS' : 'SAT';
-        
         document.getElementById('pSekolah').innerText = db.cfg.sekolah || 'NAMA SEKOLAH';
         document.getElementById('pTitle').innerText = `LAPORAN HASIL BELAJAR - ${m.toUpperCase()} - SEMESTER ${currentSemester}`;
-
         let head = `<tr><th>NAMA SISWA</th>${tps.map((t, i) => `<th>TP ${i+1}<br><small>${t.kode||'TP'}</small></th>`).join('')}<th style="background:#fef3c7">STS</th><th style="background:#fef3c7">${sumatifLabel}</th><th style="background:#dcfce7">NA</th></tr>`;
         document.getElementById('headRaport').innerHTML = head;
-
         document.getElementById('bodyRaport').innerHTML = listSiswa.map(s => {
             let n = ((db.nilai || {})[s.id] || {})[semKey] || {};
             let row = `<tr><td style="text-align:left"><b>${s.nama}</b></td>`;
@@ -784,7 +784,13 @@
         document.getElementById('agTP').innerHTML = tps.map(t=>`<option value="${t.isi}">${t.isi}</option>`).join(''); 
     }
     function saveAgenda() { if(!db.agenda) db.agenda=[]; db.agenda.push({id:Date.now(), kls:document.getElementById('agKls').value, tgl:document.getElementById('agTgl').value, mapel:document.getElementById('agMapel').value, tp:document.getElementById('agTP').value, materi:document.getElementById('agMateri').value, foto: tempAgendaPhoto, status:'⏳ Pending'}); tempAgendaPhoto = ""; saveToFirebase(); renderAgenda(); }
-    function renderAgenda() { const k = document.getElementById('agKls').value; const listAg = db.agenda ? db.agenda.filter(a=>a.kls==k) : []; document.getElementById('bodyAgenda').innerHTML = listAg.map(a=>`<tr><td>${a.tgl}</td><td>${a.tp}</td><td>${a.materi}</td><td>${a.foto?'<img src="'+a.foto+'" style="width:30px">':'-'}</td><td>${a.status||'⏳ Pending'}</td><td><button onclick="hAg('${a.id}')">🗑️</button></td></tr>`).join(''); }
+    
+    // UPDATE: TABEL AGENDA MENAMPILKAN HARI
+    function renderAgenda() { 
+        const k = document.getElementById('agKls').value; 
+        const listAg = db.agenda ? db.agenda.filter(a=>a.kls==k) : []; 
+        document.getElementById('bodyAgenda').innerHTML = listAg.map(a=>`<tr><td><b>${getNamaHari(a.tgl)}</b><br>${a.tgl}</td><td>${a.tp}</td><td>${a.materi}</td><td>${a.foto?'<img src="'+a.foto+'" style="width:30px">':'-'}</td><td>${a.status||'⏳ Pending'}</td><td><button onclick="hAg('${a.id}')">🗑️</button></td></tr>`).join(''); 
+    }
     function hAg(id){ db.agenda=db.agenda.filter(x=>x.id!=id); saveToFirebase(); renderAgenda(); }
 
     function renderAbsensi() { const k = document.getElementById('abKls').value; const t = document.getElementById('abTgl').value; if(!t) return; const list = db.siswa ? db.siswa.filter(s=>s.kls==k) : []; document.getElementById('bodyAbsensi').innerHTML = list.map((s,i)=>{ let st = (db.absensi || {})[t+'_'+s.id] || 'H'; return `<tr><td>${i+1}</td><td>${s.nama}</td><td><select onchange="uAbs('${t}','${s.id}',this.value)"><option value="H" ${st=='H'?'selected':''}>H</option><option value="S" ${st=='S'?'selected':''}>S</option><option value="I" ${st=='I'?'selected':''}>I</option><option value="A" ${st=='A'?'selected':''}>A</option></select></td></tr>`; }).join(''); }
@@ -792,7 +798,13 @@
     function renderRekapAbsen() { const k = document.getElementById('rekKls').value; const bul = document.getElementById('rekBulan').value; if(!bul) return; let h = `<tr><th>NAMA</th>`; for(let d=1; d<=31; d++) h += `<th>${d}</th>`; h += `</tr>`; document.getElementById('headRekap').innerHTML = h; const list = db.siswa ? db.siswa.filter(s=>s.kls==k) : []; document.getElementById('bodyRekap').innerHTML = list.map(s=>{ let row = `<tr><td>${s.nama}</td>`; for(let d=1; d<=31; d++){ let day = d<10?'0'+d:d; row += `<td>${(db.absensi || {})[bul+'-'+day+'_'+s.id] || '-'}</td>`; } return row + `</tr>`; }).join(''); }
 
     function saveKegiatan() { if(!db.kegiatan) db.kegiatan = []; db.kegiatan.push({id: Date.now(), jenis: document.getElementById('kgJenis').value, nama: document.getElementById('kgNama').value, tgl: document.getElementById('kgTgl').value, ket: document.getElementById('kgKet').value, foto: tempKegiatanPhoto, status: '⏳ Menunggu'}); tempKegiatanPhoto = ""; saveToFirebase(); renderKegiatan(); alert('Diajukan!'); }
-    function renderKegiatan() { const b = document.getElementById('bodyKegiatan'); if(!db.kegiatan) return b.innerHTML = ""; b.innerHTML = db.kegiatan.map(k=>`<tr><td>${k.jenis}</td><td>${k.nama}</td><td>${k.tgl}</td><td>${k.foto?'<img src="'+k.foto+'" style="width:30px">':'-'}</td><td><span class="status-badge" style="background:${k.status==='✅ Disetujui'?'#dcfce7':'#fee2e2'}">${k.status}</span></td><td><button onclick="hKeg('${k.id}')">🗑️</button></td></tr>`).join(''); }
+    
+    // UPDATE: TABEL KEGIATAN MENAMPILKAN HARI
+    function renderKegiatan() { 
+        const b = document.getElementById('bodyKegiatan'); 
+        if(!db.kegiatan) return b.innerHTML = ""; 
+        b.innerHTML = db.kegiatan.map(k=>`<tr><td>${k.jenis}</td><td>${k.nama}</td><td><b>${getNamaHari(k.tgl)}</b><br>${k.tgl}</td><td>${k.foto?'<img src="'+k.foto+'" style="width:30px">':'-'}</td><td><span class="status-badge" style="background:${k.status==='✅ Disetujui'?'#dcfce7':'#fee2e2'}">${k.status}</span></td><td><button onclick="hKeg('${k.id}')">🗑️</button></td></tr>`).join(''); 
+    }
     function hKeg(id){ db.kegiatan=db.kegiatan.filter(x=>x.id!=id); saveToFirebase(); renderKegiatan(); }
 
     function saveKosp(){ if(!db.kosp) db.kosp=[]; db.kosp.push({id:Date.now(), nama:document.getElementById('ksNama').value, link:document.getElementById('ksLink').value}); saveToFirebase(); renderKosp(); }
@@ -800,8 +812,6 @@
     function hKosp(id){ db.kosp=db.kosp.filter(x=>x.id!=id); saveToFirebase(); renderKosp(); }
     function toggleVisibility(id) { const x = document.getElementById(id); x.style.display = (x.style.display==='none'?'block':'none'); }
     function exportSiswaExcel() { const ws = XLSX.utils.json_to_sheet(db.siswa || []); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Siswa"); XLSX.writeFile(wb, `SISWA_${currentRole}.xlsx`); }
-
-    // --- FUNGSI MONITORING KEPSEK (PENUH) ---
 
     function renderMonitorAgenda() {
         switchTab('tab-kepsek'); document.getElementById('monitor-title').innerText = '📋 Persetujuan Agenda';
@@ -828,7 +838,7 @@
     function renderMonitorAbsenGuru() {
         switchTab('tab-kepsek'); document.getElementById('monitor-title').innerText = '👨‍🏫 Monitor Presensi Guru';
         const area = document.getElementById('area-monitor-kepsek');
-        const tgl = new Date().toISOString().split('T')[0];
+        const tgl = getTodayISO();
         rtdb.ref(`presensi_guru/${tgl}`).on('value', snap => {
             const dataHadir = snap.val() || {};
             let html = '<div class="table-res"><table><thead><tr><th>NAMA</th><th>STATUS</th><th>WAKTU</th></tr></thead><tbody>';
