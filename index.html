@@ -320,6 +320,10 @@
             </div>
             <div class="btn-group">
                 <button class="btn btn-green" onclick="exportSiswaExcel()">📊 EKSPOR EXCEL</button>
+                
+                <button class="btn btn-orange" onclick="document.getElementById('importSiswaFile').click()">📥 IMPORT EXCEL</button>
+                <input type="file" id="importSiswaFile" accept=".xlsx, .xls" style="display:none;" onchange="importSiswaExcel(this)">
+                
                 <button class="btn btn-dark" onclick="toggleVisibility('history-siswa')">👁️ LIHAT DATA</button>
             </div>
             <div id="history-siswa" class="history-container">
@@ -510,9 +514,13 @@
         const select = document.getElementById(elementId);
         if(!select) return;
         let list = [];
-        if(currentRole === 'PJOK') { list = ["PJOK"]; } 
-        else if(currentRole === 'PAI') { list = ["PAI"]; } 
-        else { list = (kls == 1 || kls == 2) ? mapelData.rendah : mapelData.tinggi; }
+        if(currentRole === 'PJOK') {
+            list = ["PJOK"];
+        } else if(currentRole === 'PAI') {
+            list = ["PAI"];
+        } else {
+            list = (kls == 1 || kls == 2) ? mapelData.rendah : mapelData.tinggi;
+        }
         select.innerHTML = list.map(m => `<option value="${m}">${m}</option>`).join('');
     }
 
@@ -522,9 +530,9 @@
             const select = document.getElementById(id);
             if (!select) return;
             if (role.startsWith('GK')) {
-                const klsTujuan = role.replace('GK', ''); 
+                const klsTujuan = role.replace('GK', '');
                 select.innerHTML = `<option value="${klsTujuan}">Kelas ${klsTujuan}</option>`;
-                select.disabled = true; 
+                select.disabled = true;
             } else {
                 select.innerHTML = `<option value="1">Kelas 1</option><option value="2">Kelas 2</option><option value="3">Kelas 3</option><option value="4">Kelas 4</option><option value="5">Kelas 5</option><option value="6">Kelas 6</option>`;
                 select.disabled = false;
@@ -535,10 +543,14 @@
     function selectRole(role, title, name) {
         const guruData = allGurus.find(g => g.id === role);
         const inputPw = prompt(`Ketik Password di bawah ini\nUntuk Akun: ${name}\n----------------------------------`);
-        if (inputPw !== guruData.pw) { alert("Password Salah!"); return; }
+        if (inputPw !== guruData.pw) {
+            alert("Password Salah!");
+            return;
+        }
         currentRole = role;
         document.getElementById('main-title').innerText = title + " - " + name;
         filterKelasBerdasarkanRole(role);
+        
         if(role === 'KEPSEK') {
             document.getElementById('guru-menu').style.display = 'none';
             document.getElementById('kepsek-menu').style.display = 'grid';
@@ -549,12 +561,14 @@
             loadDB(name);
             startReminderSystem();
         }
+        
         const defaultKls = role.startsWith('GK') ? role.replace('GK', '') : '1';
         updateMapelFilter('masterMapel', defaultKls);
         updateMapelFilter('rpMapel', defaultKls);
         updateMapelFilter('mdMapel', defaultKls);
         updateMapelFilter('agMapel', defaultKls);
         updateMapelFilter('ulMapel', defaultKls);
+
         switchTab('tab-home');
     }
 
@@ -570,11 +584,13 @@
         document.getElementById('modalCeklok').style.display = 'block';
         document.getElementById('statusLokasi').innerText = "Sedang mencari GPS...";
         document.getElementById('btnKirimAbsen').disabled = true;
+
         const skrg = new Date();
         const tglISO = getTodayISO();
         const jam = skrg.getHours().toString().padStart(2,'0');
         const menit = skrg.getMinutes().toString().padStart(2,'0');
         document.getElementById('infoWaktu').innerHTML = `<div style="font-size:14px;">${getNamaHari(tglISO)}, ${tglISO}</div><div style="font-size:24px; margin-top:5px;">${jam}:${menit} WIB</div>`;
+
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(pos => {
                 const dist = calculateDistance(pos.coords.latitude, pos.coords.longitude, SEKO_LAT, SEKO_LNG);
@@ -584,7 +600,9 @@
                 } else {
                     document.getElementById('statusLokasi').innerHTML = `<span style="color:red">📍 Terlalu jauh! (${Math.round(dist)}m dari sekolah)</span>`;
                 }
-            }, err => { document.getElementById('statusLokasi').innerText = "Gagal akses GPS. Aktifkan lokasi HP!"; });
+            }, err => {
+                document.getElementById('statusLokasi').innerText = "Gagal akses GPS. Aktifkan lokasi HP!";
+            });
         }
     }
 
@@ -608,123 +626,123 @@
         const tgl = getTodayISO();
         const jam = skrg.getHours();
         const menit = skrg.getMinutes();
+
         let statusAbsen = "HADIR";
         let isTerlambat = false;
-        if (jam > 6 || (jam === 6 && menit > 30)) { statusAbsen = "TERLAMBAT"; isTerlambat = true; }
-        const dataAbsen = { nama: db.cfg.guru, waktu: skrg.toLocaleTimeString(), status: statusAbsen, ket: "-" };
-        await rtdb.ref(`presensi_guru/${tgl}/${currentRole}`).set(dataAbsen);
-        if (isTerlambat) {
-            const pesanKeKepsek = `Izin lapor Pak/Bu Kepsek, Guru ${db.cfg.guru} baru saja melakukan presensi (TERLAMBAT).`;
-            rtdb.ref(`pesan_kepsek/${tgl}`).push({ teks: pesanKeKepsek, time: Date.now() });
-            alert(`Ceklok Berhasil! Anda Terlambat.`);
-        } else { alert("Ceklok Berhasil! Anda tepat waktu."); }
+        if (jam > 6 || (jam === 6 && menit > 30)) {
+            statusAbsen = "TERLAMBAT";
+            isTerlambat = true;
+        }
+
+        const jamTeks = `${jam.toString().padStart(2,'0')}:${menit.toString().padStart(2,'0')}`;
+        await rtdb.ref(`absen_guru/${tgl}/${currentRole}`).set({
+            nama: db.cfg.guru || currentRole,
+            waktu: jamTeks,
+            status: statusAbsen,
+            latlng: "Sesuai Radius"
+        });
+
+        alert(`Presensi Berhasil: ${statusAbsen} pukul ${jamTeks}`);
         closeModalCeklok();
     }
 
     async function submitIzinSakit() {
-        const statusPilih = prompt("Ketik status (SAKIT / IZIN):", "SAKIT");
-        if (!statusPilih) return;
-        const st = statusPilih.toUpperCase();
-        if (st !== "SAKIT" && st !== "IZIN") { alert("Hanya ketik SAKIT atau IZIN"); return; }
-        const ket = prompt("Masukkan alasan:");
-        if (!ket) return;
+        const ket = prompt("Keterangan (Contoh: SAKIT atau IZIN ACARA KELUARGA):");
+        if(!ket) return;
         const tgl = getTodayISO();
-        const dataAbsen = { nama: db.cfg.guru, waktu: new Date().toLocaleTimeString(), status: st, ket: ket };
-        await rtdb.ref(`presensi_guru/${tgl}/${currentRole}`).set(dataAbsen);
-        alert(`Berhasil mengirim laporan ${st}.`);
+        await rtdb.ref(`absen_guru/${tgl}/${currentRole}`).set({
+            nama: db.cfg.guru || currentRole,
+            waktu: "-",
+            status: ket.toUpperCase(),
+            latlng: "-"
+        });
+        alert("Laporan terkirim ke Kepala Sekolah.");
         closeModalCeklok();
     }
 
     function startReminderSystem() {
-        setInterval(() => {
+        const check = () => {
             const skrg = new Date();
             const jam = skrg.getHours();
             const menit = skrg.getMinutes();
-            const tgl = getTodayISO();
-            if (jam === 6 && menit >= 15 && menit <= 30) {
-                rtdb.ref(`presensi_guru/${tgl}/${currentRole}`).once('value', snapshot => {
-                    if (!snapshot.exists() && menit % 5 === 0) {
-                        const randomSindiran = sindiranPagi[Math.floor(Math.random() * sindiranPagi.length)];
-                        if (Notification.permission === "granted") { new Notification("📢 PENGINGAT ABSEN", { body: randomSindiran }); }
-                    }
-                });
+            if(jam === 6 && menit >= 15 && menit <= 30) {
+                const msg = sindiranPagi[Math.floor(Math.random() * sindiranPagi.length)];
+                if(confirm(`[PENGINGAT PAGI]\n${msg}\n\nIngin buka menu Ceklok sekarang?`)) {
+                    openModalCeklok();
+                }
             }
-        }, 60000);
+        };
+        setInterval(check, 300000); 
     }
 
-    if (Notification.permission !== "denied") { Notification.requestPermission(); }
+    function switchTab(id) {
+        document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+        document.getElementById(id).style.display = 'block';
+        document.getElementById('back-area').style.display = (id === 'tab-login' || id === 'tab-login-siswa') ? 'none' : 'block';
+        window.scrollTo(0,0);
+        if(id === 'tab-siswa') renderSiswa();
+        if(id === 'tab-agenda') renderAgenda();
+        if(id === 'tab-absensi') renderAbsensi();
+    }
 
-    function loadDB(name) {
-        const path = 'sekolah_wetan/' + currentRole.toLowerCase();
-        rtdb.ref(path).on('value', (snapshot) => {
-            const data = snapshot.val();
-            if(data) {
-                db = data;
-                if(!db.cfg) db.cfg = {sekolah:'', guru: name, nipGuru:'', waGuru:'', kepsek:'KARYADI, S.Pd', nipKepsek:'', waKepsek:''};
-                fillSetupForm();
-            } else {
-                db = { cfg: { sekolah: '', guru: name, nipGuru: '', waGuru:'', kepsek: 'KARYADI, S.Pd', nipKepsek: '', waKepsek:'' }, siswa: [], cp: [], agenda: [], absensi: {}, nilai: {}, modul: [], kegiatan:[], kosp:[] };
-                fillSetupForm();
-            }
-        });
+    function toggleVisibility(id) {
+        const el = document.getElementById(id);
+        el.style.display = (el.style.display === 'none' || el.style.display === '') ? 'block' : 'none';
+    }
+
+    async function loadDB(guruName) {
+        const snapCfg = await rtdb.ref(`config/${currentRole}`).once('value');
+        db.cfg = snapCfg.val() || {};
+        document.getElementById('sGuru').value = db.cfg.guru || guruName;
+        document.getElementById('snipGuru').value = db.cfg.nipGuru || "";
+        document.getElementById('sWaGuru').value = db.cfg.waGuru || "";
+        document.getElementById('sKepsek').value = db.cfg.kepsek || "KARYADI, S.Pd";
+        document.getElementById('snipKepsek').value = db.cfg.nipKepsek || "";
+        document.getElementById('sWaKepsek').value = db.cfg.waKepsek || "";
+        document.getElementById('sSekolah').value = db.cfg.sekolah || "SD NEGERI MAJALENGKA WETAN VIII";
+        
+        if(db.cfg.foto) {
+            document.getElementById('photo-img').src = db.cfg.foto;
+            document.getElementById('photo-img').style.display = 'block';
+            document.getElementById('photo-placeholder').style.display = 'none';
+        }
+
+        if(currentRole === 'KEPSEK') {
+            document.getElementById('kepsek-wa-management').style.display = 'block';
+            renderWaGuruManagement();
+        }
+    }
+
+    async function renderWaGuruManagement() {
+        let html = "";
+        for(let g of allGurus) {
+            if(g.id === 'KEPSEK') continue;
+            const snap = await rtdb.ref(`config/${g.id}/waGuru`).once('value');
+            const wa = snap.val() || "";
+            html += `<div style="margin-bottom:10px; display:flex; gap:10px; align-items:center;">
+                <label style="width:120px; font-weight:normal;">${g.nama}</label>
+                <input type="text" placeholder="628..." value="${wa}" onchange="updateWaGuru('${g.id}', this.value)" style="flex:1;">
+            </div>`;
+        }
+        document.getElementById('list-wa-guru-inputs').innerHTML = html;
+    }
+
+    async function updateWaGuru(roleId, val) {
+        await rtdb.ref(`config/${roleId}/waGuru`).set(val);
     }
 
     function previewProfilePhoto(input) {
-        if (input.files && input.files[0]) {
+        const file = input.files[0];
+        if(file) {
             const reader = new FileReader();
             reader.onload = function(e) {
                 document.getElementById('photo-img').src = e.target.result;
                 document.getElementById('photo-img').style.display = 'block';
                 document.getElementById('photo-placeholder').style.display = 'none';
                 db.cfg.foto = e.target.result;
-            };
-            reader.readAsDataURL(input.files[0]);
+            }
+            reader.readAsDataURL(file);
         }
-    }
-
-    function processAgendaPhoto(input) { if (input.files && input.files[0]) { const reader = new FileReader(); reader.onload = function(e) { tempAgendaPhoto = e.target.result; }; reader.readAsDataURL(input.files[0]); } }
-    function processKegiatanPhoto(input) { if (input.files && input.files[0]) { const reader = new FileReader(); reader.onload = function(e) { tempKegiatanPhoto = e.target.result; }; reader.readAsDataURL(input.files[0]); } }
-
-    async function fillSetupForm() {
-        document.getElementById('sSekolah').value = db.cfg.sekolah || '';
-        document.getElementById('sGuru').value = db.cfg.guru || '';
-        document.getElementById('snipGuru').value = db.cfg.nipGuru || '';
-        document.getElementById('sWaGuru').value = db.cfg.waGuru || '';
-        document.getElementById('sKepsek').value = db.cfg.kepsek || '';
-        document.getElementById('snipKepsek').value = db.cfg.nipKepsek || '';
-        document.getElementById('sWaKepsek').value = db.cfg.waKepsek || '';
-        if(db.cfg.foto) { document.getElementById('photo-img').src = db.cfg.foto; document.getElementById('photo-img').style.display = 'block'; document.getElementById('photo-placeholder').style.display = 'none'; }
-        if(currentRole === 'KEPSEK') {
-            document.getElementById('kepsek-wa-management').style.display = 'block';
-            const container = document.getElementById('list-wa-guru-inputs');
-            const snap = await rtdb.ref('sekolah_wetan').once('value');
-            const allData = snap.val() || {};
-            let html = '<table style="width:100%">';
-            allGurus.forEach(g => {
-                const wa = (allData[g.id.toLowerCase()] && allData[g.id.toLowerCase()].cfg) ? allData[g.id.toLowerCase()].cfg.waGuru || '' : '';
-                html += `<tr><td>${g.nama}</td><td><input type="text" id="admin-wa-${g.id}" value="${wa}"></td></tr>`;
-            });
-            container.innerHTML = html + '</table>';
-        }
-    }
-
-    function saveToFirebase() { if(!currentRole) return; rtdb.ref('sekolah_wetan/' + currentRole.toLowerCase()).set(db); }
-
-    function switchTab(id) {
-        document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
-        document.getElementById(id).style.display = 'block';
-        document.getElementById('back-area').style.display = (id === 'tab-login' ? 'none' : 'block');
-        const tglHariIni = getTodayISO();
-        if(id==='tab-siswa') renderSiswa();
-        if(id==='tab-master') renderSemuaMaster();
-        if(id==='tab-modul') updateMdTP();
-        if(id==='tab-agenda') { document.getElementById('agTgl').value = tglHariIni; updateAgTP(); renderAgenda(); }
-        if(id==='tab-absensi') { document.getElementById('abTgl').value = tglHariIni; renderAbsensi(); }
-        if(id==='tab-rekap-absen') { const bln = tglHariIni.substring(0,7); document.getElementById('rekBulan').value = bln; renderRekapAbsen(); }
-        if(id==='tab-raport') renderRaport();
-        if(id==='tab-kegiatan') { document.getElementById('kgTgl').value = tglHariIni; renderKegiatan(); }
-        if(id==='tab-kosp') renderKosp();
-        if(id==='tab-buat-ulangan') { updateUlTP(); renderKoreksiSiswa(); }
     }
 
     async function saveSetup() {
@@ -735,340 +753,622 @@
         db.cfg.kepsek = document.getElementById('sKepsek').value;
         db.cfg.nipKepsek = document.getElementById('snipKepsek').value;
         db.cfg.waKepsek = document.getElementById('sWaKepsek').value;
-        saveToFirebase(); alert('Disimpan!');
+        await rtdb.ref(`config/${currentRole}`).set(db.cfg);
+        alert("Identitas Berhasil Disimpan!");
     }
 
-    function uNilDetail(sid, tpId, field, val) {
-        if(!db.nilai) db.nilai = {};
-        let semKey = 'S' + currentSemester;
-        if(!db.nilai[sid]) db.nilai[sid] = {};
-        if(!db.nilai[sid][semKey]) db.nilai[sid][semKey] = {};
-        if(!db.nilai[sid][semKey][tpId]) db.nilai[sid][semKey][tpId] = { skor: 0, materi: '' };
-        if(field === 'skor') db.nilai[sid][semKey][tpId].skor = parseFloat(val) || 0;
-        if(field === 'materi') db.nilai[sid][semKey][tpId].materi = val;
-        saveToFirebase(); renderRaport();
+    // --- FITUR SISWA ---
+    async function saveSiswa() {
+        const kls = document.getElementById('swKls').value;
+        const data = {
+            nisn: document.getElementById('swNisn').value,
+            nis: document.getElementById('swNis').value,
+            nama: document.getElementById('swNama').value.toUpperCase()
+        };
+        if(!data.nama) return;
+        await rtdb.ref(`siswa_data/KLS${kls}`).push(data);
+        alert("Siswa Ditambahkan!");
+        renderSiswa();
     }
 
-    function uNilGlobal(sid, field, val) {
-        if(!db.nilai) db.nilai = {};
-        let semKey = 'S' + currentSemester;
-        if(!db.nilai[sid]) db.nilai[sid] = {};
-        if(!db.nilai[sid][semKey]) db.nilai[sid][semKey] = {};
-        db.nilai[sid][semKey][field] = parseFloat(val) || 0;
-        saveToFirebase(); renderRaport();
-    }
-
-    function renderRaport() {
-        const k = document.getElementById('rpKls').value;
-        const m = document.getElementById('rpMapel').value;
-        const tps = db.cp ? db.cp.filter(x => x.kls == k && x.mapel == m && x.tipe == 'TP') : [];
-        const listSiswa = db.siswa ? db.siswa.filter(s => s.kls == k) : [];
-        let semKey = 'S' + currentSemester;
-        let sumatifLabel = currentSemester === 1 ? 'SAS' : 'SAT';
-        document.getElementById('pSekolah').innerText = db.cfg.sekolah || 'NAMA SEKOLAH';
-        document.getElementById('pTitle').innerText = `LAPORAN HASIL BELAJAR - ${m.toUpperCase()} - SEMESTER ${currentSemester}`;
-        let head = `<tr><th>NAMA SISWA</th>${tps.map((t, i) => `<th>TP ${i+1}<br><small>${t.kode||'TP'}</small></th>`).join('')}<th style="background:#fef3c7">STS</th><th style="background:#fef3c7">${sumatifLabel}</th><th style="background:#dcfce7">NA</th></tr>`;
-        document.getElementById('headRaport').innerHTML = head;
-        document.getElementById('bodyRaport').innerHTML = listSiswa.map(s => {
-            let n = ((db.nilai || {})[s.id] || {})[semKey] || {};
-            let row = `<tr><td style="text-align:left"><b>${s.nama}</b></td>`;
-            let totalTP = 0;
-            tps.forEach(t => {
-                let dataTP = n[t.id] || { skor: 0, materi: '' };
-                totalTP += dataTP.skor;
-                row += `<td><input type="number" onchange="uNilDetail('${s.id}','${t.id}','skor',this.value)" value="${dataTP.skor}" style="width:40px"></td>`;
-            });
-            let avgTP = tps.length > 0 ? totalTP / tps.length : 0;
-            let sts = n.sts || 0; 
-            let sumatifVal = currentSemester === 1 ? (n.sas || 0) : (n.sat || 0);
-            let na = (avgTP + sts + sumatifVal) / 3;
-            row += `<td style="background:#fef3c7"><input type="number" value="${sts}" onchange="uNilGlobal('${s.id}','sts',this.value)" style="width:40px"></td><td style="background:#fef3c7"><input type="number" value="${sumatifVal}" onchange="uNilGlobal('${s.id}','${sumatifLabel.toLowerCase()}',this.value)" style="width:40px"></td><td style="background:#dcfce7"><b>${na.toFixed(1)}</b></td></tr>`;
-            return row;
-        }).join('');
-    }
-
-    function saveSiswa() { if(!db.siswa) db.siswa=[]; db.siswa.push({id:'s'+Date.now(), kls:document.getElementById('swKls').value, nisn:document.getElementById('swNisn').value, nis:document.getElementById('swNis').value, nama:document.getElementById('swNama').value}); saveToFirebase(); renderSiswa(); }
-    function renderSiswa() { const k = document.getElementById('swKls').value; const f = db.siswa ? db.siswa.filter(s=>s.kls==k) : []; document.getElementById('bodySiswa').innerHTML = f.map((s,i)=>`<tr><td>${i+1}</td><td>${s.nisn}</td><td>${s.nis}</td><td style="text-align:left">${s.nama}</td><td class="no-print"><button class="btn btn-red" onclick="hS('${s.id}')">🗑️</button></td></tr>`).join(''); }
-    function hS(id){ if(confirm('Hapus?')){ db.siswa=db.siswa.filter(x=>x.id!=id); saveToFirebase(); renderSiswa(); }}
-
-    function showMasterForm(id){ document.querySelectorAll('.hidden-form').forEach(f=>f.style.display='none'); document.getElementById(id).style.display='block'; }
-    function saveMaster(tipe) { 
-        if(!db.cp) db.cp=[]; 
-        const kls = document.getElementById('masterKls').value;
-        const mpl = document.getElementById('masterMapel').value;
-        let d = { id: Date.now(), kls: kls, mapel: mpl, tipe: tipe }; 
-        if(tipe==='CP'){ d.elemen=document.getElementById('cpElemen').value; d.isi=document.getElementById('cpIsi').value; d.kompetensi=document.getElementById('cpKompetensi').value; d.konten=document.getElementById('cpKonten').value; } 
-        else if(tipe==='TP'){ d.kode=document.getElementById('tpKode').value; d.isi=document.getElementById('tpIsi').value; d.kktp=document.getElementById('tpKktp').value; } 
-        else if(tipe==='ATP'){ d.isi=document.getElementById('atpIsi').value; d.waktu=document.getElementById('atpWaktu').value; d.dimensi=document.getElementById('atpDimensi').value; d.asesmen=document.getElementById('atpAsesmen').value; } 
-        db.cp.push(d); saveToFirebase(); renderSemuaMaster(); 
-    }
-    function renderSemuaMaster() { 
-        const k = document.getElementById('masterKls').value; 
-        const m = document.getElementById('masterMapel').value;
-        const all = db.cp ? db.cp.filter(x=>x.kls==k && x.mapel==m) : []; 
-        document.getElementById('bodyCPNew').innerHTML = all.filter(x=>x.tipe==='CP').map(x=>`<tr><td>${x.elemen}</td><td>${x.isi}</td><td>${x.kompetensi}</td><td>${x.konten}</td><td><button onclick="hM('${x.id}')">🗑️</button></td></tr>`).join(''); 
-        document.getElementById('bodyTPNew').innerHTML = all.filter(x=>x.tipe==='TP').map(x=>`<tr><td>${x.kode}</td><td>${x.isi}</td><td>${x.kktp}</td><td><button onclick="hM('${x.id}')">🗑️</button></td></tr>`).join(''); 
-        document.getElementById('bodyATPNew').innerHTML = all.filter(x=>x.tipe==='ATP').map((x,i)=>`<tr><td>${i+1}</td><td>${x.isi}</td><td>${x.waktu}</td><td>${x.asesmen}</td><td><button onclick="hM('${x.id}')">🗑️</button></td></tr>`).join(''); 
-    }
-    function hM(id){ db.cp=db.cp.filter(x=>x.id!=id); saveToFirebase(); renderSemuaMaster(); }
-
-    function updateMdTP() { 
-        const k = document.getElementById('mdKls').value; 
-        const m = document.getElementById('mdMapel').value;
-        const tps = db.cp ? db.cp.filter(x=>x.kls==k && x.mapel==m && x.tipe=='TP') : []; 
-        document.getElementById('mdTP').innerHTML = tps.map(t=>`<option value="${t.id}">${t.isi}</option>`).join(''); 
-        loadModulDetail(); 
-    }
-    function loadModulDetail() { const tid = document.getElementById('mdTP').value; const m = (db.modul || []).find(x=>x.tpId == tid) || {waktu:'', metode:'', langkah:'', media:'', asesmen:''}; document.getElementById('mdWaktu').value=m.waktu; document.getElementById('mdMetode').value=m.metode; document.getElementById('mdLangkah').value=m.langkah; document.getElementById('mdMedia').value=m.media; document.getElementById('mdAsesmen').value=m.asesmen; }
-    function saveModul() { if(!db.modul) db.modul=[]; const tid = document.getElementById('mdTP').value; const d = { tpId: tid, kls: document.getElementById('mdKls').value, mapel: document.getElementById('mdMapel').value, waktu: document.getElementById('mdWaktu').value, metode: document.getElementById('mdMetode').value, langkah: document.getElementById('mdLangkah').value, media: document.getElementById('mdMedia').value, asesmen: document.getElementById('mdAsesmen').value }; const idx = db.modul.findIndex(x=>x.tpId == tid); if(idx>-1) db.modul[idx]=d; else db.modul.push(d); saveToFirebase(); alert('Disimpan'); }
-
-    function updateAgTP() { 
-        const k = document.getElementById('agKls').value; 
-        const m = document.getElementById('agMapel').value;
-        const tps = db.cp ? db.cp.filter(x=>x.kls==k && x.mapel==m && x.tipe=='TP') : []; 
-        document.getElementById('agTP').innerHTML = tps.map(t=>`<option value="${t.isi}">${t.isi}</option>`).join(''); 
-    }
-    function saveAgenda() { if(!db.agenda) db.agenda=[]; db.agenda.push({id:Date.now(), kls:document.getElementById('agKls').value, tgl:document.getElementById('agTgl').value, mapel:document.getElementById('agMapel').value, tp:document.getElementById('agTP').value, materi:document.getElementById('agMateri').value, foto: tempAgendaPhoto, status:'⏳ Pending'}); tempAgendaPhoto = ""; saveToFirebase(); renderAgenda(); }
-    function renderAgenda() { 
-        const k = document.getElementById('agKls').value; 
-        const listAg = db.agenda ? db.agenda.filter(a=>a.kls==k) : []; 
-        document.getElementById('bodyAgenda').innerHTML = listAg.map(a=>`<tr><td><b>${getNamaHari(a.tgl)}</b><br>${a.tgl}</td><td>${a.tp}</td><td>${a.materi}</td><td>${a.foto?'<img src="'+a.foto+'" style="width:30px">':'-'}</td><td>${a.status||'⏳ Pending'}</td><td><button onclick="hAg('${a.id}')">🗑️</button></td></tr>`).join(''); 
-    }
-    function hAg(id){ db.agenda=db.agenda.filter(x=>x.id!=id); saveToFirebase(); renderAgenda(); }
-
-    function renderAbsensi() { const k = document.getElementById('abKls').value; const t = document.getElementById('abTgl').value; if(!t) return; const list = db.siswa ? db.siswa.filter(s=>s.kls==k) : []; document.getElementById('bodyAbsensi').innerHTML = list.map((s,i)=>{ let st = (db.absensi || {})[t+'_'+s.id] || 'H'; return `<tr><td>${i+1}</td><td>${s.nama}</td><td><select onchange="uAbs('${t}','${s.id}',this.value)"><option value="H" ${st=='H'?'selected':''}>H</option><option value="S" ${st=='S'?'selected':''}>S</option><option value="I" ${st=='I'?'selected':''}>I</option><option value="A" ${st=='A'?'selected':''}>A</option></select></td></tr>`; }).join(''); }
-    function uAbs(t, sid, v) { if(!db.absensi) db.absensi={}; db.absensi[t+'_'+sid] = v; saveToFirebase(); }
-    function renderRekapAbsen() { const k = document.getElementById('rekKls').value; const bul = document.getElementById('rekBulan').value; if(!bul) return; let h = `<tr><th>NAMA</th>`; for(let d=1; d<=31; d++) h += `<th>${d}</th>`; h += `</tr>`; document.getElementById('headRekap').innerHTML = h; const list = db.siswa ? db.siswa.filter(s=>s.kls==k) : []; document.getElementById('bodyRekap').innerHTML = list.map(s=>{ let row = `<tr><td>${s.nama}</td>`; for(let d=1; d<=31; d++){ let day = d<10?'0'+d:d; row += `<td>${(db.absensi || {})[bul+'-'+day+'_'+s.id] || '-'}</td>`; } return row + `</tr>`; }).join(''); }
-
-    function saveKegiatan() { if(!db.kegiatan) db.kegiatan = []; db.kegiatan.push({id: Date.now(), jenis: document.getElementById('kgJenis').value, nama: document.getElementById('kgNama').value, tgl: document.getElementById('kgTgl').value, ket: document.getElementById('kgKet').value, foto: tempKegiatanPhoto, status: '⏳ Menunggu'}); tempKegiatanPhoto = ""; saveToFirebase(); renderKegiatan(); alert('Diajukan!'); }
-    function renderKegiatan() { 
-        const b = document.getElementById('bodyKegiatan'); 
-        if(!db.kegiatan) return b.innerHTML = ""; 
-        b.innerHTML = db.kegiatan.map(k=>`<tr><td>${k.jenis}</td><td>${k.nama}</td><td><b>${getNamaHari(k.tgl)}</b><br>${k.tgl}</td><td>${k.foto?'<img src="'+k.foto+'" style="width:30px">':'-'}</td><td><span class="status-badge" style="background:${k.status==='✅ Disetujui'?'#dcfce7':'#fee2e2'}">${k.status}</span></td><td><button onclick="hKeg('${k.id}')">🗑️</button></td></tr>`).join(''); 
-    }
-    function hKeg(id){ db.kegiatan=db.kegiatan.filter(x=>x.id!=id); saveToFirebase(); renderKegiatan(); }
-
-    function saveKosp(){ if(!db.kosp) db.kosp=[]; db.kosp.push({id:Date.now(), nama:document.getElementById('ksNama').value, link:document.getElementById('ksLink').value}); saveToFirebase(); renderKosp(); }
-    function renderKosp(){ const b = document.getElementById('bodyKosp'); if(!db.kosp) return b.innerHTML=""; b.innerHTML=db.kosp.map(k=>`<tr><td>${k.nama}</td><td><a href="${k.link}" target="_blank">Buka</a></td><td><button onclick="hKosp('${k.id}')">🗑️</button></td></tr>`).join(''); }
-    function hKosp(id){ db.kosp=db.kosp.filter(x=>x.id!=id); saveToFirebase(); renderKosp(); }
-    function toggleVisibility(id) { const x = document.getElementById(id); x.style.display = (x.style.display==='none'?'block':'none'); }
-    function exportSiswaExcel() { const ws = XLSX.utils.json_to_sheet(db.siswa || []); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Siswa"); XLSX.writeFile(wb, `SISWA_${currentRole}.xlsx`); }
-
-    function renderMonitorAgenda() {
-        switchTab('tab-kepsek'); document.getElementById('monitor-title').innerText = '📋 Persetujuan Agenda';
-        const area = document.getElementById('area-monitor-kepsek');
-        rtdb.ref('sekolah_wetan').once('value', snapshot => {
-            const all = snapshot.val(); let html = '<div class="table-res"><table><thead><tr><th>GURU</th><th>MAPEL</th><th>TGL</th><th>AKSI</th></tr></thead><tbody>';
-            for(let r in all) { if(all[r].agenda) all[r].agenda.forEach((a,i)=>{ if(a.status!=='✅ Disetujui') html += `<tr><td>${all[r].cfg.guru||r}</td><td>${a.mapel}</td><td>${a.tgl}</td><td><button class="btn btn-green" onclick="appAg('${r}',${i})">Setujui</button></td></tr>`; }); }
-            area.innerHTML = html + '</tbody></table></div>';
+    async function renderSiswa() {
+        const kls = document.getElementById('swKls').value;
+        const snap = await rtdb.ref(`siswa_data/KLS${kls}`).once('value');
+        let html = "";
+        let i = 1;
+        snap.forEach(s => {
+            const val = s.val();
+            html += `<tr><td>${i++}</td><td>${val.nisn}</td><td>${val.nis}</td><td style="text-align:left">${val.nama}</td><td><button class="btn btn-red" onclick="delSiswa('${kls}','${s.key}')">🗑️</button></td></tr>`;
         });
-    }
-    function appAg(r,i){ rtdb.ref(`sekolah_wetan/${r}/agenda/${i}/status`).set('✅ Disetujui'); alert('Disetujui'); renderMonitorAgenda(); }
-
-    function renderMonitorKegiatan() {
-        switchTab('tab-kepsek'); document.getElementById('monitor-title').innerText = '🏆 Persetujuan Kegiatan';
-        const area = document.getElementById('area-monitor-kepsek');
-        rtdb.ref('sekolah_wetan').once('value', snapshot => {
-            const all = snapshot.val(); let html = '<div class="table-res"><table><thead><tr><th>GURU</th><th>KEGIATAN</th><th>TGL</th><th>AKSI</th></tr></thead><tbody>';
-            for(let r in all) { if(all[r].kegiatan) all[r].kegiatan.forEach((k,i)=>{ if(k.status !== '✅ Disetujui') html += `<tr><td>${all[r].cfg.guru||r}</td><td>${k.nama}</td><td>${k.tgl}</td><td><button class="btn btn-green" onclick="appKeg('${r}',${i})">Setujui</button></td></tr>`; }); }
-            area.innerHTML = html + '</tbody></table></div>';
-        });
-    }
-    function appKeg(r, i) { rtdb.ref(`sekolah_wetan/${r}/kegiatan/${i}/status`).set('✅ Disetujui'); alert('Kegiatan Disetujui!'); renderMonitorKegiatan(); }
-
-    function renderMonitorAbsenGuru() {
-        switchTab('tab-kepsek'); document.getElementById('monitor-title').innerText = '👨‍🏫 Monitor Presensi Guru';
-        const area = document.getElementById('area-monitor-kepsek');
-        const tgl = getTodayISO();
-        rtdb.ref(`presensi_guru/${tgl}`).on('value', snap => {
-            const dataHadir = snap.val() || {};
-            let html = '<div class="table-res"><table><thead><tr><th>NAMA</th><th>STATUS</th><th>WAKTU</th></tr></thead><tbody>';
-            allGurus.forEach(g => {
-                const h = dataHadir[g.id] || { status: '🔴 Belum Absen', waktu: '-' };
-                html += `<tr><td>${g.nama}</td><td><b>${h.status}</b></td><td>${h.waktu}</td></tr>`;
-            });
-            area.innerHTML = html + '</tbody></table></div>';
-        });
+        document.getElementById('bodySiswa').innerHTML = html;
     }
 
-    function renderMonitorAbsenSiswa() {
-        switchTab('tab-kepsek'); document.getElementById('monitor-title').innerText = '📊 Monitor Absensi Siswa';
-        const area = document.getElementById('area-monitor-kepsek');
-        area.innerHTML = "<p style='text-align:center'>Pilih Kelas di menu utama Guru untuk melihat rekap detail bulanan secara langsung.</p>";
+    async function delSiswa(kls, key) {
+        if(confirm('Hapus siswa ini?')) {
+            await rtdb.ref(`siswa_data/KLS${kls}/${key}`).remove();
+            renderSiswa();
+        }
     }
 
-    function renderMonitorLinkGuru() {
-        switchTab('tab-kepsek'); document.getElementById('monitor-title').innerText = '📂 Dokumen & Perangkat Guru';
-        const area = document.getElementById('area-monitor-kepsek');
-        rtdb.ref('sekolah_wetan').once('value', snapshot => {
-            const all = snapshot.val();
-            let html = '<div class="table-res"><table><thead><tr><th>GURU</th><th>DOKUMEN</th><th>LINK</th></tr></thead><tbody>';
-            for(let r in all) {
-                if(all[r].kosp) all[r].kosp.forEach(k => {
-                    html += `<tr><td>${all[r].cfg.guru||r}</td><td>${k.nama}</td><td><a href="${k.link}" target="_blank" class="btn btn-blue">Buka Drive</a></td></tr>`;
-                });
+    // --- BARU: IMPORT EXCEL LOGIC ---
+    async function importSiswaExcel(input) {
+        const file = input.files[0];
+        const kls = document.getElementById('swKls').value;
+
+        if (!file) return;
+        if (!confirm(`Import data siswa ke Kelas ${kls}?`)) return;
+
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheetName = workbook.SheetNames[0];
+                const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+
+                let count = 0;
+                for (let row of jsonData) {
+                    const nisn = row.NISN || row.nisn || "";
+                    const nis = row.NIS || row.nis || "";
+                    const nama = (row.NAMA || row.nama || row.Nama || "").toUpperCase();
+
+                    if (nama) {
+                        await rtdb.ref(`siswa_data/KLS${kls}`).push({
+                            nisn: nisn.toString(),
+                            nis: nis.toString(),
+                            nama: nama
+                        });
+                        count++;
+                    }
+                }
+
+                alert(`Berhasil mengimpor ${count} siswa ke Kelas ${kls}`);
+                input.value = ""; 
+                renderSiswa();
+            } catch (err) {
+                console.error(err);
+                alert("Gagal memproses file. Pastikan format kolom: NISN, NIS, NAMA");
             }
-            area.innerHTML = html + '</tbody></table></div>';
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    async function exportSiswaExcel() {
+        const kls = document.getElementById('swKls').value;
+        const snap = await rtdb.ref(`siswa_data/KLS${kls}`).once('value');
+        let data = [];
+        snap.forEach(s => {
+            const v = s.val();
+            data.push({ "NISN": v.nisn, "NIS": v.nis, "NAMA": v.nama });
         });
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Siswa");
+        XLSX.writeFile(wb, `Data_Siswa_Kelas_${kls}.xlsx`);
     }
 
-    function renderMonitorNilai() {
-        switchTab('tab-kepsek'); document.getElementById('monitor-title').innerText = '📜 Monitor Progress Nilai';
-        const area = document.getElementById('area-monitor-kepsek');
-        area.innerHTML = "<p style='text-align:center'>Data Nilai dan Rapor dapat dipantau langsung melalui login masing-masing akun Guru Kelas.</p>";
+    // --- MASTER CP/TP/ATP ---
+    function showMasterForm(id) {
+        document.querySelectorAll('.hidden-form').forEach(f => f.style.display = 'none');
+        document.getElementById(id).style.display = 'block';
     }
 
-    // --- LOGIK BARU: ULANGAN HARIAN & LOGIN SISWA ---
-
-    function updateUlTP() {
-        const kls = currentRole.replace('GK', '');
-        const mpl = document.getElementById('ulMapel').value;
-        const tps = db.cp ? db.cp.filter(x => x.kls == kls && x.mapel == mpl && x.tipe == 'TP') : [];
-        document.getElementById('ulTargetTP').innerHTML = tps.map(t => `<option value="${t.id}">${t.isi}</option>`).join('');
+    async function saveMaster(type) {
+        const kls = document.getElementById('masterKls').value;
+        const mapel = document.getElementById('masterMapel').value;
+        let data = {};
+        if(type === 'CP') data = { elemen: document.getElementById('cpElemen').value, isi: document.getElementById('cpIsi').value, kompetensi: document.getElementById('cpKompetensi').value, konten: document.getElementById('cpKonten').value };
+        if(type === 'TP') data = { kode: document.getElementById('tpKode').value, isi: document.getElementById('tpIsi').value, kktp: document.getElementById('tpKktp').value };
+        if(type === 'ATP') data = { isi: document.getElementById('atpIsi').value, waktu: document.getElementById('atpWaktu').value, dimensi: document.getElementById('atpDimensi').value, asesmen: document.getElementById('atpAsesmen').value };
+        
+        await rtdb.ref(`master_data/${kls}/${mapel}/${type}`).push(data);
+        alert("Data Master Disimpan!");
+        renderSemuaMaster();
     }
 
-    function tambahSoalBaru() {
-        const id = Date.now();
-        const html = `
-        <div class="card" id="q-${id}" style="background: #f8fafc; border-left: 5px solid var(--accent);">
-            <div class="form-group">
-                <div class="field">
-                    <label>Tipe Soal</label>
-                    <select class="q-tipe" onchange="toggleTipeSoal(this, '${id}')">
-                        <option value="PG">Pilihan Ganda</option>
-                        <option value="URAIAN">Uraian / Esai</option>
-                    </select>
-                </div>
-            </div>
-            <textarea placeholder="Pertanyaan" class="q-tanya" style="width:100%; margin-bottom:10px;"></textarea>
+    async function renderSemuaMaster() {
+        const kls = document.getElementById('masterKls').value;
+        const mapel = document.getElementById('masterMapel').value;
+        const snap = await rtdb.ref(`master_data/${kls}/${mapel}`).once('value');
+        const v = snap.val() || {};
+        
+        let hCP = "", hTP = "", hATP = "";
+        if(v.CP) Object.keys(v.CP).forEach(k => { hCP += `<tr><td>${v.CP[k].elemen}</td><td>${v.CP[k].isi}</td><td>${v.CP[k].kompetensi}</td><td>${v.CP[k].konten}</td><td><button class="btn btn-red" onclick="delMaster('${kls}','${mapel}','CP','${k}')">🗑️</button></td></tr>`; });
+        if(v.TP) Object.keys(v.TP).forEach(k => { hTP += `<tr><td>${v.TP[k].kode}</td><td>${v.TP[k].isi}</td><td>${v.TP[k].kktp}</td><td><button class="btn btn-red" onclick="delMaster('${kls}','${mapel}','TP','${k}')">🗑️</button></td></tr>`; });
+        if(v.ATP) { let i=1; Object.keys(v.ATP).forEach(k => { hATP += `<tr><td>${i++}</td><td>${v.ATP[k].isi}</td><td>${v.ATP[k].waktu}</td><td>${v.ATP[k].asesmen}</td><td><button class="btn btn-red" onclick="delMaster('${kls}','${mapel}','ATP','${k}')">🗑️</button></td></tr>`; }); }
+        
+        document.getElementById('bodyCPNew').innerHTML = hCP;
+        document.getElementById('bodyTPNew').innerHTML = hTP;
+        document.getElementById('bodyATPNew').innerHTML = hATP;
+    }
+
+    async function delMaster(kls, mapel, type, key) {
+        if(confirm('Hapus item ini?')) {
+            await rtdb.ref(`master_data/${kls}/${mapel}/${type}/${key}`).remove();
+            renderSemuaMaster();
+        }
+    }
+
+    // --- AGENDA ---
+    async function updateAgTP() {
+        const kls = document.getElementById('agKls').value;
+        const mapel = document.getElementById('agMapel').value;
+        const snap = await rtdb.ref(`master_data/${kls}/${mapel}/TP`).once('value');
+        let html = "<option value=''>-- Pilih TP --</option>";
+        snap.forEach(tp => { html += `<option value="${tp.val().isi}">${tp.val().kode} - ${tp.val().isi}</option>`; });
+        document.getElementById('agTP').innerHTML = html;
+    }
+
+    function processAgendaPhoto(input) {
+        if(input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = e => tempAgendaPhoto = e.target.result;
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    async function saveAgenda() {
+        const kls = document.getElementById('agKls').value;
+        const data = {
+            tgl: document.getElementById('agTgl').value,
+            mapel: document.getElementById('agMapel').value,
+            tp: document.getElementById('agTP').value,
+            materi: document.getElementById('agMateri').value,
+            foto: tempAgendaPhoto,
+            status: "MENUNGGU",
+            guru: db.cfg.guru || currentRole
+        };
+        await rtdb.ref(`agenda_data/KLS${kls}`).push(data);
+        alert("Agenda dikirim!");
+        tempAgendaPhoto = "";
+        renderAgenda();
+    }
+
+    async function renderAgenda() {
+        const kls = document.getElementById('agKls').value;
+        const snap = await rtdb.ref(`agenda_data/KLS${kls}`).once('value');
+        let html = "";
+        snap.forEach(a => {
+            const v = a.val();
+            const badge = v.status === 'SETUJU' ? 'btn-green' : (v.status === 'DITOLAK' ? 'btn-red' : 'btn-orange');
+            html += `<tr><td>${v.tgl}</td><td>${v.tp}</td><td>${v.materi}</td><td>${v.foto ? `<img src="${v.foto}" width="50">` : '-'}</td><td><span class="status-badge ${badge}">${v.status}</span></td><td><button class="btn btn-red" onclick="delAgenda('${kls}','${a.key}')">🗑️</button></td></tr>`;
+        });
+        document.getElementById('bodyAgenda').innerHTML = html;
+    }
+
+    async function delAgenda(kls, key) {
+        if(confirm('Hapus agenda?')) {
+            await rtdb.ref(`agenda_data/KLS${kls}/${key}`).remove();
+            renderAgenda();
+        }
+    }
+
+    // --- ABSENSI ---
+    async function renderAbsensi() {
+        const kls = document.getElementById('abKls').value;
+        const tgl = document.getElementById('abTgl').value || getTodayISO();
+        const snapSiswa = await rtdb.ref(`siswa_data/KLS${kls}`).once('value');
+        const snapAbsen = await rtdb.ref(`absensi_data/KLS${kls}/${tgl}`).once('value');
+        const absVal = snapAbsen.val() || {};
+
+        let html = "";
+        let i = 1;
+        snapSiswa.forEach(s => {
+            const nama = s.val().nama;
+            const status = absVal[nama] || "H";
+            html += `<tr><td>${i++}</td><td style="text-align:left">${nama}</td><td>
+                <select onchange="saveAbsen('${kls}','${tgl}','${nama}', this.value)">
+                    <option value="H" ${status==='H'?'selected':''}>Hadir</option>
+                    <option value="S" ${status==='S'?'selected':''}>Sakit</option>
+                    <option value="I" ${status==='I'?'selected':''}>Izin</option>
+                    <option value="A" ${status==='A'?'selected':''}>Alfa</option>
+                </select>
+            </td></tr>`;
+        });
+        document.getElementById('bodyAbsensi').innerHTML = html;
+    }
+
+    async function saveAbsen(kls, tgl, nama, val) {
+        await rtdb.ref(`absensi_data/KLS${kls}/${tgl}/${nama}`).set(val);
+    }
+
+    // --- REKAP ABSEN ---
+    async function renderRekapAbsen() {
+        const kls = document.getElementById('rekKls').value;
+        const bulanStr = document.getElementById('rekBulan').value; 
+        if(!bulanStr) return;
+
+        const year = bulanStr.split('-')[0];
+        const month = bulanStr.split('-')[1];
+        const daysInMonth = new Date(year, month, 0).getDate();
+
+        let head = `<tr><th>NAMA</th>`;
+        for(let d=1; d<=daysInMonth; d++) head += `<th>${d}</th>`;
+        head += `<th>S</th><th>I</th><th>A</th></tr>`;
+        document.getElementById('headRekap').innerHTML = head;
+
+        const snapSiswa = await rtdb.ref(`siswa_data/KLS${kls}`).once('value');
+        const snapAbsen = await rtdb.ref(`absensi_data/KLS${kls}`).once('value');
+        const absData = snapAbsen.val() || {};
+
+        let body = "";
+        snapSiswa.forEach(s => {
+            const nama = s.val().nama;
+            let row = `<tr><td style="text-align:left">${nama}</td>`;
+            let sCount=0, iCount=0, aCount=0;
+
+            for(let d=1; d<=daysInMonth; d++) {
+                const tglKey = `${year}-${month}-${d.toString().padStart(2,'0')}`;
+                const st = (absData[tglKey] && absData[tglKey][nama]) ? absData[tglKey][nama] : ".";
+                row += `<td>${st}</td>`;
+                if(st==='S') sCount++; if(st==='I') iCount++; if(st==='A') aCount++;
+            }
+            row += `<td>${sCount}</td><td>${iCount}</td><td>${aCount}</td></tr>`;
+            body += row;
+        });
+        document.getElementById('bodyRekap').innerHTML = body;
+    }
+
+    // --- MONITOR KEPSEK ---
+    async function renderMonitorAgenda() {
+        document.getElementById('monitor-title').innerText = "📋 Persetujuan Agenda Harian";
+        let html = `<div class="table-res"><table><thead><tr><th>GURU</th><th>KELAS</th><th>TGL</th><th>MATERI</th><th>FOTO</th><th>AKSI</th></tr></thead><tbody>`;
+        const snap = await rtdb.ref(`agenda_data`).once('value');
+        snap.forEach(klsFolder => {
+            const kls = klsFolder.key;
+            klsFolder.forEach(item => {
+                const v = item.val();
+                if(v.status === 'MENUNGGU') {
+                    html += `<tr><td>${v.guru}</td><td>${kls}</td><td>${v.tgl}</td><td>${v.materi}</td><td>${v.foto?`<img src="${v.foto}" width="50">`:'-'}</td><td>
+                        <button class="btn btn-green" onclick="aksiAgenda('${kls}','${item.key}','SETUJU')">✅</button>
+                        <button class="btn btn-red" onclick="aksiAgenda('${kls}','${item.key}','DITOLAK')">❌</button>
+                    </td></tr>`;
+                }
+            });
+        });
+        html += `</tbody></table></div>`;
+        document.getElementById('area-monitor-kepsek').innerHTML = html;
+        switchTab('tab-kepsek');
+    }
+
+    async function aksiAgenda(kls, key, status) {
+        await rtdb.ref(`agenda_data/${kls}/${key}/status`).set(status);
+        renderMonitorAgenda();
+    }
+
+    async function renderMonitorAbsenGuru() {
+        document.getElementById('monitor-title').innerText = "👨‍🏫 Presensi Kehadiran Guru";
+        const tgl = getTodayISO();
+        let html = `<h4>Tanggal: ${tgl}</h4><div class="table-res"><table><thead><tr><th>GURU</th><th>JAM</th><th>STATUS</th><th>JARAK</th></tr></thead><tbody>`;
+        const snap = await rtdb.ref(`absen_guru/${tgl}`).once('value');
+        snap.forEach(g => {
+            const v = g.val();
+            const cStatus = v.status === 'HADIR' ? 'color:green' : 'color:red';
+            html += `<tr><td>${v.nama}</td><td>${v.waktu}</td><td style="font-weight:bold; ${cStatus}">${v.status}</td><td>${v.latlng}</td></tr>`;
+        });
+        html += `</tbody></table></div>`;
+        document.getElementById('area-monitor-kepsek').innerHTML = html;
+        switchTab('tab-kepsek');
+    }
+
+    async function renderMonitorAbsenSiswa() {
+        document.getElementById('monitor-title').innerText = "📊 Monitor Absensi Siswa";
+        document.getElementById('area-monitor-kepsek').innerHTML = `<p>Gunakan menu Rekap Bulanan di akun Guru untuk melihat detail.</p>`;
+        switchTab('tab-kepsek');
+    }
+
+    // --- RAPOR & NILAI ---
+    async function renderRaport() {
+        const kls = document.getElementById('rpKls').value;
+        const mapel = document.getElementById('rpMapel').value;
+        const sem = currentSemester;
+
+        const snapSiswa = await rtdb.ref(`siswa_data/KLS${kls}`).once('value');
+        const snapTP = await rtdb.ref(`master_data/${kls}/${mapel}/TP`).once('value');
+        const snapNilai = await rtdb.ref(`nilai_data/${kls}/${mapel}/SEM${sem}`).once('value');
+        const nilVal = snapNilai.val() || {};
+
+        let listTP = [];
+        snapTP.forEach(t => listTP.push({ key: t.key, kode: t.val().kode, isi: t.val().isi }));
+
+        let head = `<tr><th rowspan="2">NAMA SISWA</th><th colspan="${listTP.length || 1}">TUJUAN PEMBELAJARAN (TP)</th><th rowspan="2">RATA</th></tr><tr>`;
+        if(listTP.length > 0) listTP.forEach(t => head += `<th>${t.kode}</th>`);
+        else head += `<th>-</th>`;
+        head += `</tr>`;
+        document.getElementById('headRaport').innerHTML = head;
+
+        let body = "";
+        snapSiswa.forEach(s => {
+            const nama = s.val().nama;
+            let row = `<tr><td style="text-align:left">${nama}</td>`;
+            let total = 0, count = 0;
             
-            <div id="opsi-container-${id}">
-                <div class="form-group">
-                    <input type="text" placeholder="Pilihan A" class="q-a">
-                    <input type="text" placeholder="Pilihan B" class="q-b">
-                    <input type="text" placeholder="Pilihan C" class="q-c">
-                    <input type="text" placeholder="Pilihan D" class="q-d">
-                </div>
-                <label>Kunci Jawaban PG:</label>
-                <select class="q-kunci"><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select>
-            </div>
-            <button class="btn btn-red" onclick="document.getElementById('q-${id}').remove()">Hapus Soal</button>
-        </div>`;
-        document.getElementById('area-input-soal').insertAdjacentHTML('beforeend', html);
+            if(listTP.length > 0) {
+                listTP.forEach(t => {
+                    const skor = (nilVal[nama] && nilVal[nama][t.key]) ? nilVal[nama][t.key] : "";
+                    row += `<td><input type="number" value="${skor}" style="width:50px" onchange="saveNilai('${kls}','${mapel}','${sem}','${nama}','${t.key}', this.value)"></td>`;
+                    if(skor) { total += parseFloat(skor); count++; }
+                });
+            } else { row += `<td>-</td>`; }
+
+            const rata = count > 0 ? (total/count).toFixed(1) : "-";
+            row += `<td style="font-weight:bold">${rata}</td></tr>`;
+            body += row;
+        });
+        document.getElementById('bodyRaport').innerHTML = body;
+
+        // Footer Print
+        document.getElementById('fGuru').innerText = db.cfg.guru || "-";
+        document.getElementById('fnipGuru').innerText = db.cfg.nipGuru || "-";
+        document.getElementById('fKepsek').innerText = db.cfg.kepsek || "-";
+        document.getElementById('fnipKepsek').innerText = db.cfg.nipKepsek || "-";
+        document.getElementById('fTanggal').innerText = "Majalengka, " + new Date().toLocaleDateString('id-ID');
+        document.getElementById('pSekolah').innerText = db.cfg.sekolah || "SD NEGERI MAJALENGKA WETAN VIII";
     }
 
-    function toggleTipeSoal(sel, id) {
-        document.getElementById(`opsi-container-${id}`).style.display = (sel.value === 'URAIAN') ? 'none' : 'block';
+    async function saveNilai(kls, mapel, sem, nama, tpKey, val) {
+        await rtdb.ref(`nilai_data/${kls}/${mapel}/SEM${sem}/${nama}/${tpKey}`).set(val);
+    }
+
+    // --- MODUL AJAR ---
+    async function updateMdTP() {
+        const kls = document.getElementById('mdKls').value;
+        const mapel = document.getElementById('mdMapel').value;
+        const snap = await rtdb.ref(`master_data/${kls}/${mapel}/TP`).once('value');
+        let html = "<option value=''>-- Pilih TP --</option>";
+        snap.forEach(tp => { html += `<option value="${tp.key}">${tp.val().kode} - ${tp.val().isi}</option>`; });
+        document.getElementById('mdTP').innerHTML = html;
+    }
+
+    async function loadModulDetail() {
+        const kls = document.getElementById('mdKls').value;
+        const mapel = document.getElementById('mdMapel').value;
+        const tpKey = document.getElementById('mdTP').value;
+        if(!tpKey) return;
+        const snap = await rtdb.ref(`modul_data/${kls}/${mapel}/${tpKey}`).once('value');
+        const v = snap.val() || {};
+        document.getElementById('mdWaktu').value = v.waktu || "";
+        document.getElementById('mdMetode').value = v.metode || "";
+        document.getElementById('mdLangkah').value = v.langkah || "";
+        document.getElementById('mdMedia').value = v.media || "";
+        document.getElementById('mdAsesmen').value = v.asesmen || "";
+    }
+
+    async function saveModul() {
+        const kls = document.getElementById('mdKls').value;
+        const mapel = document.getElementById('mdMapel').value;
+        const tpKey = document.getElementById('mdTP').value;
+        if(!tpKey) return alert("Pilih TP dulu!");
+        const data = {
+            waktu: document.getElementById('mdWaktu').value,
+            metode: document.getElementById('mdMetode').value,
+            langkah: document.getElementById('mdLangkah').value,
+            media: document.getElementById('mdMedia').value,
+            asesmen: document.getElementById('mdAsesmen').value
+        };
+        await rtdb.ref(`modul_data/${kls}/${mapel}/${tpKey}`).set(data);
+        alert("Modul Ajar disimpan!");
+    }
+
+    // --- EKSKUL & KOKUL ---
+    function processKegiatanPhoto(input) {
+        if(input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = e => tempKegiatanPhoto = e.target.result;
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    async function saveKegiatan() {
+        const data = {
+            jenis: document.getElementById('kgJenis').value,
+            nama: document.getElementById('kgNama').value,
+            tgl: document.getElementById('kgTgl').value,
+            ket: document.getElementById('kgKet').value,
+            foto: tempKegiatanPhoto,
+            status: "MENUNGGU",
+            guru: db.cfg.guru || currentRole
+        };
+        await rtdb.ref(`kegiatan_data`).push(data);
+        alert("Kegiatan diajukan!");
+        tempKegiatanPhoto = "";
+        renderKegiatan();
+    }
+
+    async function renderKegiatan() {
+        const snap = await rtdb.ref(`kegiatan_data`).once('value');
+        let html = "";
+        snap.forEach(k => {
+            const v = k.val();
+            if(v.guru === (db.cfg.guru || currentRole)) {
+                html += `<tr><td>${v.jenis}</td><td>${v.nama}</td><td>${v.tgl}</td><td>${v.foto?`<img src="${v.foto}" width="40">`:'-'}</td><td>${v.status}</td><td><button class="btn btn-red" onclick="delKegiatan('${k.key}')">🗑️</button></td></tr>`;
+            }
+        });
+        document.getElementById('bodyKegiatan').innerHTML = html;
+    }
+
+    async function delKegiatan(key) {
+        if(confirm('Hapus kegiatan?')) { await rtdb.ref(`kegiatan_data/${key}`).remove(); renderKegiatan(); }
+    }
+
+    async function renderMonitorKegiatan() {
+        document.getElementById('monitor-title').innerText = "🏆 Persetujuan Kegiatan";
+        let html = `<div class="table-res"><table><thead><tr><th>GURU</th><th>JENIS</th><th>KEGIATAN</th><th>FOTO</th><th>AKSI</th></tr></thead><tbody>`;
+        const snap = await rtdb.ref(`kegiatan_data`).once('value');
+        snap.forEach(item => {
+            const v = item.val();
+            if(v.status === 'MENUNGGU') {
+                html += `<tr><td>${v.guru}</td><td>${v.jenis}</td><td>${v.nama}</td><td>${v.foto?`<img src="${v.foto}" width="50">`:'-'}</td><td>
+                    <button class="btn btn-green" onclick="aksiKegiatan('${item.key}','SETUJU')">✅</button>
+                    <button class="btn btn-red" onclick="aksiKegiatan('${item.key}','DITOLAK')">❌</button>
+                </td></tr>`;
+            }
+        });
+        html += `</tbody></table></div>`;
+        document.getElementById('area-monitor-kepsek').innerHTML = html;
+        switchTab('tab-kepsek');
+    }
+
+    async function aksiKegiatan(key, status) {
+        await rtdb.ref(`kegiatan_data/${key}/status`).set(status);
+        renderMonitorKegiatan();
+    }
+
+    // --- KOSP & LINK ---
+    async function saveKosp() {
+        const data = { nama: document.getElementById('ksNama').value, link: document.getElementById('ksLink').value };
+        await rtdb.ref(`kosp_data/${currentRole}`).push(data);
+        alert("Link disimpan!");
+        renderKosp();
+    }
+
+    async function renderKosp() {
+        const snap = await rtdb.ref(`kosp_data/${currentRole}`).once('value');
+        let html = "";
+        snap.forEach(k => {
+            const v = k.val();
+            html += `<tr><td>${v.nama}</td><td><a href="${v.link}" target="_blank">BUKA LINK</a></td><td><button class="btn btn-red" onclick="delKosp('${k.key}')">🗑️</button></td></tr>`;
+        });
+        document.getElementById('bodyKosp').innerHTML = html;
+    }
+
+    async function delKosp(key) {
+        if(confirm('Hapus link?')) { await rtdb.ref(`kosp_data/${currentRole}/${key}`).remove(); renderKosp(); }
+    }
+
+    async function renderMonitorLinkGuru() {
+        document.getElementById('monitor-title').innerText = "📂 Dokumen & Perangkat Guru";
+        let html = `<div class="table-res"><table><thead><tr><th>GURU</th><th>DOKUMEN</th><th>LINK</th></tr></thead><tbody>`;
+        const snap = await rtdb.ref(`kosp_data`).once('value');
+        snap.forEach(guruLink => {
+            const guruID = guruLink.key;
+            guruLink.forEach(item => {
+                const v = item.val();
+                html += `<tr><td>${guruID}</td><td>${v.nama}</td><td><a href="${v.link}" target="_blank">LIHAT DRIVE</a></td></tr>`;
+            });
+        });
+        html += `</tbody></table></div>`;
+        document.getElementById('area-monitor-kepsek').innerHTML = html;
+        switchTab('tab-kepsek');
+    }
+
+    async function renderMonitorNilai() {
+        document.getElementById('monitor-title').innerText = "📜 Monitor Nilai & Raport";
+        document.getElementById('area-monitor-kepsek').innerHTML = `<p>Gunakan menu Rapor & Nilai untuk memantau capaian setiap kelas.</p>`;
+        switchTab('tab-kepsek');
+    }
+
+    // --- FITUR ULANGAN ---
+    function tambahSoalBaru() {
+        const id = daftarSoal.length;
+        const html = `
+            <div class="card" id="soal-${id}" style="border-left: 4px solid var(--accent);">
+                <div class="form-group">
+                    <label>Soal #${id+1}</label>
+                    <textarea id="qText-${id}" placeholder="Tulis soal di sini..." rows="2" style="width:100%"></textarea>
+                </div>
+                <div class="form-group">
+                    <div class="field"><label>Tipe</label><select id="qType-${id}" onchange="toggleOpsi(${id})"><option value="PG">Pilihan Ganda</option><option value="ESAI">Esai</option></select></div>
+                    <div class="field" id="area-kunci-${id}"><label>Kunci Jawaban (A/B/C/D)</label><input type="text" id="qKunci-${id}" maxlength="1"></div>
+                </div>
+                <div id="area-opsi-${id}">
+                    <div class="form-group">
+                        <input type="text" id="opsiA-${id}" placeholder="Opsi A" style="flex:1">
+                        <input type="text" id="opsiB-${id}" placeholder="Opsi B" style="flex:1">
+                        <input type="text" id="opsiC-${id}" placeholder="Opsi C" style="flex:1">
+                        <input type="text" id="opsiD-${id}" placeholder="Opsi D" style="flex:1">
+                    </div>
+                </div>
+                <button class="btn btn-red" onclick="hapusEntrySoal(${id})">HAPUS SOAL</button>
+            </div>
+        `;
+        document.getElementById('area-input-soal').insertAdjacentHTML('beforeend', html);
+        daftarSoal.push({ id });
+    }
+
+    function toggleOpsi(id) {
+        const tipe = document.getElementById(`qType-${id}`).value;
+        document.getElementById(`area-opsi-${id}`).style.display = tipe === 'PG' ? 'block' : 'none';
+        document.getElementById(`area-kunci-${id}`).style.display = tipe === 'PG' ? 'block' : 'none';
+    }
+
+    async function updateUlTP() {
+        const kls = document.getElementById('agKls').value; // Mengikuti kelas login guru
+        const mapel = document.getElementById('ulMapel').value;
+        const snap = await rtdb.ref(`master_data/${kls}/${mapel}/TP`).once('value');
+        let html = "<option value=''>-- Pilih TP (Opsional) --</option>";
+        snap.forEach(tp => { html += `<option value="${tp.key}">${tp.val().kode} - ${tp.val().isi}</option>`; });
+        document.getElementById('ulTargetTP').innerHTML = html;
     }
 
     async function simpanUlangan() {
+        const kls = document.getElementById('agKls').value;
         const judul = document.getElementById('ulJudul').value;
-        const tpId = document.getElementById('ulTargetTP').value;
-        if(!judul || !tpId) return alert("Lengkapi Judul dan Pilih TP!");
-        
-        const nodes = document.querySelectorAll('#area-input-soal .card');
-        let soalData = [];
-        nodes.forEach(n => {
-            const tipe = n.querySelector('.q-tipe').value;
-            soalData.push({
-                tipe: tipe,
-                tanya: n.querySelector('.q-tanya').value,
-                a: tipe === 'PG' ? n.querySelector('.q-a').value : '',
-                b: tipe === 'PG' ? n.querySelector('.q-b').value : '',
-                c: tipe === 'PG' ? n.querySelector('.q-c').value : '',
-                d: tipe === 'PG' ? n.querySelector('.q-d').value : '',
-                kunci: tipe === 'PG' ? n.querySelector('.q-kunci').value : ''
+        const mapel = document.getElementById('ulMapel').value;
+        const tpKey = document.getElementById('ulTargetTP').value;
+
+        if(!judul) return alert("Judul ulangan harus diisi!");
+
+        let soalFinal = [];
+        for(let i=0; i<daftarSoal.length; i++) {
+            const el = document.getElementById(`qText-${i}`);
+            if(!el) continue;
+            soalFinal.push({
+                tanya: el.value,
+                tipe: document.getElementById(`qType-${i}`).value,
+                kunci: document.getElementById(`qKunci-${i}`).value.toUpperCase(),
+                opsi: [
+                    document.getElementById(`opsiA-${i}`).value,
+                    document.getElementById(`opsiB-${i}`).value,
+                    document.getElementById(`opsiC-${i}`).value,
+                    document.getElementById(`opsiD-${i}`).value
+                ]
             });
+        }
+
+        await rtdb.ref(`ulangan_aktif/GK${kls}`).set({
+            judul, mapel, tpKey, soal: soalFinal, status: "OPEN"
         });
-        await rtdb.ref(`ulangan_aktif/${currentRole}`).set({ judul, tpId, soal: soalData });
-        alert("Ulangan Aktif! Siswa sudah bisa mengerjakan.");
-    }
-
-    async function renderKoreksiSiswa() {
-        const area = document.getElementById('area-koreksi-guru');
-        const kls = currentRole;
-        const snap = await rtdb.ref(`hasil_ulangan/${kls}`).once('value');
-        const data = snap.val() || {};
-        
-        let html = '<table style="width:100%"><tr><th>Nama Siswa</th><th>Nilai Awal (PG)</th><th>Nilai Akhir (Manual)</th><th>Aksi</th></tr>';
-        for(let namaSiswa in data) {
-            const entries = Object.entries(data[namaSiswa]);
-            const lastEntryKey = entries[entries.length - 1][0];
-            const lastEntry = entries[entries.length - 1][1];
-            
-            html += `<tr>
-                <td style="text-align:left">${namaSiswa}</td>
-                <td>${lastEntry.nilai}</td>
-                <td><input type="number" id="input-nilai-${namaSiswa.replace(/\s/g, '')}" value="${lastEntry.nilai}" style="width:50px"></td>
-                <td>
-                    <button class="btn btn-green" onclick="updateNilaiManual('${namaSiswa}', '${lastEntry.tpId}')">💾 Simpan ke Rapor</button>
-                    <button class="btn btn-red" onclick="hapusHasilUlangan('${namaSiswa}', '${lastEntryKey}')">🗑️</button>
-                </td>
-            </tr>`;
-        }
-        area.innerHTML = Object.keys(data).length > 0 ? html + '</table>' : '<p>Belum ada jawaban masuk.</p>';
-    }
-
-    async function updateNilaiManual(namaSiswa, tpId) {
-        const inputId = `input-nilai-${namaSiswa.replace(/\s/g, '')}`;
-        const nilaiBaru = document.getElementById(inputId).value;
-        const sObj = db.siswa.find(s => s.nama === namaSiswa);
-        
-        if(!sObj) return alert("Siswa tidak ditemukan di database!");
-        
-        // Masukkan ke database lokal db.nilai
-        if(!db.nilai) db.nilai = {};
-        let semKey = 'S' + currentSemester;
-        if(!db.nilai[sObj.id]) db.nilai[sObj.id] = {};
-        if(!db.nilai[sObj.id][semKey]) db.nilai[sObj.id][semKey] = {};
-        
-        db.nilai[sObj.id][semKey][tpId] = { skor: parseFloat(nilaiBaru) };
-        
-        saveToFirebase();
-        alert(`Nilai ${namaSiswa} berhasil dikunci ke Rapor!`);
-    }
-
-    async function hapusHasilUlangan(nama, key) {
-        if(confirm('Hapus hasil ulangan siswa ini?')) {
-            await rtdb.ref(`hasil_ulangan/${currentRole}/${nama}/${key}`).remove();
-            renderKoreksiSiswa();
-        }
+        alert("Ulangan telah aktif! Siswa sudah bisa mengerjakan.");
+        renderKoreksiGuru();
     }
 
     async function loadDaftarNamaSiswa(kls) {
         if(!kls) return;
-        const sel = document.getElementById('loginSwNama');
-        sel.innerHTML = '<option>Memuat...</option>';
-        const snap = await rtdb.ref(`sekolah_wetan/gk${kls}/siswa`).once('value');
-        const data = snap.val() || [];
-        let html = '<option value="">-- Pilih Nama --</option>';
-        data.forEach(s => { html += `<option value="${s.nama}">${s.nama}</option>`; });
-        sel.innerHTML = html;
+        const snap = await rtdb.ref(`siswa_data/KLS${kls}`).once('value');
+        let html = "<option value=''>-- Pilih Nama --</option>";
+        snap.forEach(s => { html += `<option value="${s.val().nama}">${s.val().nama}</option>`; });
+        document.getElementById('loginSwNama').innerHTML = html;
     }
 
     async function mulaiUlanganSiswa() {
         const kls = document.getElementById('loginSwKls').value;
         const nama = document.getElementById('loginSwNama').value;
-        if(!nama) return alert("Pilih nama dulu!");
+        if(!kls || !nama) return alert("Pilih Kelas dan Nama!");
+
         const snap = await rtdb.ref(`ulangan_aktif/GK${kls}`).once('value');
         const data = snap.val();
-        if(!data) return alert("Maaf, tidak ada ulangan aktif untuk kelas ini.");
+        if(!data || data.status !== 'OPEN') return alert("Maaf, tidak ada ulangan aktif di kelas ini.");
+
         siswaAktif = nama;
         daftarSoal = data.soal;
         document.getElementById('displayUlJudul').innerText = data.judul;
         document.getElementById('displayNamaSiswa').innerText = "Siswa: " + nama;
+
         let html = "";
         data.soal.forEach((s, i) => {
             let inputArea = "";
-            if(s.tipe === 'URAIAN') {
-                inputArea = `<textarea name="q${i}" style="width:100%" rows="4" placeholder="Ketik jawaban uraian Anda di sini..."></textarea>`;
-            } else {
+            if(s.tipe === 'PG') {
                 inputArea = `
-                    <label><input type="radio" name="q${i}" value="A"> A. ${s.a}</label>
-                    <label><input type="radio" name="q${i}" value="B"> B. ${s.b}</label>
-                    <label><input type="radio" name="q${i}" value="C"> C. ${s.c}</label>
-                    <label><input type="radio" name="q${i}" value="D"> D. ${s.d}</label>`;
+                    <label><input type="radio" name="q${i}" value="A"> A. ${s.opsi[0]}</label><br>
+                    <label><input type="radio" name="q${i}" value="B"> B. ${s.opsi[1]}</label><br>
+                    <label><input type="radio" name="q${i}" value="C"> C. ${s.opsi[2]}</label><br>
+                    <label><input type="radio" name="q${i}" value="D"> D. ${s.opsi[3]}</label>
+                `;
+            } else {
+                inputArea = `<textarea id="ans-${i}" style="width:100%" rows="3" placeholder="Jawaban esai..."></textarea>`;
             }
+
             html += `
             <div class="card" style="margin-bottom:15px; border-top: 2px solid #ddd;">
                 <p><b>${i+1}. [${s.tipe}] ${s.tanya}</b></p>
@@ -1099,15 +1399,33 @@
         const nilaiHitung = (benarPG / totalSoal) * 100;
 
         await rtdb.ref(`hasil_ulangan/GK${kls}/${siswaAktif}`).push({
-            nilai: nilaiHitung.toFixed(1),
-            tpId: metadata.tpId,
-            waktu: new Date().toLocaleString()
+            nilai: nilaiHitung.toFixed(0),
+            tgl: new Date().toLocaleString(),
+            judul: metadata.judul
         });
 
-        alert(`Terima kasih ${siswaAktif}!\nJawaban sudah terkirim.\nJika ada soal URAIAN, Nilai Anda akan diperbarui oleh Guru.`);
+        if(metadata.tpKey) {
+            await rtdb.ref(`nilai_data/${kls}/${metadata.mapel}/SEM${currentSemester}/${siswaAktif}/${metadata.tpKey}`).set(nilaiHitung.toFixed(0));
+        }
+
+        alert(`Selesai! Nilai Anda: ${nilaiHitung.toFixed(0)}`);
         location.reload();
     }
+
+    async function renderKoreksiGuru() {
+        const kls = document.getElementById('agKls').value;
+        const snap = await rtdb.ref(`hasil_ulangan/GK${kls}`).once('value');
+        let html = "<table><thead><tr><th>NAMA</th><th>JUDUL</th><th>TGL</th><th>NILAI</th></tr></thead><tbody>";
+        snap.forEach(siswa => {
+            siswa.forEach(h => {
+                const v = h.val();
+                html += `<tr><td>${siswa.key}</td><td>${v.judul}</td><td>${v.tgl}</td><td style="font-weight:bold">${v.nilai}</td></tr>`;
+            });
+        });
+        html += "</tbody></table>";
+        document.getElementById('area-koreksi-guru').innerHTML = html;
+    }
+
 </script>
 </body>
 </html>
-
