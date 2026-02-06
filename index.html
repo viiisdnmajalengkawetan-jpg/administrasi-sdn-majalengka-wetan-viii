@@ -167,13 +167,30 @@
 
     <div id="tab-buat-ulangan" class="tab-content">
         <div class="card">
-            <h3>📝 Kelola Soal Ulangan</h3>
+            <h3>📝 Kelola Soal Ulangan (Integrasi Rapor)</h3>
             <div class="form-group">
-                <div class="field"><label>Judul Ulangan</label><input type="text" id="ulJudul" placeholder="Contoh: Ulangan Harian IPAS Bab 1"></div>
-                <button class="btn btn-blue" onclick="simpanUlangan()">💾 AKTIFKAN ULANGAN</button>
+                <div class="field">
+                    <label>Judul Ulangan</label>
+                    <input type="text" id="ulJudul" placeholder="Contoh: PH 1 IPAS">
+                </div>
+                <div class="field">
+                    <label>Mata Pelajaran</label>
+                    <select id="ulMapel" onchange="updateUlTP()"></select>
+                </div>
+                <div class="field">
+                    <label>Hubungkan ke TP (Untuk Rapor)</label>
+                    <select id="ulTargetTP"></select>
+                </div>
+                <button class="btn btn-blue" onclick="simpanUlangan()">💾 AKTIFKAN & SIMPAN</button>
             </div>
             <div id="area-input-soal"></div>
             <button class="btn btn-dark" onclick="tambahSoalBaru()">➕ TAMBAH SOAL</button>
+            
+            <hr style="margin: 30px 0;">
+            <h4>📥 Koreksi Jawaban & Nilai Siswa</h4>
+            <div id="area-koreksi-guru" class="table-res">
+                <p>Belum ada data pengerjaan.</p>
+            </div>
         </div>
     </div>
 
@@ -537,6 +554,7 @@
         updateMapelFilter('rpMapel', defaultKls);
         updateMapelFilter('mdMapel', defaultKls);
         updateMapelFilter('agMapel', defaultKls);
+        updateMapelFilter('ulMapel', defaultKls);
         switchTab('tab-home');
     }
 
@@ -706,6 +724,7 @@
         if(id==='tab-raport') renderRaport();
         if(id==='tab-kegiatan') { document.getElementById('kgTgl').value = tglHariIni; renderKegiatan(); }
         if(id==='tab-kosp') renderKosp();
+        if(id==='tab-buat-ulangan') { updateUlTP(); renderKoreksiSiswa(); }
     }
 
     async function saveSetup() {
@@ -899,43 +918,121 @@
         area.innerHTML = "<p style='text-align:center'>Data Nilai dan Rapor dapat dipantau langsung melalui login masing-masing akun Guru Kelas.</p>";
     }
 
-    // --- FUNGSI BARU: ULANGAN HARIAN & LOGIN SISWA ---
+    // --- LOGIK BARU: ULANGAN HARIAN & LOGIN SISWA ---
+
+    function updateUlTP() {
+        const kls = currentRole.replace('GK', '');
+        const mpl = document.getElementById('ulMapel').value;
+        const tps = db.cp ? db.cp.filter(x => x.kls == kls && x.mapel == mpl && x.tipe == 'TP') : [];
+        document.getElementById('ulTargetTP').innerHTML = tps.map(t => `<option value="${t.id}">${t.isi}</option>`).join('');
+    }
 
     function tambahSoalBaru() {
         const id = Date.now();
         const html = `
         <div class="card" id="q-${id}" style="background: #f8fafc; border-left: 5px solid var(--accent);">
-            <textarea placeholder="Pertanyaan" class="q-tanya" style="width:100%; margin-bottom:10px;"></textarea>
             <div class="form-group">
-                <input type="text" placeholder="Pilihan A" class="q-a">
-                <input type="text" placeholder="Pilihan B" class="q-b">
-                <input type="text" placeholder="Pilihan C" class="q-c">
-                <input type="text" placeholder="Pilihan D" class="q-d">
+                <div class="field">
+                    <label>Tipe Soal</label>
+                    <select class="q-tipe" onchange="toggleTipeSoal(this, '${id}')">
+                        <option value="PG">Pilihan Ganda</option>
+                        <option value="URAIAN">Uraian / Esai</option>
+                    </select>
+                </div>
             </div>
-            <label>Kunci Jawaban:</label>
-            <select class="q-kunci"><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select>
-            <button class="btn btn-red" onclick="document.getElementById('q-${id}').remove()">Hapus</button>
+            <textarea placeholder="Pertanyaan" class="q-tanya" style="width:100%; margin-bottom:10px;"></textarea>
+            
+            <div id="opsi-container-${id}">
+                <div class="form-group">
+                    <input type="text" placeholder="Pilihan A" class="q-a">
+                    <input type="text" placeholder="Pilihan B" class="q-b">
+                    <input type="text" placeholder="Pilihan C" class="q-c">
+                    <input type="text" placeholder="Pilihan D" class="q-d">
+                </div>
+                <label>Kunci Jawaban PG:</label>
+                <select class="q-kunci"><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select>
+            </div>
+            <button class="btn btn-red" onclick="document.getElementById('q-${id}').remove()">Hapus Soal</button>
         </div>`;
         document.getElementById('area-input-soal').insertAdjacentHTML('beforeend', html);
     }
 
+    function toggleTipeSoal(sel, id) {
+        document.getElementById(`opsi-container-${id}`).style.display = (sel.value === 'URAIAN') ? 'none' : 'block';
+    }
+
     async function simpanUlangan() {
         const judul = document.getElementById('ulJudul').value;
-        if(!judul) return alert("Isi judul ulangan!");
+        const tpId = document.getElementById('ulTargetTP').value;
+        if(!judul || !tpId) return alert("Lengkapi Judul dan Pilih TP!");
+        
         const nodes = document.querySelectorAll('#area-input-soal .card');
         let soalData = [];
         nodes.forEach(n => {
+            const tipe = n.querySelector('.q-tipe').value;
             soalData.push({
+                tipe: tipe,
                 tanya: n.querySelector('.q-tanya').value,
-                a: n.querySelector('.q-a').value,
-                b: n.querySelector('.q-b').value,
-                c: n.querySelector('.q-c').value,
-                d: n.querySelector('.q-d').value,
-                kunci: n.querySelector('.q-kunci').value
+                a: tipe === 'PG' ? n.querySelector('.q-a').value : '',
+                b: tipe === 'PG' ? n.querySelector('.q-b').value : '',
+                c: tipe === 'PG' ? n.querySelector('.q-c').value : '',
+                d: tipe === 'PG' ? n.querySelector('.q-d').value : '',
+                kunci: tipe === 'PG' ? n.querySelector('.q-kunci').value : ''
             });
         });
-        await rtdb.ref(`ulangan_aktif/${currentRole}`).set({ judul, soal: soalData });
-        alert("Ulangan telah diaktifkan untuk siswa!");
+        await rtdb.ref(`ulangan_aktif/${currentRole}`).set({ judul, tpId, soal: soalData });
+        alert("Ulangan Aktif! Siswa sudah bisa mengerjakan.");
+    }
+
+    async function renderKoreksiSiswa() {
+        const area = document.getElementById('area-koreksi-guru');
+        const kls = currentRole;
+        const snap = await rtdb.ref(`hasil_ulangan/${kls}`).once('value');
+        const data = snap.val() || {};
+        
+        let html = '<table style="width:100%"><tr><th>Nama Siswa</th><th>Nilai Awal (PG)</th><th>Nilai Akhir (Manual)</th><th>Aksi</th></tr>';
+        for(let namaSiswa in data) {
+            const entries = Object.entries(data[namaSiswa]);
+            const lastEntryKey = entries[entries.length - 1][0];
+            const lastEntry = entries[entries.length - 1][1];
+            
+            html += `<tr>
+                <td style="text-align:left">${namaSiswa}</td>
+                <td>${lastEntry.nilai}</td>
+                <td><input type="number" id="input-nilai-${namaSiswa.replace(/\s/g, '')}" value="${lastEntry.nilai}" style="width:50px"></td>
+                <td>
+                    <button class="btn btn-green" onclick="updateNilaiManual('${namaSiswa}', '${lastEntry.tpId}')">💾 Simpan ke Rapor</button>
+                    <button class="btn btn-red" onclick="hapusHasilUlangan('${namaSiswa}', '${lastEntryKey}')">🗑️</button>
+                </td>
+            </tr>`;
+        }
+        area.innerHTML = Object.keys(data).length > 0 ? html + '</table>' : '<p>Belum ada jawaban masuk.</p>';
+    }
+
+    async function updateNilaiManual(namaSiswa, tpId) {
+        const inputId = `input-nilai-${namaSiswa.replace(/\s/g, '')}`;
+        const nilaiBaru = document.getElementById(inputId).value;
+        const sObj = db.siswa.find(s => s.nama === namaSiswa);
+        
+        if(!sObj) return alert("Siswa tidak ditemukan di database!");
+        
+        // Masukkan ke database lokal db.nilai
+        if(!db.nilai) db.nilai = {};
+        let semKey = 'S' + currentSemester;
+        if(!db.nilai[sObj.id]) db.nilai[sObj.id] = {};
+        if(!db.nilai[sObj.id][semKey]) db.nilai[sObj.id][semKey] = {};
+        
+        db.nilai[sObj.id][semKey][tpId] = { skor: parseFloat(nilaiBaru) };
+        
+        saveToFirebase();
+        alert(`Nilai ${namaSiswa} berhasil dikunci ke Rapor!`);
+    }
+
+    async function hapusHasilUlangan(nama, key) {
+        if(confirm('Hapus hasil ulangan siswa ini?')) {
+            await rtdb.ref(`hasil_ulangan/${currentRole}/${nama}/${key}`).remove();
+            renderKoreksiSiswa();
+        }
     }
 
     async function loadDaftarNamaSiswa(kls) {
@@ -962,14 +1059,21 @@
         document.getElementById('displayNamaSiswa').innerText = "Siswa: " + nama;
         let html = "";
         data.soal.forEach((s, i) => {
-            html += `
-            <div class="card" style="margin-bottom:15px; border-top: 2px solid #ddd;">
-                <p><b>${i+1}. ${s.tanya}</b></p>
-                <div style="display:flex; flex-direction:column; gap:8px;">
+            let inputArea = "";
+            if(s.tipe === 'URAIAN') {
+                inputArea = `<textarea name="q${i}" style="width:100%" rows="4" placeholder="Ketik jawaban uraian Anda di sini..."></textarea>`;
+            } else {
+                inputArea = `
                     <label><input type="radio" name="q${i}" value="A"> A. ${s.a}</label>
                     <label><input type="radio" name="q${i}" value="B"> B. ${s.b}</label>
                     <label><input type="radio" name="q${i}" value="C"> C. ${s.c}</label>
-                    <label><input type="radio" name="q${i}" value="D"> D. ${s.d}</label>
+                    <label><input type="radio" name="q${i}" value="D"> D. ${s.d}</label>`;
+            }
+            html += `
+            <div class="card" style="margin-bottom:15px; border-top: 2px solid #ddd;">
+                <p><b>${i+1}. [${s.tipe}] ${s.tanya}</b></p>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    ${inputArea}
                 </div>
             </div>`;
         });
@@ -978,18 +1082,29 @@
     }
 
     async function selesaiUlangan() {
-        let benar = 0;
-        daftarSoal.forEach((s, i) => {
-            const pil = document.querySelector(`input[name="q${i}"]:checked`);
-            if(pil && pil.value === s.kunci) benar++;
-        });
-        const nilai = (benar / daftarSoal.length) * 100;
         const kls = document.getElementById('loginSwKls').value;
-        alert(`Terima kasih ${siswaAktif}!\nJawaban Anda sudah terkirim.\nNilai Anda: ${nilai.toFixed(1)}`);
+        const snapAktif = await rtdb.ref(`ulangan_aktif/GK${kls}`).once('value');
+        const metadata = snapAktif.val();
+        
+        let benarPG = 0;
+        let totalSoal = daftarSoal.length;
+
+        daftarSoal.forEach((s, i) => {
+            if(s.tipe === 'PG') {
+                const pil = document.querySelector(`input[name="q${i}"]:checked`);
+                if(pil && pil.value === s.kunci) benarPG++;
+            }
+        });
+
+        const nilaiHitung = (benarPG / totalSoal) * 100;
+
         await rtdb.ref(`hasil_ulangan/GK${kls}/${siswaAktif}`).push({
-            nilai: nilai.toFixed(1),
+            nilai: nilaiHitung.toFixed(1),
+            tpId: metadata.tpId,
             waktu: new Date().toLocaleString()
         });
+
+        alert(`Terima kasih ${siswaAktif}!\nJawaban sudah terkirim.\nJika ada soal URAIAN, Nilai Anda akan diperbarui oleh Guru.`);
         location.reload();
     }
 </script>
