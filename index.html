@@ -106,6 +106,10 @@
             <div class="menu-card" onclick="selectRole('PAI', '🕌 GURU PAI', 'YATI NOVIYATI,S.Pd.I')"><span class="icon">🕌</span><h3>GURU PAI</h3><p>YATI NOVIYATI,S.Pd.I</p></div>
             <div class="menu-card" onclick="selectRole('KEPSEK', '👨‍💼 KEPALA SEKOLAH', 'KARYADI, S.Pd')" style="background: #fdf2f2;"><span class="icon">👨‍💼</span><h3>KEPALA SEKOLAH</h3><p>KARYADI, S.Pd</p></div>
         </div>
+        <hr style="margin: 30px 0;">
+        <div style="text-align: center;">
+            <button class="btn btn-orange" onclick="switchTab('tab-login-siswa')" style="padding: 20px 40px; font-size: 18px;">✍️ LOGIN SISWA (ULANGAN)</button>
+        </div>
     </div>
 
     <div id="back-area" style="display: none; margin-bottom: 20px;">
@@ -124,6 +128,7 @@
             <div class="menu-card" onclick="switchTab('tab-absensi')"><span class="icon">✅</span><h4>ABSENSI SISWA</h4></div>
             <div class="menu-card" onclick="switchTab('tab-rekap-absen')"><span class="icon">📊</span><h4>REKAP ABSEN</h4></div>
             <div class="menu-card" onclick="switchTab('tab-raport')"><span class="icon">📜</span><h4>RAPOR & NILAI</h4></div>
+            <div class="menu-card" onclick="switchTab('tab-buat-ulangan')"><span class="icon">📝</span><h4>BUAT ULANGAN</h4></div>
             <div class="menu-card" onclick="switchTab('tab-kegiatan')"><span class="icon">🏆</span><h4>EKSKUL/KOKUL</h4></div>
             <div class="menu-card" onclick="switchTab('tab-kosp')"><span class="icon">📂</span><h4>KOSP & LINK</h4></div>
         </div>
@@ -135,6 +140,50 @@
             <div class="menu-card" onclick="renderMonitorLinkGuru()"><span class="icon">📂</span><h4>DOKUMEN & CP/TP</h4></div>
             <div class="menu-card" onclick="renderMonitorNilai()"><span class="icon">📜</span><h4>MONITOR NILAI & RAPOR</h4></div>
             <div class="menu-card" onclick="switchTab('tab-setup')"><span class="icon">⚙️</span><h4>PENGATURAN KEPSEK</h4></div>
+        </div>
+    </div>
+
+    <div id="tab-login-siswa" class="tab-content">
+        <div class="card" style="max-width: 500px; margin: auto; text-align: center;">
+            <h3>✍️ Masuk Ruang Ulangan</h3>
+            <div class="field" style="margin-bottom: 15px;">
+                <label>Pilih Kelas</label>
+                <select id="loginSwKls" onchange="loadDaftarNamaSiswa(this.value)">
+                    <option value="">-- Pilih Kelas --</option>
+                    <option value="1">Kelas 1</option><option value="2">Kelas 2</option>
+                    <option value="3">Kelas 3</option><option value="4">Kelas 4</option>
+                    <option value="5">Kelas 5</option><option value="6">Kelas 6</option>
+                </select>
+            </div>
+            <div class="field" style="margin-bottom: 20px;">
+                <label>Pilih Nama Anda</label>
+                <select id="loginSwNama">
+                    <option value="">-- Pilih Nama --</option>
+                </select>
+            </div>
+            <button class="btn btn-green" style="width: 100%; padding: 15px;" onclick="mulaiUlanganSiswa()">MASUK ULANGAN</button>
+        </div>
+    </div>
+
+    <div id="tab-buat-ulangan" class="tab-content">
+        <div class="card">
+            <h3>📝 Kelola Soal Ulangan</h3>
+            <div class="form-group">
+                <div class="field"><label>Judul Ulangan</label><input type="text" id="ulJudul" placeholder="Contoh: Ulangan Harian IPAS Bab 1"></div>
+                <button class="btn btn-blue" onclick="simpanUlangan()">💾 AKTIFKAN ULANGAN</button>
+            </div>
+            <div id="area-input-soal"></div>
+            <button class="btn btn-dark" onclick="tambahSoalBaru()">➕ TAMBAH SOAL</button>
+        </div>
+    </div>
+
+    <div id="tab-kerjakan-ulangan" class="tab-content">
+        <div class="card">
+            <h2 id="displayUlJudul" style="text-align: center;"></h2>
+            <p id="displayNamaSiswa" style="text-align: center; color: var(--accent); font-weight: bold;"></p>
+            <hr>
+            <div id="konten-soal-siswa"></div>
+            <button class="btn btn-green" style="width: 100%; padding: 20px; margin-top: 20px;" onclick="selesaiUlangan()">KIRIM JAWABAN</button>
         </div>
     </div>
 
@@ -397,6 +446,8 @@
     let db = { cfg:{}, siswa:[], cp:[], agenda:[], absensi:{}, nilai:{}, modul:[], kegiatan:[], kosp:[] };
     let tempAgendaPhoto = "";
     let tempKegiatanPhoto = "";
+    let daftarSoal = [];
+    let siswaAktif = "";
     
     const SEKO_LAT = -6.8352517; 
     const SEKO_LNG = 108.2408433;
@@ -496,23 +547,16 @@
         renderRaport();
     }
 
-    // UPDATE: MODAL CEKLOK DENGAN HARI & JAM REALTIME
     function openModalCeklok() {
         document.getElementById('overlayCeklok').style.display = 'block';
         document.getElementById('modalCeklok').style.display = 'block';
         document.getElementById('statusLokasi').innerText = "Sedang mencari GPS...";
         document.getElementById('btnKirimAbsen').disabled = true;
-        
         const skrg = new Date();
         const tglISO = getTodayISO();
         const jam = skrg.getHours().toString().padStart(2,'0');
         const menit = skrg.getMinutes().toString().padStart(2,'0');
-        
-        document.getElementById('infoWaktu').innerHTML = `
-            <div style="font-size:14px;">${getNamaHari(tglISO)}, ${tglISO}</div>
-            <div style="font-size:24px; margin-top:5px;">${jam}:${menit} WIB</div>
-        `;
-
+        document.getElementById('infoWaktu').innerHTML = `<div style="font-size:14px;">${getNamaHari(tglISO)}, ${tglISO}</div><div style="font-size:24px; margin-top:5px;">${jam}:${menit} WIB</div>`;
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(pos => {
                 const dist = calculateDistance(pos.coords.latitude, pos.coords.longitude, SEKO_LAT, SEKO_LNG);
@@ -648,35 +692,19 @@
 
     function saveToFirebase() { if(!currentRole) return; rtdb.ref('sekolah_wetan/' + currentRole.toLowerCase()).set(db); }
 
-    // UPDATE: SWITCH TAB UNTUK OTOMATIS TANGGAL HARI INI
     function switchTab(id) {
         document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
         document.getElementById(id).style.display = 'block';
         document.getElementById('back-area').style.display = (id === 'tab-login' ? 'none' : 'block');
-        
         const tglHariIni = getTodayISO();
-
         if(id==='tab-siswa') renderSiswa();
         if(id==='tab-master') renderSemuaMaster();
         if(id==='tab-modul') updateMdTP();
-        if(id==='tab-agenda') { 
-            document.getElementById('agTgl').value = tglHariIni; 
-            updateAgTP(); renderAgenda(); 
-        }
-        if(id==='tab-absensi') { 
-            document.getElementById('abTgl').value = tglHariIni; 
-            renderAbsensi(); 
-        }
-        if(id==='tab-rekap-absen') {
-            const bln = tglHariIni.substring(0,7);
-            document.getElementById('rekBulan').value = bln;
-            renderRekapAbsen();
-        }
+        if(id==='tab-agenda') { document.getElementById('agTgl').value = tglHariIni; updateAgTP(); renderAgenda(); }
+        if(id==='tab-absensi') { document.getElementById('abTgl').value = tglHariIni; renderAbsensi(); }
+        if(id==='tab-rekap-absen') { const bln = tglHariIni.substring(0,7); document.getElementById('rekBulan').value = bln; renderRekapAbsen(); }
         if(id==='tab-raport') renderRaport();
-        if(id==='tab-kegiatan') { 
-            document.getElementById('kgTgl').value = tglHariIni;
-            renderKegiatan(); 
-        }
+        if(id==='tab-kegiatan') { document.getElementById('kgTgl').value = tglHariIni; renderKegiatan(); }
         if(id==='tab-kosp') renderKosp();
     }
 
@@ -699,8 +727,7 @@
         if(!db.nilai[sid][semKey][tpId]) db.nilai[sid][semKey][tpId] = { skor: 0, materi: '' };
         if(field === 'skor') db.nilai[sid][semKey][tpId].skor = parseFloat(val) || 0;
         if(field === 'materi') db.nilai[sid][semKey][tpId].materi = val;
-        saveToFirebase();
-        renderRaport();
+        saveToFirebase(); renderRaport();
     }
 
     function uNilGlobal(sid, field, val) {
@@ -709,8 +736,7 @@
         if(!db.nilai[sid]) db.nilai[sid] = {};
         if(!db.nilai[sid][semKey]) db.nilai[sid][semKey] = {};
         db.nilai[sid][semKey][field] = parseFloat(val) || 0;
-        saveToFirebase();
-        renderRaport();
+        saveToFirebase(); renderRaport();
     }
 
     function renderRaport() {
@@ -784,8 +810,6 @@
         document.getElementById('agTP').innerHTML = tps.map(t=>`<option value="${t.isi}">${t.isi}</option>`).join(''); 
     }
     function saveAgenda() { if(!db.agenda) db.agenda=[]; db.agenda.push({id:Date.now(), kls:document.getElementById('agKls').value, tgl:document.getElementById('agTgl').value, mapel:document.getElementById('agMapel').value, tp:document.getElementById('agTP').value, materi:document.getElementById('agMateri').value, foto: tempAgendaPhoto, status:'⏳ Pending'}); tempAgendaPhoto = ""; saveToFirebase(); renderAgenda(); }
-    
-    // UPDATE: TABEL AGENDA MENAMPILKAN HARI
     function renderAgenda() { 
         const k = document.getElementById('agKls').value; 
         const listAg = db.agenda ? db.agenda.filter(a=>a.kls==k) : []; 
@@ -798,8 +822,6 @@
     function renderRekapAbsen() { const k = document.getElementById('rekKls').value; const bul = document.getElementById('rekBulan').value; if(!bul) return; let h = `<tr><th>NAMA</th>`; for(let d=1; d<=31; d++) h += `<th>${d}</th>`; h += `</tr>`; document.getElementById('headRekap').innerHTML = h; const list = db.siswa ? db.siswa.filter(s=>s.kls==k) : []; document.getElementById('bodyRekap').innerHTML = list.map(s=>{ let row = `<tr><td>${s.nama}</td>`; for(let d=1; d<=31; d++){ let day = d<10?'0'+d:d; row += `<td>${(db.absensi || {})[bul+'-'+day+'_'+s.id] || '-'}</td>`; } return row + `</tr>`; }).join(''); }
 
     function saveKegiatan() { if(!db.kegiatan) db.kegiatan = []; db.kegiatan.push({id: Date.now(), jenis: document.getElementById('kgJenis').value, nama: document.getElementById('kgNama').value, tgl: document.getElementById('kgTgl').value, ket: document.getElementById('kgKet').value, foto: tempKegiatanPhoto, status: '⏳ Menunggu'}); tempKegiatanPhoto = ""; saveToFirebase(); renderKegiatan(); alert('Diajukan!'); }
-    
-    // UPDATE: TABEL KEGIATAN MENAMPILKAN HARI
     function renderKegiatan() { 
         const b = document.getElementById('bodyKegiatan'); 
         if(!db.kegiatan) return b.innerHTML = ""; 
@@ -875,6 +897,100 @@
         switchTab('tab-kepsek'); document.getElementById('monitor-title').innerText = '📜 Monitor Progress Nilai';
         const area = document.getElementById('area-monitor-kepsek');
         area.innerHTML = "<p style='text-align:center'>Data Nilai dan Rapor dapat dipantau langsung melalui login masing-masing akun Guru Kelas.</p>";
+    }
+
+    // --- FUNGSI BARU: ULANGAN HARIAN & LOGIN SISWA ---
+
+    function tambahSoalBaru() {
+        const id = Date.now();
+        const html = `
+        <div class="card" id="q-${id}" style="background: #f8fafc; border-left: 5px solid var(--accent);">
+            <textarea placeholder="Pertanyaan" class="q-tanya" style="width:100%; margin-bottom:10px;"></textarea>
+            <div class="form-group">
+                <input type="text" placeholder="Pilihan A" class="q-a">
+                <input type="text" placeholder="Pilihan B" class="q-b">
+                <input type="text" placeholder="Pilihan C" class="q-c">
+                <input type="text" placeholder="Pilihan D" class="q-d">
+            </div>
+            <label>Kunci Jawaban:</label>
+            <select class="q-kunci"><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select>
+            <button class="btn btn-red" onclick="document.getElementById('q-${id}').remove()">Hapus</button>
+        </div>`;
+        document.getElementById('area-input-soal').insertAdjacentHTML('beforeend', html);
+    }
+
+    async function simpanUlangan() {
+        const judul = document.getElementById('ulJudul').value;
+        if(!judul) return alert("Isi judul ulangan!");
+        const nodes = document.querySelectorAll('#area-input-soal .card');
+        let soalData = [];
+        nodes.forEach(n => {
+            soalData.push({
+                tanya: n.querySelector('.q-tanya').value,
+                a: n.querySelector('.q-a').value,
+                b: n.querySelector('.q-b').value,
+                c: n.querySelector('.q-c').value,
+                d: n.querySelector('.q-d').value,
+                kunci: n.querySelector('.q-kunci').value
+            });
+        });
+        await rtdb.ref(`ulangan_aktif/${currentRole}`).set({ judul, soal: soalData });
+        alert("Ulangan telah diaktifkan untuk siswa!");
+    }
+
+    async function loadDaftarNamaSiswa(kls) {
+        if(!kls) return;
+        const sel = document.getElementById('loginSwNama');
+        sel.innerHTML = '<option>Memuat...</option>';
+        const snap = await rtdb.ref(`sekolah_wetan/gk${kls}/siswa`).once('value');
+        const data = snap.val() || [];
+        let html = '<option value="">-- Pilih Nama --</option>';
+        data.forEach(s => { html += `<option value="${s.nama}">${s.nama}</option>`; });
+        sel.innerHTML = html;
+    }
+
+    async function mulaiUlanganSiswa() {
+        const kls = document.getElementById('loginSwKls').value;
+        const nama = document.getElementById('loginSwNama').value;
+        if(!nama) return alert("Pilih nama dulu!");
+        const snap = await rtdb.ref(`ulangan_aktif/GK${kls}`).once('value');
+        const data = snap.val();
+        if(!data) return alert("Maaf, tidak ada ulangan aktif untuk kelas ini.");
+        siswaAktif = nama;
+        daftarSoal = data.soal;
+        document.getElementById('displayUlJudul').innerText = data.judul;
+        document.getElementById('displayNamaSiswa').innerText = "Siswa: " + nama;
+        let html = "";
+        data.soal.forEach((s, i) => {
+            html += `
+            <div class="card" style="margin-bottom:15px; border-top: 2px solid #ddd;">
+                <p><b>${i+1}. ${s.tanya}</b></p>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <label><input type="radio" name="q${i}" value="A"> A. ${s.a}</label>
+                    <label><input type="radio" name="q${i}" value="B"> B. ${s.b}</label>
+                    <label><input type="radio" name="q${i}" value="C"> C. ${s.c}</label>
+                    <label><input type="radio" name="q${i}" value="D"> D. ${s.d}</label>
+                </div>
+            </div>`;
+        });
+        document.getElementById('konten-soal-siswa').innerHTML = html;
+        switchTab('tab-kerjakan-ulangan');
+    }
+
+    async function selesaiUlangan() {
+        let benar = 0;
+        daftarSoal.forEach((s, i) => {
+            const pil = document.querySelector(`input[name="q${i}"]:checked`);
+            if(pil && pil.value === s.kunci) benar++;
+        });
+        const nilai = (benar / daftarSoal.length) * 100;
+        const kls = document.getElementById('loginSwKls').value;
+        alert(`Terima kasih ${siswaAktif}!\nJawaban Anda sudah terkirim.\nNilai Anda: ${nilai.toFixed(1)}`);
+        await rtdb.ref(`hasil_ulangan/GK${kls}/${siswaAktif}`).push({
+            nilai: nilai.toFixed(1),
+            waktu: new Date().toLocaleString()
+        });
+        location.reload();
     }
 </script>
 </body>
