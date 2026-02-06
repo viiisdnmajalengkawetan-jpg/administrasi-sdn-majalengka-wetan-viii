@@ -89,7 +89,7 @@
 </div>
 
 <div class="navbar">
-    <h2 id="main-title" style="cursor: pointer;">🚀 ADMINISTRASI SD NEGERI MAJALENGKA WETAN VIII</h2>
+    <h2 id="main-title">🚀 ADMINISTRASI SD NEGERI MAJALENGKA WETAN VIII</h2>
 </div>
 
 <div class="container">
@@ -135,14 +135,6 @@
             <div class="menu-card" onclick="renderMonitorLinkGuru()"><span class="icon">📂</span><h4>DOKUMEN & CP/TP</h4></div>
             <div class="menu-card" onclick="renderMonitorNilai()"><span class="icon">📜</span><h4>MONITOR NILAI & RAPOR</h4></div>
             <div class="menu-card" onclick="switchTab('tab-setup')"><span class="icon">⚙️</span><h4>PENGATURAN KEPSEK</h4></div>
-            
-            <div id="super-admin-only" style="display: none; grid-column: 1 / -1;">
-                <div class="menu-card" onclick="superAdminResetDatabase()" style="background: #fee2e2; border: 2px solid var(--danger);">
-                    <span class="icon">⚠️</span>
-                    <h4 style="color: var(--danger);">RESET TOTAL DATABASE</h4>
-                    <p style="font-size: 11px;">Hapus seluruh data sistem (Developer Only)</p>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -181,7 +173,8 @@
     <div id="tab-kepsek" class="tab-content">
         <div class="card">
             <h3 id="monitor-title">Monitoring</h3>
-            <div id="area-monitor-kepsek"></div>
+            <div id="area-monitor-kepsek">
+                </div>
         </div>
     </div>
 
@@ -193,11 +186,23 @@
                 <button id="btnSem2" class="sem-btn" onclick="setSemester(2)">SEMESTER 2 (GENAP)</button>
             </div>
             <div class="form-group">
-                <div class="field"><label>Pilih Kelas</label><select id="rpKls" onchange="updateMapelFilter('rpMapel', this.value); renderRaport()"></select></div>
-                <div class="field"><label>Pilih Mata Pelajaran</label><select id="rpMapel" onchange="renderRaport()"></select></div>
+                <div class="field">
+                    <label>Pilih Kelas</label>
+                    <select id="rpKls" onchange="updateMapelFilter('rpMapel', this.value); renderRaport()">
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Pilih Mata Pelajaran</label>
+                    <select id="rpMapel" onchange="renderRaport()"></select>
+                </div>
             </div>
             <button class="btn btn-green" onclick="window.print()">🖨️ CETAK RAPOR</button>
-            <div class="table-res"><table><thead id="headRaport"></thead><tbody id="bodyRaport"></tbody></table></div>
+            <div class="table-res">
+                <table>
+                    <thead id="headRaport"></thead>
+                    <tbody id="bodyRaport"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -205,8 +210,15 @@
         <div class="card">
             <h3>🎯 Master CP, TP, ATP</h3>
             <div class="form-group">
-                <div class="field"><label>Pilih Kelas</label><select id="masterKls" onchange="updateMapelFilter('masterMapel', this.value); renderSemuaMaster()"></select></div>
-                <div class="field"><label>Pilih Mata Pelajaran</label><select id="masterMapel" onchange="renderSemuaMaster()"></select></div>
+                <div class="field">
+                    <label>Pilih Kelas</label>
+                    <select id="masterKls" onchange="updateMapelFilter('masterMapel', this.value); renderSemuaMaster()">
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Pilih Mata Pelajaran</label>
+                    <select id="masterMapel" onchange="renderSemuaMaster()"></select>
+                </div>
             </div>
             <div class="btn-group">
                 <button class="btn btn-blue" onclick="showMasterForm('formCP')">➕ CP</button>
@@ -258,7 +270,11 @@
         <div class="card">
             <h3>📖 Modul Ajar</h3>
             <div class="form-group">
-                <div class="field"><label>Kelas</label><select id="mdKls" onchange="updateMapelFilter('mdMapel', this.value); updateMdTP();"></select></div>
+                <div class="field">
+                    <label>Kelas</label>
+                    <select id="mdKls" onchange="updateMapelFilter('mdMapel', this.value); updateMdTP()">
+                    </select>
+                </div>
                 <div class="field"><label>Mata Pelajaran</label><select id="mdMapel" onchange="updateMdTP()"></select></div>
                 <div class="field"><label>Pilih TP</label><select id="mdTP" onchange="loadModulDetail()"></select></div>
             </div>
@@ -275,7 +291,11 @@
         <div class="card">
             <h3>📝 Agenda Harian</h3>
             <div class="form-group">
-                <div class="field"><label>Kelas</label><select id="agKls" onchange="updateMapelFilter('agMapel', this.value); updateAgTP(); renderAgenda();"></select></div>
+                <div class="field">
+                    <label>Kelas</label>
+                    <select id="agKls" onchange="updateMapelFilter('agMapel', this.value); updateAgTP(); renderAgenda();">
+                    </select>
+                </div>
                 <div class="field"><label>Mata Pelajaran</label><select id="agMapel" onchange="updateAgTP()"></select></div>
                 <div class="field"><label>Tanggal</label><input type="date" id="agTgl"></div>
                 <div class="field"><label>TP</label><select id="agTP"></select></div>
@@ -390,8 +410,7 @@
         {id: 'GK6', nama: 'ESIH IMAWATI,S.Pd', pw: '12345'},
         {id: 'PJOK', nama: 'INDRA SETIAWAN,S.Pd', pw: '12345'},
         {id: 'PAI', nama: 'YATI NOVIYATI,S.Pd.I', pw: '12345'},
-        {id: 'KEPSEK', nama: 'KARYADI, S.Pd', pw: 'admin2026'},
-        {id: 'SUPER_ADMIN', nama: 'DEVELOPER / ADMIN PUSAT', pw: 'super2026'}
+        {id: 'KEPSEK', nama: 'KARYADI, S.Pd', pw: 'admin2026'}
     ];
 
     function updateMapelFilter(elementId, kls) {
@@ -427,28 +446,15 @@
 
         currentRole = role;
         document.getElementById('main-title').innerText = title + " - " + name;
-        
-        const gMenu = document.getElementById('guru-menu');
-        const kMenu = document.getElementById('kepsek-menu');
-        const sBtn = document.getElementById('super-admin-only');
+        filterKelasBerdasarkanRole(role);
 
-        if(role === 'SUPER_ADMIN') {
-            gMenu.style.display = 'grid';
-            kMenu.style.display = 'grid';
-            sBtn.style.display = 'block';
-            filterKelasBerdasarkanRole('ALL');
-            loadDB("SUPER ADMIN");
-        } else if(role === 'KEPSEK') {
-            gMenu.style.display = 'none';
-            kMenu.style.display = 'grid';
-            sBtn.style.display = 'none';
-            filterKelasBerdasarkanRole(role);
+        if(role === 'KEPSEK') {
+            document.getElementById('guru-menu').style.display = 'none';
+            document.getElementById('kepsek-menu').style.display = 'grid';
             loadDB(name);
         } else {
-            gMenu.style.display = 'grid';
-            kMenu.style.display = 'none';
-            sBtn.style.display = 'none';
-            filterKelasBerdasarkanRole(role);
+            document.getElementById('guru-menu').style.display = 'grid';
+            document.getElementById('kepsek-menu').style.display = 'none';
             loadDB(name);
         }
         switchTab('tab-home');
@@ -468,34 +474,6 @@
         document.getElementById(id).style.display = 'block';
         document.getElementById('back-area').style.display = (id === 'tab-login' ? 'none' : 'block');
     }
-
-    // --- FUNGSI SUPER ADMIN ---
-    function superAdminResetDatabase() {
-        if (currentRole !== 'SUPER_ADMIN') return;
-        const konfirmasi1 = confirm("⚠️ PERINGATAN!\n\nAnda akan menghapus SELURUH data sistem (Siswa, Nilai, Agenda, dan Presensi).\n\nLanjutkan?");
-        if (konfirmasi1) {
-            const konfirmasi2 = prompt("Ketik 'HAPUS SEMUA' untuk konfirmasi:");
-            if (konfirmasi2 === "HAPUS SEMUA") {
-                Promise.all([
-                    rtdb.ref('sekolah_wetan').remove(),
-                    rtdb.ref('presensi_guru').remove()
-                ]).then(() => {
-                    alert("Database berhasil dikosongkan.");
-                    location.reload();
-                });
-            }
-        }
-    }
-
-    // Klik Judul 5x untuk Super Admin
-    let clickCount = 0;
-    document.getElementById('main-title').addEventListener('click', function() {
-        clickCount++;
-        if (clickCount === 5) {
-            selectRole('SUPER_ADMIN', '⚡ SUPER ADMIN', 'ADMIN PUSAT');
-            clickCount = 0;
-        }
-    });
 
     // --- FUNGSI MONITORING KEPALA SEKOLAH ---
 
@@ -578,7 +556,7 @@
             const data = snap.val() || {};
             let html = '<div class="table-res"><table><thead><tr><th>GURU</th><th>STATUS</th><th>WAKTU</th><th>KET</th></tr></thead><tbody>';
             allGurus.forEach(g => {
-                if(g.id === 'KEPSEK' || g.id === 'SUPER_ADMIN') return;
+                if(g.id === 'KEPSEK') return;
                 const h = data[g.id] || { status: '🔴 Belum Hadir', waktu: '-', ket: '-' };
                 html += `<tr><td>${g.nama}</td><td><b>${h.status}</b></td><td>${h.waktu}</td><td>${h.ket}</td></tr>`;
             });
@@ -590,7 +568,7 @@
         switchTab('tab-kepsek');
         document.getElementById('monitor-title').innerText = '📊 Monitor Absen Siswa (Global)';
         const area = document.getElementById('area-monitor-kepsek');
-        area.innerHTML = `<div class="card">Data detail absen siswa dapat diakses melalui rekap kelas masing-masing.</div>`;
+        area.innerHTML = `<div class="card">Pilih Kelas di Menu Utama Guru untuk melihat rekap detail. Fitur ringkasan eksekutif sedang disiapkan.</div>`;
     }
 
     function renderMonitorLinkGuru() {
@@ -616,7 +594,7 @@
         switchTab('tab-kepsek');
         document.getElementById('monitor-title').innerText = '📜 Monitor Nilai & Rapor';
         const area = document.getElementById('area-monitor-kepsek');
-        area.innerHTML = `<p>Monitoring input nilai secara terpusat.</p>`;
+        area.innerHTML = `<p>Kepala Sekolah dapat memantau progres input nilai melalui menu "Cetak Rapor" di masing-masing akun guru atau melalui ringkasan ini (Fitur dalam pengembangan).</p>`;
     }
 
     // --- FUNGSI IDENTITAS ---
@@ -741,8 +719,8 @@
         const x = document.getElementById(id);
         x.style.display = x.style.display === 'none' ? 'block' : 'none';
     }
-    
-    // Fungsi pembantu lainnya untuk Rapor, Siswa, Master tetap berfungsi normal sesuai struktur db yang dimuat.
+
+    // Sisanya fungsi saveSiswa, renderSiswa, saveMaster sama seperti kode awal Anda.
 </script>
 </body>
 </html>
