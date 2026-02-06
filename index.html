@@ -801,16 +801,29 @@
     function toggleVisibility(id) { const x = document.getElementById(id); x.style.display = (x.style.display==='none'?'block':'none'); }
     function exportSiswaExcel() { const ws = XLSX.utils.json_to_sheet(db.siswa || []); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Siswa"); XLSX.writeFile(wb, `SISWA_${currentRole}.xlsx`); }
 
+    // --- FUNGSI MONITORING KEPSEK (PENUH) ---
+
     function renderMonitorAgenda() {
         switchTab('tab-kepsek'); document.getElementById('monitor-title').innerText = '📋 Persetujuan Agenda';
         const area = document.getElementById('area-monitor-kepsek');
         rtdb.ref('sekolah_wetan').once('value', snapshot => {
             const all = snapshot.val(); let html = '<div class="table-res"><table><thead><tr><th>GURU</th><th>MAPEL</th><th>TGL</th><th>AKSI</th></tr></thead><tbody>';
-            for(let r in all) { if(all[r].agenda) all[r].agenda.forEach((a,i)=>{ if(a.status!=='✅ Disetujui') html += `<tr><td>${all[r].cfg.guru||r}</td><td>${a.mapel}</td><td>${a.tgl}</td><td><button class="btn-green" onclick="appAg('${r}',${i})">Setujui</button></td></tr>`; }); }
+            for(let r in all) { if(all[r].agenda) all[r].agenda.forEach((a,i)=>{ if(a.status!=='✅ Disetujui') html += `<tr><td>${all[r].cfg.guru||r}</td><td>${a.mapel}</td><td>${a.tgl}</td><td><button class="btn btn-green" onclick="appAg('${r}',${i})">Setujui</button></td></tr>`; }); }
             area.innerHTML = html + '</tbody></table></div>';
         });
     }
     function appAg(r,i){ rtdb.ref(`sekolah_wetan/${r}/agenda/${i}/status`).set('✅ Disetujui'); alert('Disetujui'); renderMonitorAgenda(); }
+
+    function renderMonitorKegiatan() {
+        switchTab('tab-kepsek'); document.getElementById('monitor-title').innerText = '🏆 Persetujuan Kegiatan';
+        const area = document.getElementById('area-monitor-kepsek');
+        rtdb.ref('sekolah_wetan').once('value', snapshot => {
+            const all = snapshot.val(); let html = '<div class="table-res"><table><thead><tr><th>GURU</th><th>KEGIATAN</th><th>TGL</th><th>AKSI</th></tr></thead><tbody>';
+            for(let r in all) { if(all[r].kegiatan) all[r].kegiatan.forEach((k,i)=>{ if(k.status !== '✅ Disetujui') html += `<tr><td>${all[r].cfg.guru||r}</td><td>${k.nama}</td><td>${k.tgl}</td><td><button class="btn btn-green" onclick="appKeg('${r}',${i})">Setujui</button></td></tr>`; }); }
+            area.innerHTML = html + '</tbody></table></div>';
+        });
+    }
+    function appKeg(r, i) { rtdb.ref(`sekolah_wetan/${r}/kegiatan/${i}/status`).set('✅ Disetujui'); alert('Kegiatan Disetujui!'); renderMonitorKegiatan(); }
 
     function renderMonitorAbsenGuru() {
         switchTab('tab-kepsek'); document.getElementById('monitor-title').innerText = '👨‍🏫 Monitor Presensi Guru';
@@ -825,6 +838,33 @@
             });
             area.innerHTML = html + '</tbody></table></div>';
         });
+    }
+
+    function renderMonitorAbsenSiswa() {
+        switchTab('tab-kepsek'); document.getElementById('monitor-title').innerText = '📊 Monitor Absensi Siswa';
+        const area = document.getElementById('area-monitor-kepsek');
+        area.innerHTML = "<p style='text-align:center'>Pilih Kelas di menu utama Guru untuk melihat rekap detail bulanan secara langsung.</p>";
+    }
+
+    function renderMonitorLinkGuru() {
+        switchTab('tab-kepsek'); document.getElementById('monitor-title').innerText = '📂 Dokumen & Perangkat Guru';
+        const area = document.getElementById('area-monitor-kepsek');
+        rtdb.ref('sekolah_wetan').once('value', snapshot => {
+            const all = snapshot.val();
+            let html = '<div class="table-res"><table><thead><tr><th>GURU</th><th>DOKUMEN</th><th>LINK</th></tr></thead><tbody>';
+            for(let r in all) {
+                if(all[r].kosp) all[r].kosp.forEach(k => {
+                    html += `<tr><td>${all[r].cfg.guru||r}</td><td>${k.nama}</td><td><a href="${k.link}" target="_blank" class="btn btn-blue">Buka Drive</a></td></tr>`;
+                });
+            }
+            area.innerHTML = html + '</tbody></table></div>';
+        });
+    }
+
+    function renderMonitorNilai() {
+        switchTab('tab-kepsek'); document.getElementById('monitor-title').innerText = '📜 Monitor Progress Nilai';
+        const area = document.getElementById('area-monitor-kepsek');
+        area.innerHTML = "<p style='text-align:center'>Data Nilai dan Rapor dapat dipantau langsung melalui login masing-masing akun Guru Kelas.</p>";
     }
 </script>
 </body>
