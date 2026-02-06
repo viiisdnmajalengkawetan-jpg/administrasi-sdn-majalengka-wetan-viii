@@ -15,717 +15,493 @@
             --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
         body { font-family: 'Inter', 'Segoe UI', sans-serif; background: #f1f5f9; margin: 0; padding: 0; color: var(--dark); display: flex; flex-direction: column; min-height: 100vh; }
-        .navbar { background: var(--primary); color: white; padding: 25px; text-align: center; box-shadow: var(--shadow); position: sticky; top: 0; z-index: 100; border-bottom: 4px solid var(--accent); }
-        .container { padding: 30px; max-width: 1300px; margin: auto; flex: 1; width: 100%; box-sizing: border-box; }
-        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px; }
-        .menu-card { background: var(--white); padding: 35px 20px; border-radius: 20px; text-align: center; cursor: pointer; transition: 0.3s; box-shadow: var(--shadow); border: 1px solid rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; }
-        .menu-card:hover { transform: translateY(-10px); border-color: var(--accent); }
-        .menu-card .icon { font-size: 50px; margin-bottom: 15px; }
-        .tab-content { display: none; animation: fadeIn 0.5s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
-        .card { background: white; padding: 25px; border-radius: 16px; box-shadow: var(--shadow); margin-bottom: 25px; border-top: 5px solid var(--accent); }
-        .btn-group { display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
-        .btn { padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
-        .btn-blue { background: var(--accent); } .btn-green { background: var(--success); } .btn-red { background: var(--danger); } .btn-orange { background: var(--warning); } .btn-dark { background: var(--dark); }
-        .form-group { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; align-items: flex-end; }
-        .field { display: flex; flex-direction: column; flex: 1; min-width: 150px; }
-        label { font-size: 11px; font-weight: 800; margin-bottom: 5px; color: #64748b; }
-        input, select, textarea { padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; }
-        .table-res { overflow-x: auto; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
-        table { width: 100%; border-collapse: collapse; background: white; }
-        th { background: #f8fafc; padding: 12px; color: var(--primary); font-size: 11px; border-bottom: 2px solid #e2e8f0; }
-        td { padding: 8px; border-bottom: 1px solid #f1f5f9; text-align: center; font-size: 13px; }
-        .hidden-form { display: none; margin-top: 20px; padding: 15px; border: 2px dashed #3b82f6; border-radius: 12px; }
-        .history-container { display: none; margin-top: 20px; padding: 15px; background: #fff; border-radius: 12px; border: 1px solid #cbd5e1; }
-        .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 10px; font-weight: bold; color: #fff; }
-        
-        .semester-switcher { display: flex; gap: 10px; margin-bottom: 15px; justify-content: center; }
-        .sem-btn { padding: 8px 15px; border-radius: 20px; border: 1px solid var(--accent); cursor: pointer; background: white; color: var(--accent); font-weight: bold; }
-        .sem-btn.active { background: var(--accent); color: white; }
-
-        .profile-photo-container { text-align: center; margin-bottom: 20px; }
-        .photo-preview { width: 120px; height: 120px; border-radius: 50%; background: #e2e8f0; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 3px solid var(--accent); }
-        .photo-preview img { width: 100%; height: 100%; object-fit: cover; }
-        .admin-wa-box { background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #cbd5e1; margin-top: 15px; }
-
-        #modalCeklok {
-            display: none; position: fixed; top: 50%; left: 50%; 
-            transform: translate(-50%, -50%); background: white; 
-            padding: 30px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); 
-            z-index: 2000; text-align: center; width: 320px;
-        }
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1999; }
-
-        @media print {
-            .navbar, .btn, .btn-group, .form-group, .dashboard-grid, .no-print, #back-area, .btn-orange, .btn-green, .semester-switcher { display: none !important; }
-            #print-header { display: block !important; text-align: center; border-bottom: 3px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
-            #print-footer { display: block !important; margin-top: 40px; }
-            .card { border: none !important; box-shadow: none !important; padding: 0 !important; }
-            body { background: white; }
-            table { font-size: 10px; width: 100%; border: 1px solid #000 !important; }
-            th, td { border: 1px solid #000 !important; }
-            .print-footer-table { width: 100%; border: none !important; margin-top: 30px; }
-            .print-footer-table td { border: none !important; text-align: center; width: 50% !important; vertical-align: top; }
-        }
+        .header { background: var(--primary); color: white; padding: 20px; text-align: center; box-shadow: var(--shadow); position: sticky; top: 0; z-index: 100; border-bottom: 4px solid var(--accent); }
+        .header h1 { margin: 0; font-size: 1.5rem; letter-spacing: 1px; }
+        .header p { margin: 5px 0 0; opacity: 0.9; font-size: 0.85rem; }
+        .container { flex: 1; padding: 15px; max-width: 1200px; margin: 0 auto; width: 100%; box-sizing: border-box; }
+        .card { background: white; padding: 20px; border-radius: 16px; box-shadow: var(--shadow); margin-bottom: 20px; border: 1px solid rgba(0,0,0,0.05); }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
+        .btn { padding: 12px 15px; border: none; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; color: white; }
+        .btn-primary { background: var(--primary); }
+        .btn-accent { background: var(--accent); }
+        .btn-green { background: var(--success); }
+        .btn-red { background: var(--danger); }
+        .btn-warn { background: var(--warning); }
+        .btn-dark { background: var(--dark); }
+        .btn:active { transform: scale(0.95); }
+        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1.5px solid #e2e8f0; border-radius: 10px; box-sizing: border-box; font-size: 1rem; }
+        input:focus { outline: none; border-color: var(--accent); }
+        .table-res { overflow-x: auto; margin-top: 15px; border-radius: 12px; border: 1px solid #e2e8f0; }
+        table { width: 100%; border-collapse: collapse; background: white; min-width: 600px; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid #eee; text-align: center; font-size: 0.9rem; }
+        th { background: #f8fafc; font-weight: 700; color: var(--primary); text-transform: uppercase; font-size: 0.75rem; }
+        .tab-content { display: none; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .login-box { max-width: 400px; margin: 60px auto; text-align: center; }
+        .profile-section { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #f1f5f9; }
+        .profile-img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent); }
+        .status-badge { padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; }
+        .footer { text-align: center; padding: 20px; font-size: 0.8rem; color: #64748b; }
+        #map-link { color: var(--accent); font-weight: bold; text-decoration: none; display: block; margin: 10px 0; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--accent); border-radius: 50%; width: 30px; height: 30px; animation: spin 2s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-<div class="modal-overlay" id="overlayCeklok"></div>
-<div id="modalCeklok">
-    <span style="font-size: 50px;">📍</span>
-    <h4>PRESENSI GURU</h4>
-    <p id="statusLokasi" style="font-size: 12px; color: #64748b;">Mendeteksi lokasi Anda...</p>
-    <div id="infoWaktu" style="margin-bottom: 15px; font-weight: bold; color: var(--primary);"></div>
-    <button id="btnKirimAbsen" disabled onclick="submitCeklok()" class="btn btn-green" style="width: 100%; justify-content: center; padding: 15px;">CEKLOK SEKARANG</button>
-    <button onclick="submitIzinSakit()" class="btn btn-orange" style="width: 100%; justify-content: center; padding: 10px; margin-top: 5px;">LAPOR IZIN / SAKIT</button>
-    <button onclick="closeModalCeklok()" style="margin-top: 15px; background: none; border: none; color: var(--danger); cursor: pointer; font-weight: bold;">TUTUP</button>
-</div>
-
-<div id="print-header" style="display:none;">
-    <h1 id="pSekolah">NAMA SEKOLAH</h1>
-    <h2 id="pTitle">LAPORAN CAPAIAN HASIL BELAJAR</h2>
-    <hr>
-</div>
-
-<div class="navbar">
-    <h2 id="main-title">🚀 ADMINISTRASI SD NEGERI MAJALENGKA WETAN VIII</h2>
-</div>
-
-<div class="container">
-    <div id="tab-login" class="tab-content" style="display: block;">
-        <h3 style="text-align:center">Silakan Pilih Akun:</h3>
-        <div class="dashboard-grid">
-            <div class="menu-card" onclick="selectRole('GK1', '🏫 KELAS 1', 'SITI ROKAYAH,S.Pd')"><span class="icon">🏫</span><h3>KELAS 1</h3><p>SITI ROKAYAH,S.Pd</p></div>
-            <div class="menu-card" onclick="selectRole('GK2', '🏫 KELAS 2', 'VIKA NURATIKA,S.Pd')"><span class="icon">🏫</span><h3>KELAS 2</h3><p>VIKA NURATIKA,S.Pd</p></div>
-            <div class="menu-card" onclick="selectRole('GK3', '🏫 KELAS 3', 'RISKA WIDIA ROSANA,S.PD')"><span class="icon">🏫</span><h3>KELAS 3</h3><p>RISKA WIDIA ROSANA,S.PD</p></div>
-            <div class="menu-card" onclick="selectRole('GK4', '🏫 KELAS 4', 'DEDE YUDIASTUTI,S.Pd')"><span class="icon">🏫</span><h3>KELAS 4</h3><p>DEDE YUDIASTUTI,S.Pd</p></div>
-            <div class="menu-card" onclick="selectRole('GK5', '🏫 KELAS 5', 'SILVYRA RISMAWATI,S.Pd.SD')"><span class="icon">🏫</span><h3>KELAS 5</h3><p>SILVYRA RISMAWATI,S.Pd.SD</p></div>
-            <div class="menu-card" onclick="selectRole('GK6', '🏫 KELAS 6', 'ESIH IMAWATI,S.Pd')"><span class="icon">🏫</span><h3>KELAS 6</h3><p>ESIH IMAWATI,S.Pd</p></div>
-            <div class="menu-card" onclick="selectRole('PJOK', '🏃‍♂️ GURU PJOK', 'INDRA SETIAWAN,S.Pd')"><span class="icon">🏃‍♂️</span><h3>GURU PJOK</h3><p>INDRA SETIAWAN,S.Pd</p></div>
-            <div class="menu-card" onclick="selectRole('PAI', '🕌 GURU PAI', 'YATI NOVIYATI,S.Pd.I')"><span class="icon">🕌</span><h3>GURU PAI</h3><p>YATI NOVIYATI,S.Pd.I</p></div>
-            <div class="menu-card" onclick="selectRole('KEPSEK', '👨‍💼 KEPALA SEKOLAH', 'KARYADI, S.Pd')" style="background: #fdf2f2;"><span class="icon">👨‍💼</span><h3>KEPALA SEKOLAH</h3><p>KARYADI, S.Pd</p></div>
-        </div>
+    <div class="header">
+        <h1 id="main-title">SDN MAJALENGKA WETAN VIII</h1>
+        <p id="sub-title">Sistem Administrasi Digital Merdeka</p>
     </div>
 
-    <div id="back-area" style="display: none; margin-bottom: 20px;">
-        <button class="btn btn-dark" onclick="switchTab('tab-home')">🏠 MENU UTAMA</button>
-        <button class="btn btn-red" onclick="location.reload()">🚪 GANTI AKUN</button>
-    </div>
-
-    <div id="tab-home" class="tab-content">
-        <div class="dashboard-grid" id="guru-menu">
-            <div class="menu-card" onclick="openModalCeklok()" style="background: #f0fdf4; border: 2px solid var(--success);"><span class="icon">📍</span><h4>CEKLOK ABSEN</h4></div>
-            <div class="menu-card" onclick="switchTab('tab-setup')"><span class="icon">⚙️</span><h4>IDENTITAS</h4></div>
-            <div class="menu-card" onclick="switchTab('tab-siswa')"><span class="icon">👥</span><h4>SISWA</h4></div>
-            <div class="menu-card" onclick="switchTab('tab-master')"><span class="icon">🎯</span><h4>CP, TP, ATP</h4></div>
-            <div class="menu-card" onclick="switchTab('tab-modul')"><span class="icon">📖</span><h4>MODUL AJAR</h4></div>
-            <div class="menu-card" onclick="switchTab('tab-agenda')"><span class="icon">📝</span><h4>AGENDA</h4></div>
-            <div class="menu-card" onclick="switchTab('tab-absensi')"><span class="icon">✅</span><h4>ABSENSI SISWA</h4></div>
-            <div class="menu-card" onclick="switchTab('tab-rekap-absen')"><span class="icon">📊</span><h4>REKAP ABSEN</h4></div>
-            <div class="menu-card" onclick="switchTab('tab-raport')"><span class="icon">📜</span><h4>RAPOR & NILAI</h4></div>
-            <div class="menu-card" onclick="switchTab('tab-kegiatan')"><span class="icon">🏆</span><h4>EKSKUL/KOKUL</h4></div>
-            <div class="menu-card" onclick="switchTab('tab-kosp')"><span class="icon">📂</span><h4>KOSP & LINK</h4></div>
+    <div class="container">
+        <div id="section-login" class="login-box card">
+            <img src="https://cdn-icons-png.flaticon.com/512/2602/2602414.png" width="80" style="margin-bottom:15px">
+            <h2>Silahkan Masuk</h2>
+            <p>Gunakan Kode Akses Guru/Kepsek</p>
+            <input type="password" id="pass" placeholder="Masukkan Kode Akses..." onkeyup="if(event.key==='Enter') login()">
+            <button class="btn btn-primary" style="width:100%" onclick="login()">MASUK SISTEM</button>
         </div>
-        <div class="dashboard-grid" id="kepsek-menu" style="display: none;">
-            <div class="menu-card" onclick="renderMonitorAgenda()"><span class="icon">📋</span><h4>PERSETUJUAN AGENDA</h4></div>
-            <div class="menu-card" onclick="renderMonitorKegiatan()"><span class="icon">🏆</span><h4>PERSETUJUAN KEGIATAN</h4></div>
-            <div class="menu-card" onclick="renderMonitorAbsenGuru()"><span class="icon">👨‍🏫</span><h4>PRESENSI GURU</h4></div>
-            <div class="menu-card" onclick="renderMonitorAbsenSiswa()"><span class="icon">📊</span><h4>MONITOR ABSEN SISWA</h4></div>
-            <div class="menu-card" onclick="renderMonitorLinkGuru()"><span class="icon">📂</span><h4>DOKUMEN & CP/TP</h4></div>
-            <div class="menu-card" onclick="renderMonitorNilai()"><span class="icon">📜</span><h4>MONITOR NILAI & RAPOR</h4></div>
-            <div class="menu-card" onclick="switchTab('tab-setup')"><span class="icon">⚙️</span><h4>PENGATURAN KEPSEK</h4></div>
-        </div>
-    </div>
 
-    <div id="tab-setup" class="tab-content">
-        <div class="card">
-            <h3>⚙️ Identitas & Foto Profil</h3>
-            <div class="profile-photo-container">
-                <div class="photo-preview" id="photo-preview-box">
-                    <span id="photo-placeholder">📸 No Photo</span>
-                    <img id="photo-img" src="" style="display:none;">
+        <div id="section-app" style="display:none">
+            
+            <div class="card profile-section">
+                <img id="my-foto" class="profile-img" src="https://via.placeholder.com/100">
+                <div style="text-align:left">
+                    <h3 id="my-name" style="margin:0">-</h3>
+                    <p id="my-role" style="margin:0; font-size:0.8rem; color:var(--accent)">-</p>
                 </div>
-                <input type="file" id="input-foto" accept="image/*" style="display:none;" onchange="previewProfilePhoto(this)">
-                <button class="btn btn-dark" onclick="document.getElementById('input-foto').click()">📤 UPLOAD FOTO PROFIL</button>
+                <button class="btn btn-red" style="margin-left:auto; padding:8px" onclick="location.reload()">LOGOUT</button>
             </div>
-            <div class="form-group"><div class="field"><label>Nama Sekolah</label><input type="text" id="sSekolah"></div></div>
-            <div class="form-group">
-                <div class="field"><label>Nama Pengguna</label><input type="text" id="sGuru"></div>
-                <div class="field"><label>NIP Pengguna</label><input type="text" id="snipGuru"></div>
-                <div class="field"><label>WA Pribadi (628...)</label><input type="text" id="sWaGuru" placeholder="62812345678"></div>
-            </div>
-            <div id="kepsek-wa-management" class="admin-wa-box" style="display:none;">
-                <h4>🛠️ Panel Admin: Atur Nomor HP Guru</h4>
-                <div id="list-wa-guru-inputs"></div>
-            </div>
-            <div class="form-group">
-                <div class="field"><label>Nama Kepala Sekolah</label><input type="text" id="sKepsek"></div>
-                <div class="field"><label>NIP Kepala Sekolah</label><input type="text" id="snipKepsek"></div>
-                <div class="field"><label>WA Kepsek (628...)</label><input type="text" id="sWaKepsek" placeholder="62812345678"></div>
-            </div>
-            <div class="btn-group">
-                <button class="btn btn-blue" onclick="saveSetup()">💾 SIMPAN PERUBAHAN</button>
-            </div>
-        </div>
-    </div>
 
-    <div id="tab-raport" class="tab-content">
-        <div class="card">
-            <h3>📜 Input Nilai & Rapor</h3>
-            <div class="semester-switcher">
-                <button id="btnSem1" class="sem-btn active" onclick="setSemester(1)">SEMESTER 1 (GANJIL)</button>
-                <button id="btnSem2" class="sem-btn" onclick="setSemester(2)">SEMESTER 2 (GENAP)</button>
+            <div id="menu-guru" class="grid" style="display:none">
+                <button class="btn btn-accent" onclick="showTab('tab-absen')">🕒 PRESENSI</button>
+                <button class="btn btn-primary" onclick="showTab('tab-kurikulum')">📚 KURIKULUM</button>
+                <button class="btn btn-green" onclick="showTab('tab-agenda')">📝 AGENDA</button>
+                <button class="btn btn-warn" onclick="showTab('tab-nilai')">📊 NILAI</button>
+                <button class="btn btn-dark" onclick="showTab('tab-config')">⚙️ PENGATURAN</button>
             </div>
-            <div class="form-group">
-                <div class="field">
-                    <label>Pilih Kelas</label>
-                    <select id="rpKls" onchange="updateMapelFilter('rpMapel', this.value); renderRaport()">
-                        <option value="1">Kelas 1</option><option value="2">Kelas 2</option><option value="3">Kelas 3</option>
-                        <option value="4">Kelas 4</option><option value="5">Kelas 5</option><option value="6">Kelas 6</option>
-                    </select>
-                </div>
-                <div class="field">
-                    <label>Pilih Mata Pelajaran</label>
-                    <select id="rpMapel" onchange="renderRaport()"></select>
+
+            <div id="menu-kepsek" class="grid" style="display:none">
+                <button class="btn btn-primary" onclick="renderMonitorAbsenGuru()">👨‍🏫 ABSEN GURU</button>
+                <button class="btn btn-green" onclick="renderMonitorAgenda()">📋 CEK AGENDA</button>
+                <button class="btn btn-accent" onclick="renderMonitorKOSP()">📁 KOSP/LINK</button>
+                <button class="btn btn-warn" onclick="renderMonitorNilai()">📉 REKAP NILAI</button>
+            </div>
+
+            <div id="tab-absen" class="tab-content card">
+                <h3>Presensi Kehadiran GPS</h3>
+                <p id="jam-now" style="font-size:1.5rem; font-weight:bold; color:var(--primary)">00:00:00</p>
+                <div id="absen-status-box">Menunggu Lokasi...</div>
+                <input type="text" id="ket-absen" placeholder="Keterangan (Opsional)...">
+                <button id="btn-ceklok" class="btn btn-green" style="width:100%; margin-top:10px" onclick="doAbsen()" disabled>CEKLOK SEKARANG</button>
+                <a id="map-link" href="#" target="_blank">Lihat Lokasi Saya di Map</a>
+            </div>
+
+            <div id="tab-kurikulum" class="tab-content card">
+                <h3>Manajemen CP / TP / ATP</h3>
+                <select id="k-mapel"><option>Bahasa Indonesia</option><option>Matematika</option><option>IPAS</option><option>Pancasila</option><option>PJOK</option><option>Seni Budaya</option><option>B. Inggris</option><option>B. Sunda</option><option>PAI</option></select>
+                <textarea id="k-cp" placeholder="Input Capaian Pembelajaran (CP)..."></textarea>
+                <textarea id="k-tp" placeholder="Input Tujuan Pembelajaran (TP)..."></textarea>
+                <textarea id="k-atp" placeholder="Alur Tujuan Pembelajaran (ATP)..."></textarea>
+                <button class="btn btn-primary" onclick="saveKurikulum()">SIMPAN DATA</button>
+            </div>
+
+            <div id="tab-agenda" class="tab-content card">
+                <h3>Agenda Harian & Modul Ajar</h3>
+                <input type="date" id="ag-tgl">
+                <input type="text" id="ag-mapel" placeholder="Mata Pelajaran">
+                <input type="number" id="ag-kls" placeholder="Kelas">
+                <textarea id="ag-materi" placeholder="Materi / Langkah Pembelajaran"></textarea>
+                <p>Foto Kegiatan:</p>
+                <input type="file" id="ag-foto" accept="image/*">
+                <button class="btn btn-green" onclick="saveAgenda()">KIRIM AGENDA</button>
+                <hr>
+                <h4>Riwayat Agenda Saya</h4>
+                <div id="list-agenda-saya"></div>
+            </div>
+
+            <div id="tab-nilai" class="tab-content card">
+                <h3>Input Nilai Sumatif</h3>
+                <div id="nilai-form">
+                    <button class="btn btn-accent" onclick="generateFormatNilai()">1. BUAT FORMAT SISWA</button>
+                    <div id="area-input-nilai" class="table-res"></div>
+                    <button class="btn btn-primary" style="margin-top:10px" onclick="saveNilai()">2. SIMPAN SEMUA NILAI</button>
                 </div>
             </div>
-            <button class="btn btn-green" onclick="window.print()">🖨️ CETAK RAPOR</button>
-            <div class="table-res">
-                <table>
-                    <thead id="headRaport"></thead>
-                    <tbody id="bodyRaport"></tbody>
-                </table>
+
+            <div id="tab-config" class="tab-content card">
+                <h3>Pengaturan Profil</h3>
+                <p>Ganti Foto Profil:</p>
+                <input type="file" id="cfg-foto" accept="image/*" onchange="uploadFotoProfil()">
+                <input type="text" id="cfg-link-kosp" placeholder="Link Google Drive KOSP / Perangkat">
+                <button class="btn btn-primary" onclick="saveConfig()">UPDATE PROFIL</button>
             </div>
+
+            <div id="tab-kepsek" class="tab-content card">
+                <h3 id="monitor-title">Monitoring</h3>
+                <div id="area-monitor-kepsek"></div>
+            </div>
+
         </div>
     </div>
 
-    <div id="tab-master" class="tab-content">
-        <div class="card">
-            <h3>🎯 Master CP, TP, ATP</h3>
-            <div class="form-group">
-                <div class="field">
-                    <label>Pilih Kelas</label>
-                    <select id="masterKls" onchange="updateMapelFilter('masterMapel', this.value); renderSemuaMaster()">
-                        <option value="1">1</option><option value="2">2</option><option value="3">3</option>
-                        <option value="4">4</option><option value="5">5</option><option value="6">6</option>
-                    </select>
-                </div>
-                <div class="field">
-                    <label>Pilih Mata Pelajaran</label>
-                    <select id="masterMapel" onchange="renderSemuaMaster()"></select>
-                </div>
-            </div>
-            <div class="btn-group">
-                <button class="btn btn-blue" onclick="showMasterForm('formCP')">➕ CP</button>
-                <button class="btn btn-green" onclick="showMasterForm('formTP')">➕ TP</button>
-                <button class="btn btn-orange" onclick="showMasterForm('formATP')">➕ ATP</button>
-                <button class="btn btn-dark" onclick="toggleVisibility('history-master')">👁️ LIHAT RIWAYAT</button>
-            </div>
-            <div id="formCP" class="hidden-form">
-                <h4>A. Capaian Pembelajaran (CP)</h4>
-                <div class="form-group"><div class="field"><label>Elemen</label><input type="text" id="cpElemen"></div><div class="field" style="flex:2"><label>Isi CP</label><input type="text" id="cpIsi"></div><div class="field"><label>Kompetensi</label><input type="text" id="cpKompetensi"></div><div class="field"><label>Konten</label><input type="text" id="cpKonten"></div><button class="btn btn-blue" onclick="saveMaster('CP')">💾 SIMPAN</button></div>
-            </div>
-            <div id="formTP" class="hidden-form">
-                <h4>B. Tujuan Pembelajaran (TP)</h4>
-                <div class="form-group"><div class="field"><label>Kode TP</label><input type="text" id="tpKode"></div><div class="field" style="flex:2"><label>Isi TP</label><input type="text" id="tpIsi"></div><div class="field"><label>KKTP</label><input type="text" id="tpKktp"></div><button class="btn btn-green" onclick="saveMaster('TP')">💾 SIMPAN</button></div>
-            </div>
-            <div id="formATP" class="hidden-form">
-                <h4>C. Alur Tujuan Pembelajaran (ATP)</h4>
-                <div class="form-group"><div class="field" style="flex:2"><label>Isi ATP</label><input type="text" id="atpIsi"></div><div class="field"><label>Waktu</label><input type="text" id="atpWaktu"></div><div class="field"><label>Dimensi PPP</label><input type="text" id="atpDimensi"></div><div class="field"><label>Asesmen</label><input type="text" id="atpAsesmen"></div><button class="btn btn-orange" onclick="saveMaster('ATP')">💾 SIMPAN</button></div>
-            </div>
-            <div id="history-master" class="history-container">
-                <div class="table-res"><table><thead><tr><th>Elemen</th><th>CP</th><th>Kompetensi</th><th>Konten</th><th>AKSI</th></tr></thead><tbody id="bodyCPNew"></tbody></table></div>
-                <div class="table-res"><table><thead><tr><th>Kode TP</th><th>TP</th><th>KKTP</th><th>AKSI</th></tr></thead><tbody id="bodyTPNew"></tbody></table></div>
-                <div class="table-res"><table><thead><tr><th>No</th><th>ATP</th><th>Waktu</th><th>Asesmen</th><th>AKSI</th></tr></thead><tbody id="bodyATPNew"></tbody></table></div>
-            </div>
-        </div>
+    <div class="footer">
+        &copy; 2024 SD Negeri Majalengka Wetan VIII<br>Digitalisasi Administrasi Kurikulum Merdeka
     </div>
 
-    <div id="tab-siswa" class="tab-content">
-        <div class="card">
-            <h3>👥 Data Siswa</h3>
-            <div class="form-group">
-                <div class="field"><label>Kelas</label><select id="swKls" onchange="renderSiswa()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select></div>
-                <div class="field"><label>NISN</label><input type="text" id="swNisn"></div>
-                <div class="field"><label>NIS</label><input type="text" id="swNis"></div>
-                <div class="field"><label>Nama</label><input type="text" id="swNama"></div>
-                <button class="btn btn-blue" onclick="saveSiswa()">➕ TAMBAH</button>
-            </div>
-            <div class="btn-group">
-                <button class="btn btn-green" onclick="exportSiswaExcel()">📊 EKSPOR EXCEL</button>
-                <button class="btn btn-dark" onclick="toggleVisibility('history-siswa')">👁️ LIHAT DATA</button>
-            </div>
-            <div id="history-siswa" class="history-container">
-                <div class="table-res"><table><thead><tr><th>NO</th><th>NISN</th><th>NIS</th><th>NAMA</th><th class="no-print">AKSI</th></tr></thead><tbody id="bodySiswa"></tbody></table></div>
-            </div>
-        </div>
-    </div>
+    <script>
+        // CONFIG FIREBASE
+        const firebaseConfig = {
+            databaseURL: "https://wetandelapan-default-rtdb.firebaseio.com/"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const rtdb = firebase.database();
 
-    <div id="tab-modul" class="tab-content">
-        <div class="card">
-            <h3>📖 Modul Ajar</h3>
-            <div class="form-group">
-                <div class="field">
-                    <label>Kelas</label>
-                    <select id="mdKls" onchange="updateMapelFilter('mdMapel', this.value); updateMdTP()">
-                        <option value="1">1</option><option value="2">2</option><option value="3">3</option>
-                        <option value="4">4</option><option value="5">5</option><option value="6">6</option>
-                    </select>
-                </div>
-                <div class="field"><label>Mata Pelajaran</label><select id="mdMapel" onchange="updateMdTP()"></select></div>
-                <div class="field"><label>Pilih TP</label><select id="mdTP" onchange="loadModulDetail()"></select></div>
-            </div>
-            <div class="card" style="background: #f8fafc;">
-                <div class="form-group"><div class="field"><label>Alokasi Waktu</label><input type="text" id="mdWaktu"></div><div class="field"><label>Metode</label><input type="text" id="mdMetode"></div></div>
-                <div class="field"><label>Langkah-Langkah</label><textarea id="mdLangkah" rows="8"></textarea></div>
-                <div class="form-group"><div class="field"><label>Media</label><input type="text" id="mdMedia"></div><div class="field"><label>Asesmen</label><input type="text" id="mdAsesmen"></div></div>
-                <button class="btn btn-blue" onclick="saveModul()" style="width:100%">💾 SIMPAN MODUL</button>
-            </div>
-        </div>
-    </div>
+        // DATA GURU
+        const allGurus = [
+            {id: 'KEPSEK', nama: 'Hj. NENENG HERNI, S.Pd.', pass: '12345', role: 'Kepala Sekolah'},
+            {id: 'GK1', nama: 'Guru Kelas 1', pass: '111', role: 'Guru Kelas'},
+            {id: 'GK2', nama: 'Guru Kelas 2', pass: '222', role: 'Guru Kelas'},
+            {id: 'GK3', nama: 'Guru Kelas 3', pass: '333', role: 'Guru Kelas'},
+            {id: 'GK4', nama: 'Guru Kelas 4', pass: '444', role: 'Guru Kelas'},
+            {id: 'GK5', nama: 'Guru Kelas 5', pass: '555', role: 'Guru Kelas'},
+            {id: 'GK6', nama: 'Guru Kelas 6', pass: '666', role: 'Guru Kelas'},
+            {id: 'GPAI', nama: 'Guru PAI', pass: '777', role: 'Guru Mapel'},
+            {id: 'GPJOK', nama: 'Guru PJOK', pass: '888', role: 'Guru Mapel'}
+        ];
 
-    <div id="tab-agenda" class="tab-content">
-        <div class="card">
-            <h3>📝 Agenda Harian</h3>
-            <div class="form-group">
-                <div class="field">
-                    <label>Kelas</label>
-                    <select id="agKls" onchange="updateMapelFilter('agMapel', this.value); updateAgTP(); renderAgenda();">
-                        <option value="1">1</option><option value="2">2</option><option value="3">3</option>
-                        <option value="4">4</option><option value="5">5</option><option value="6">6</option>
-                    </select>
-                </div>
-                <div class="field"><label>Mata Pelajaran</label><select id="agMapel" onchange="updateAgTP()"></select></div>
-                <div class="field"><label>Tanggal</label><input type="date" id="agTgl"></div>
-                <div class="field"><label>TP</label><select id="agTP"></select></div>
-                <div class="field"><label>Materi</label><input type="text" id="agMateri"></div>
-                <div class="field"><label>Foto (Opsional)</label><input type="file" id="agFoto" accept="image/*" onchange="processAgendaPhoto(this)"></div>
-                <button class="btn btn-blue" onclick="saveAgenda()">💾 SIMPAN</button>
-            </div>
-            <div class="table-res"><table><thead><tr><th>TGL</th><th>TP</th><th>MATERI</th><th>FOTO</th><th>STATUS</th><th>AKSI</th></tr></thead><tbody id="bodyAgenda"></tbody></table></div>
-        </div>
-    </div>
+        let curUser = null;
+        const SEKO_LAT = -6.8373; 
+        const SEKO_LNG = 108.2250; 
+        let userLat = 0, userLng = 0;
 
-    <div id="tab-absensi" class="tab-content">
-        <div class="card">
-            <h3>✅ Absensi Harian Siswa</h3>
-            <div class="form-group">
-                <select id="abKls" onchange="renderAbsensi()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select>
-                <input type="date" id="abTgl" onchange="renderAbsensi()">
-            </div>
-            <div class="table-res"><table><thead><tr><th>NO</th><th>NAMA</th><th>STATUS</th></tr></thead><tbody id="bodyAbsensi"></tbody></table></div>
-        </div>
-    </div>
-
-    <div id="tab-rekap-absen" class="tab-content">
-        <div class="card">
-            <h3>📊 Rekap Bulanan</h3>
-            <div class="form-group">
-                <select id="rekKls" onchange="renderRekapAbsen()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select>
-                <input type="month" id="rekBulan" onchange="renderRekapAbsen()">
-            </div>
-            <div class="table-res"><table><thead id="headRekap"></thead><tbody id="bodyRekap"></tbody></table></div>
-        </div>
-    </div>
-
-    <div id="tab-kegiatan" class="tab-content">
-        <div class="card">
-            <h3>🏆 Kegiatan Ekstrakulikuler & Kokulikuler</h3>
-            <div class="form-group">
-                <div class="field"><label>Jenis</label><select id="kgJenis"><option value="Ekstrakulikuler">Ekstrakulikuler</option><option value="Kokulikuler">Kokulikuler</option></select></div>
-                <div class="field"><label>Nama Kegiatan</label><input type="text" id="kgNama"></div>
-                <div class="field"><label>Tanggal</label><input type="date" id="kgTgl"></div>
-            </div>
-            <div class="form-group">
-                <div class="field"><label>Deskripsi</label><textarea id="kgKet"></textarea></div>
-                <div class="field"><label>Foto Kegiatan</label><input type="file" id="kgFoto" accept="image/*" onchange="processKegiatanPhoto(this)"></div>
-            </div>
-            <button class="btn btn-blue" onclick="saveKegiatan()">💾 AJUKAN KE KEPSEK</button>
-            <div class="table-res" style="margin-top:15px;">
-                <table><thead><tr><th>JENIS</th><th>NAMA</th><th>TGL</th><th>FOTO</th><th>STATUS</th><th>AKSI</th></tr></thead>
-                <tbody id="bodyKegiatan"></tbody></table>
-            </div>
-        </div>
-    </div>
-
-    <div id="tab-kosp" class="tab-content">
-        <div class="card">
-            <h3>📂 Link Dokumen KOSP & Perangkat</h3>
-            <div class="form-group">
-                <div class="field"><label>Nama Dokumen</label><input type="text" id="ksNama" placeholder="KOSP / Prota / Promes"></div>
-                <div class="field"><label>Link URL Drive</label><input type="text" id="ksLink"></div>
-                <button class="btn btn-blue" onclick="saveKosp()">🔗 SIMPAN LINK</button>
-            </div>
-            <div class="table-res"><table><thead><tr><th>DOKUMEN</th><th>LINK</th><th>AKSI</th></tr></thead><tbody id="bodyKosp"></tbody></table></div>
-        </div>
-    </div>
-
-    <div id="tab-kepsek" class="tab-content">
-        <div class="card">
-            <h3 id="monitor-title">Monitoring</h3>
-            <div id="area-monitor-kepsek"></div>
-        </div>
-    </div>
-
-    <div id="print-footer" style="display:none;">
-        <table class="print-footer-table">
-            <tr>
-                <td>Mengetahui,<br>Kepala Sekolah<br><br><br><br><b id="fKepsek">KARYADI, S.Pd</b><br>NIP. <span id="fnipKepsek"></span></td>
-                <td><span id="fTanggal"></span><br><span id="fRoleLabel">Guru</span><br><br><br><br><b id="fGuru"></b><br>NIP. <span id="fnipGuru"></span></td>
-            </tr>
-        </table>
-    </div>
-</div>
-
-<script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyBDSZ5mBwxiMHem5gNBpD8lSKYqSoCFxOQ",
-        authDomain: "adminsitrasi-guru-de394.firebaseapp.com",
-        databaseURL: "https://adminsitrasi-guru-de394-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "adminsitrasi-guru-de394",
-        storageBucket: "adminsitrasi-guru-de394.firebasestorage.app",
-        messagingSenderId: "1056567544540",
-        appId: "1:1056567544540:web:d612d0c9eccb758c87c219"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const rtdb = firebase.database();
-
-    let currentRole = '';
-    let currentSemester = 1;
-    let db = { cfg:{}, siswa:[], cp:[], agenda:[], absensi:{}, nilai:{}, modul:[], kegiatan:[], kosp:[] };
-    let tempAgendaPhoto = "";
-    let tempKegiatanPhoto = "";
-    
-    const SEKO_LAT = -6.8352517; 
-    const SEKO_LNG = 108.2408433;
-    const MAX_DISTANCE = 100;
-
-    const mapelData = {
-        rendah: ["Pendidikan Pancasila", "Matematika", "B.Indonesia", "SBDP", "Bahasa Sunda"],
-        tinggi: ["Pendidikan Pancasila", "Matematika", "B.Indonesia", "SBDP", "Bahasa Sunda", "IPAS", "B.Inggris"]
-    };
-
-    const allGurus = [
-        {id: 'GK1', nama: 'SITI ROKAYAH,S.Pd', pw: '12345'},
-        {id: 'GK2', nama: 'VIKA NURATIKA,S.Pd', pw: '12345'},
-        {id: 'GK3', nama: 'RISKA WIDIA ROSANA,S.PD', pw: '12345'},
-        {id: 'GK4', nama: 'DEDE YUDIASTUTI,S.Pd', pw: '12345'},
-        {id: 'GK5', nama: 'SILVYRA RISMAWATI,S.Pd.SD', pw: '12345'},
-        {id: 'GK6', nama: 'ESIH IMAWATI,S.Pd', pw: '12345'},
-        {id: 'PJOK', nama: 'INDRA SETIAWAN,S.Pd', pw: '12345'},
-        {id: 'PAI', nama: 'YATI NOVIYATI,S.Pd.I', pw: '12345'},
-        {id: 'KEPSEK', nama: 'KARYADI, S.Pd', pw: 'admin2026'}
-    ];
-
-    const sindiranPagi = [
-        "Matahari sudah bangun, masa kamu belum 'ceklok'?",
-        "Tombol absennya kesepian nih. Udah mau jam 06.30.",
-        "Lari pagi itu sehat, tapi ngejar absen jam 06.30 itu senam jantung.",
-        "Wah, pemandangan sekolah sudah cantik, lebih cantik lagi kalau status absenmu hijau.",
-        "Sudah hampir jam 06.30, jangan biarkan namamu 'nongkrong' di HP Kepala Sekolah."
-    ];
-
-    function updateMapelFilter(elementId, kls) {
-        const select = document.getElementById(elementId);
-        if(!select) return;
-        let list = [];
-        if(currentRole === 'PJOK') list = ["PJOK"];
-        else if(currentRole === 'PAI') list = ["PAI"];
-        else list = (kls == 1 || kls == 2) ? mapelData.rendah : mapelData.tinggi;
-        select.innerHTML = list.map(m => `<option value="${m}">${m}</option>`).join('');
-    }
-
-    function filterKelasBerdasarkanRole(role) {
-        const listSelectKelas = ['rpKls', 'masterKls', 'swKls', 'mdKls', 'agKls', 'abKls', 'rekKls'];
-        listSelectKelas.forEach(id => {
-            const select = document.getElementById(id);
-            if (!select) return;
-            if (role.startsWith('GK')) {
-                const klsTujuan = role.replace('GK', ''); 
-                select.innerHTML = `<option value="${klsTujuan}">Kelas ${klsTujuan}</option>`;
-                select.disabled = true; 
-            } else {
-                select.innerHTML = `<option value="1">Kelas 1</option><option value="2">Kelas 2</option><option value="3">Kelas 3</option><option value="4">Kelas 4</option><option value="5">Kelas 5</option><option value="6">Kelas 6</option>`;
-                select.disabled = false;
-            }
-        });
-    }
-
-    function selectRole(role, title, name) {
-        const guruData = allGurus.find(g => g.id === role);
-        const inputPw = prompt(`Ketik Password di bawah ini\nUntuk Akun: ${name}`);
-        if (inputPw !== guruData.pw) { alert("Password Salah!"); return; }
-        currentRole = role;
-        document.getElementById('main-title').innerText = title + " - " + name;
-        filterKelasBerdasarkanRole(role);
-        if(role === 'KEPSEK') {
-            document.getElementById('guru-menu').style.display = 'none';
-            document.getElementById('kepsek-menu').style.display = 'grid';
-            loadDB(name);
-        } else {
-            document.getElementById('guru-menu').style.display = 'grid';
-            document.getElementById('kepsek-menu').style.display = 'none';
-            loadDB(name);
-            startReminderSystem();
-        }
-        switchTab('tab-home');
-    }
-
-    function loadDB(name) {
-        const path = 'sekolah_wetan/' + currentRole.toLowerCase();
-        rtdb.ref(path).on('value', (snapshot) => {
-            const data = snapshot.val();
-            db = data || { cfg: { sekolah: '', guru: name, nipGuru: '', waGuru:'', kepsek: 'KARYADI, S.Pd', nipKepsek: '', waKepsek:'' }, siswa: [], cp: [], agenda: [], absensi: {}, nilai: {}, modul: [], kegiatan:[], kosp:[] };
-            fillSetupForm();
-        });
-    }
-
-    function saveToFirebase() { if(!currentRole) return; rtdb.ref('sekolah_wetan/' + currentRole.toLowerCase()).set(db); }
-
-    function switchTab(id) {
-        document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
-        document.getElementById(id).style.display = 'block';
-        document.getElementById('back-area').style.display = (id === 'tab-login' ? 'none' : 'block');
-        if(id==='tab-siswa') renderSiswa();
-        if(id==='tab-master') renderSemuaMaster();
-        if(id==='tab-agenda') { updateAgTP(); renderAgenda(); }
-    }
-
-    /* --- FUNGSI GURU --- */
-    function previewProfilePhoto(input) {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                document.getElementById('photo-img').src = e.target.result;
-                document.getElementById('photo-img').style.display = 'block';
-                document.getElementById('photo-placeholder').style.display = 'none';
-                db.cfg.foto = e.target.result;
-            };
-            reader.readAsDataURL(input.files[0]);
-        }
-    }
-
-    function saveSetup() {
-        db.cfg.sekolah = document.getElementById('sSekolah').value;
-        db.cfg.guru = document.getElementById('sGuru').value;
-        db.cfg.nipGuru = document.getElementById('snipGuru').value;
-        db.cfg.waGuru = document.getElementById('sWaGuru').value;
-        db.cfg.kepsek = document.getElementById('sKepsek').value;
-        db.cfg.nipKepsek = document.getElementById('snipKepsek').value;
-        db.cfg.waKepsek = document.getElementById('sWaKepsek').value;
-        saveToFirebase(); alert('Disimpan!');
-    }
-
-    function fillSetupForm() {
-        document.getElementById('sSekolah').value = db.cfg.sekolah || '';
-        document.getElementById('sGuru').value = db.cfg.guru || '';
-        document.getElementById('snipGuru').value = db.cfg.nipGuru || '';
-        document.getElementById('sWaGuru').value = db.cfg.waGuru || '';
-        document.getElementById('sKepsek').value = db.cfg.kepsek || '';
-        document.getElementById('snipKepsek').value = db.cfg.nipKepsek || '';
-        document.getElementById('sWaKepsek').value = db.cfg.waKepsek || '';
-        if(db.cfg.foto) { 
-            document.getElementById('photo-img').src = db.cfg.foto; 
-            document.getElementById('photo-img').style.display = 'block'; 
-            document.getElementById('photo-placeholder').style.display = 'none'; 
-        }
-    }
-
-    function saveSiswa() { 
-        if(!db.siswa) db.siswa=[]; 
-        db.siswa.push({id:'s'+Date.now(), kls:document.getElementById('swKls').value, nisn:document.getElementById('swNisn').value, nis:document.getElementById('swNis').value, nama:document.getElementById('swNama').value}); 
-        saveToFirebase(); renderSiswa(); 
-    }
-    function renderSiswa() { 
-        const k = document.getElementById('swKls').value; 
-        const f = db.siswa ? db.siswa.filter(s=>s.kls==k) : []; 
-        document.getElementById('bodySiswa').innerHTML = f.map((s,i)=>`<tr><td>${i+1}</td><td>${s.nisn}</td><td>${s.nis}</td><td style="text-align:left">${s.nama}</td><td class="no-print"><button class="btn btn-red" onclick="hS('${s.id}')">🗑️</button></td></tr>`).join(''); 
-    }
-    function hS(id){ if(confirm('Hapus?')){ db.siswa=db.siswa.filter(x=>x.id!=id); saveToFirebase(); renderSiswa(); }}
-
-    function saveAgenda() { 
-        if(!db.agenda) db.agenda=[]; 
-        db.agenda.push({id:Date.now(), kls:document.getElementById('agKls').value, tgl:document.getElementById('agTgl').value, mapel:document.getElementById('agMapel').value, tp:document.getElementById('agTP').value, materi:document.getElementById('agMateri').value, foto: tempAgendaPhoto, status:'⏳ Menunggu'}); 
-        tempAgendaPhoto = ""; saveToFirebase(); renderAgenda(); 
-    }
-    function renderAgenda() { 
-        const k = document.getElementById('agKls').value; 
-        const listAg = db.agenda ? db.agenda.filter(a=>a.kls==k) : []; 
-        document.getElementById('bodyAgenda').innerHTML = listAg.map(a=>`<tr><td>${a.tgl}</td><td>${a.tp}</td><td>${a.materi}</td><td>${a.foto?'<img src="'+a.foto+'" style="width:30px">':'-'}</td><td><span class="status-badge" style="background:${a.status==='✅ Disetujui'?'#10b981':'#ef4444'}">${a.status}</span></td><td><button onclick="hAg('${a.id}')">🗑️</button></td></tr>`).join(''); 
-    }
-    function hAg(id){ db.agenda=db.agenda.filter(x=>x.id!=id); saveToFirebase(); renderAgenda(); }
-
-    function processAgendaPhoto(input) { if (input.files && input.files[0]) { const reader = new FileReader(); reader.onload = (e) => tempAgendaPhoto = e.target.result; reader.readAsDataURL(input.files[0]); } }
-    function updateAgTP() { 
-        const k = document.getElementById('agKls').value; 
-        const m = document.getElementById('agMapel').value;
-        const tps = db.cp ? db.cp.filter(x=>x.kls==k && x.mapel==m && x.tipe=='TP') : []; 
-        document.getElementById('agTP').innerHTML = tps.map(t=>`<option value="${t.isi}">${t.isi}</option>`).join(''); 
-    }
-
-    /* --- FUNGSI CEKLOK --- */
-    function openModalCeklok() {
-        document.getElementById('overlayCeklok').style.display = 'block';
-        document.getElementById('modalCeklok').style.display = 'block';
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(pos => {
-                const dist = calculateDistance(pos.coords.latitude, pos.coords.longitude, SEKO_LAT, SEKO_LNG);
-                if(dist <= MAX_DISTANCE) {
-                    document.getElementById('statusLokasi').innerHTML = `<span style="color:green">Lokasi Ditemukan (${Math.round(dist)}m)</span>`;
-                    document.getElementById('btnKirimAbsen').disabled = false;
+        // LOGIN FUNCTION
+        function login() {
+            const p = document.getElementById('pass').value;
+            const user = allGurus.find(u => u.pass === p);
+            if(user) {
+                curUser = user;
+                document.getElementById('section-login').style.display = 'none';
+                document.getElementById('section-app').style.display = 'block';
+                document.getElementById('my-name').innerText = user.nama;
+                document.getElementById('my-role').innerText = user.role;
+                
+                if(user.id === 'KEPSEK') {
+                    document.getElementById('menu-kepsek').style.display = 'grid';
+                    renderMonitorAbsenGuru();
                 } else {
-                    document.getElementById('statusLokasi').innerHTML = `<span style="color:red">Terlalu jauh (${Math.round(dist)}m)</span>`;
+                    document.getElementById('menu-guru').style.display = 'grid';
+                    showTab('tab-absen');
                 }
-            }, err => { alert("GPS Mati"); });
+                loadProfile();
+            } else {
+                alert('Kode Akses Salah!');
+            }
         }
-    }
-    function closeModalCeklok() { document.getElementById('overlayCeklok').style.display = 'none'; document.getElementById('modalCeklok').style.display = 'none'; }
-    function calculateDistance(lat1, lon1, lat2, lon2) {
-        const R = 6371e3;
-        const φ1 = lat1 * Math.PI/180, φ2 = lat2 * Math.PI/180;
-        const Δφ = (lat2-lat1) * Math.PI/180, Δλ = (lon2-lon1) * Math.PI/180;
-        const a = Math.sin(Δφ/2)**2 + Math.cos(φ1)*Math.cos(φ2)*Math.sin(Δλ/2)**2;
-        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    }
-    async function submitCeklok() {
-        const skrg = new Date(), tgl = skrg.toISOString().split('T')[0];
-        const h = skrg.getHours(), m = skrg.getMinutes();
-        const stat = (h > 6 || (h === 6 && m > 30)) ? "TERLAMBAT" : "HADIR";
-        await rtdb.ref(`presensi_guru/${tgl}/${currentRole}`).set({nama: db.cfg.guru, waktu: skrg.toLocaleTimeString(), status: stat});
-        alert("Ceklok Berhasil!"); closeModalCeklok();
-    }
 
-    /* --- FUNGSI KEPALA SEKOLAH (FIXED) --- */
-    async function renderMonitorAgenda() {
-        switchTab('tab-kepsek'); document.getElementById('monitor-title').innerText = '📋 Persetujuan Agenda Harian';
-        const area = document.getElementById('area-monitor-kepsek'); area.innerHTML = "Memuat data...";
-        const snap = await rtdb.ref('sekolah_wetan').once('value');
-        const allData = snap.val() || {};
-        let html = '<div class="table-res"><table><thead><tr><th>GURU</th><th>KELAS</th><th>MAPEL</th><th>STATUS</th><th>AKSI</th></tr></thead><tbody>';
-        let ada = false;
-        for (let r in allData) {
-            if (allData[r].agenda) {
-                allData[r].agenda.forEach((a, i) => {
-                    if (a.status !== '✅ Disetujui') {
-                        ada = true;
-                        html += `<tr><td>${allData[r].cfg.guru}</td><td>${a.kls}</td><td>${a.mapel}</td><td>${a.status}</td><td><button class="btn btn-green" onclick="approveData('${r}', 'agenda', ${i})">Setujui</button></td></tr>`;
+        function showTab(id) {
+            document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+            document.getElementById(id).style.display = 'block';
+            if(id === 'tab-agenda') loadMyAgenda();
+        }
+
+        function switchTab(id) { showTab(id); }
+
+        // REALTIME CLOCK & GPS
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('jam-now').innerText = now.toLocaleTimeString('id-ID');
+        }, 1000);
+
+        if(navigator.geolocation) {
+            navigator.geolocation.watchPosition(pos => {
+                userLat = pos.coords.latitude;
+                userLng = pos.coords.longitude;
+                const dist = getDist(userLat, userLng, SEKO_LAT, SEKO_LNG);
+                const box = document.getElementById('absen-status-box');
+                const btn = document.getElementById('btn-ceklok');
+                document.getElementById('map-link').href = `https://www.google.com/maps?q=${userLat},${userLng}`;
+                
+                if(dist <= 100) {
+                    box.innerHTML = `<b style="color:green">📍 Anda di Sekolah (${Math.round(dist)}m)</b>`;
+                    btn.disabled = false;
+                } else {
+                    box.innerHTML = `<b style="color:red">📍 Diluar Jangkauan (${Math.round(dist)}m)</b>`;
+                    btn.disabled = true;
+                }
+            });
+        }
+
+        function getDist(lat1, lon1, lat2, lon2) {
+            const R = 6371e3;
+            const φ1 = lat1 * Math.PI/180;
+            const φ2 = lat2 * Math.PI/180;
+            const Δφ = (lat2-lat1) * Math.PI/180;
+            const Δλ = (lon2-lon1) * Math.PI/180;
+            const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2) * Math.sin(Δλ/2);
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        }
+
+        // ABSENSI GURU
+        function doAbsen() {
+            const tgl = new Date().toISOString().split('T')[0];
+            const jam = new Date().toLocaleTimeString('id-ID');
+            const limit = "06:30:00";
+            let status = jam > limit ? "TERLAMBAT" : "HADIR";
+            
+            rtdb.ref(`presensi_guru/${tgl}/${curUser.id}`).set({
+                nama: curUser.nama,
+                waktu: jam,
+                status: status,
+                ket: document.getElementById('ket-absen').value,
+                loc: `${userLat},${userLng}`
+            }).then(() => alert('Absen Berhasil: ' + status));
+        }
+
+        // KURIKULUM & AGENDA
+        function saveKurikulum() {
+            const data = {
+                cp: document.getElementById('k-cp').value,
+                tp: document.getElementById('k-tp').value,
+                atp: document.getElementById('k-atp').value
+            };
+            rtdb.ref(`sekolah_wetan/${curUser.id}/kurikulum/${document.getElementById('k-mapel').value}`).set(data)
+            .then(() => alert('Data Kurikulum Tersimpan'));
+        }
+
+        async function saveAgenda() {
+            const file = document.getElementById('ag-foto').files[0];
+            let base64 = "";
+            if(file) {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => {
+                    base64 = reader.result;
+                    pushAgenda(base64);
+                };
+            } else { pushAgenda(""); }
+        }
+
+        function pushAgenda(img) {
+            const newAg = {
+                tgl: document.getElementById('ag-tgl').value,
+                mapel: document.getElementById('ag-mapel').value,
+                kls: document.getElementById('ag-kls').value,
+                materi: document.getElementById('ag-materi').value,
+                foto: img,
+                status: 'Menunggu Persetujuan'
+            };
+            rtdb.ref(`sekolah_wetan/${curUser.id}/agenda`).once('value', s => {
+                let list = s.val() || [];
+                list.push(newAg);
+                rtdb.ref(`sekolah_wetan/${curUser.id}/agenda`).set(list).then(() => {
+                    alert('Agenda Terkirim ke Kepala Sekolah');
+                    loadMyAgenda();
+                });
+            });
+        }
+
+        function loadMyAgenda() {
+            const area = document.getElementById('list-agenda-saya');
+            rtdb.ref(`sekolah_wetan/${curUser.id}/agenda`).on('value', s => {
+                let data = s.val() || [];
+                let html = '<div class="table-res"><table><thead><tr><th>TGL</th><th>MAPEL</th><th>STATUS</th></tr></thead><tbody>';
+                data.forEach(a => {
+                    html += `<tr><td>${a.tgl}</td><td>${a.mapel}</td><td>${a.status}</td></tr>`;
+                });
+                area.innerHTML = html + '</tbody></table></div>';
+            });
+        }
+
+        // MANAJEMEN NILAI
+        function generateFormatNilai() {
+            const area = document.getElementById('area-input-nilai');
+            let html = '<table><thead><tr><th>NAMA SISWA</th><th>TP1</th><th>TP2</th><th>STS</th><th>SAS</th></tr></thead><tbody>';
+            for(let i=1; i<=10; i++) {
+                html += `<tr>
+                    <td><input type="text" id="n-nama-${i}" placeholder="Nama Siswa ${i}"></td>
+                    <td><input type="number" id="n-tp1-${i}"></td>
+                    <td><input type="number" id="n-tp2-${i}"></td>
+                    <td><input type="number" id="n-sts-${i}"></td>
+                    <td><input type="number" id="n-sas-${i}"></td>
+                </tr>`;
+            }
+            area.innerHTML = html + '</tbody></table>';
+        }
+
+        function saveNilai() {
+            let allNilai = [];
+            for(let i=1; i<=10; i++) {
+                if(document.getElementById(`n-nama-${i}`).value) {
+                    allNilai.push({
+                        nama: document.getElementById(`n-nama-${i}`).value,
+                        tp1: document.getElementById(`n-tp1-${i}`).value,
+                        tp2: document.getElementById(`n-tp2-${i}`).value,
+                        sts: document.getElementById(`n-sts-${i}`).value,
+                        sas: document.getElementById(`n-sas-${i}`).value
+                    });
+                }
+            }
+            rtdb.ref(`sekolah_wetan/${curUser.id}/nilai`).set(allNilai).then(() => alert('Nilai Berhasil Disimpan'));
+        }
+
+        // CONFIG & PROFILE
+        function uploadFotoProfil() {
+            const file = document.getElementById('cfg-foto').files[0];
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => {
+                const b64 = reader.result;
+                rtdb.ref(`sekolah_wetan/${curUser.id}/cfg/foto`).set(b64);
+                document.getElementById('my-foto').src = b64;
+            };
+        }
+
+        function saveConfig() {
+            rtdb.ref(`sekolah_wetan/${curUser.id}/cfg/linkKosp`).set(document.getElementById('cfg-link-kosp').value);
+            rtdb.ref(`sekolah_wetan/${curUser.id}/cfg/guru`).set(curUser.nama);
+            alert('Konfigurasi Disimpan');
+        }
+
+        function loadProfile() {
+            rtdb.ref(`sekolah_wetan/${curUser.id}/cfg`).once('value', s => {
+                const d = s.val();
+                if(d) {
+                    if(d.foto) document.getElementById('my-foto').src = d.foto;
+                    if(d.linkKosp) document.getElementById('cfg-link-kosp').value = d.linkKosp;
+                }
+            });
+        }
+
+        // ==========================================
+        // PERBAIKAN FITUR MONITORING KEPALA SEKOLAH 
+        // ==========================================
+
+        // 1. MONITORING AGENDA (Persetujuan Guru)
+        function renderMonitorAgenda() {
+            switchTab('tab-kepsek'); 
+            document.getElementById('monitor-title').innerText = '📋 Persetujuan Agenda Guru';
+            const area = document.getElementById('area-monitor-kepsek');
+            area.innerHTML = "<div class='loader'></div><p align='center'>Memuat data agenda...</p>";
+
+            rtdb.ref('sekolah_wetan').on('value', snapshot => {
+                const allData = snapshot.val();
+                if (!allData) { area.innerHTML = "Belum ada data."; return; }
+
+                let html = '<div class="table-res"><table><thead><tr><th>GURU</th><th>MAPEL</th><th>TGL</th><th>MATERI</th><th>AKSI</th></tr></thead><tbody>';
+                let found = false;
+
+                for (let role in allData) {
+                    if (allData[role].agenda && Array.isArray(allData[role].agenda)) {
+                        allData[role].agenda.forEach((a, i) => {
+                            if (a.status !== '✅ Disetujui') {
+                                found = true;
+                                html += `<tr>
+                                    <td><b>${allData[role].cfg && allData[role].cfg.guru ? allData[role].cfg.guru : role}</b></td>
+                                    <td>${a.mapel}</td>
+                                    <td>${a.tgl}</td>
+                                    <td>${a.materi}</td>
+                                    <td><button class="btn btn-green" onclick="appAg('${role}', ${i})">Setujui</button></td>
+                                </tr>`;
+                            }
+                        });
                     }
+                }
+                area.innerHTML = found ? html + '</tbody></table></div>' : "<p align='center'>Semua agenda sudah disetujui (Rapi).</p>";
+            });
+        }
+
+        // 2. MONITORING PRESENSI GURU (Real-Time)
+        function renderMonitorAbsenGuru() {
+            switchTab('tab-kepsek'); 
+            document.getElementById('monitor-title').innerText = '👨‍🏫 Monitor Kehadiran Guru';
+            const area = document.getElementById('area-monitor-kepsek');
+            const tgl = new Date().toISOString().split('T')[0];
+
+            rtdb.ref(`presensi_guru/${tgl}`).on('value', snap => {
+                const dataHadir = snap.val() || {};
+                let html = `<p>Tanggal: <b>${tgl}</b></p><div class="table-res"><table><thead><tr><th>NAMA GURU</th><th>JAM</th><th>STATUS</th></tr></thead><tbody>`;
+                
+                allGurus.forEach(g => {
+                    if (g.id === 'KEPSEK') return;
+                    const h = dataHadir[g.id] || { status: '🔴 Belum Absen', waktu: '-' };
+                    let color = h.status === 'HADIR' ? '#10b981' : (h.status === 'TERLAMBAT' ? '#f59e0b' : '#ef4444');
+                    html += `<tr>
+                        <td style="text-align:left">${g.nama}</td>
+                        <td>${h.waktu}</td>
+                        <td><b style="color:${color}">${h.status}</b></td>
+                    </tr>`;
                 });
+                area.innerHTML = html + '</tbody></table></div>';
+            });
+        }
+
+        // 3. MONITORING KOSP & LINK DOKUMEN
+        function renderMonitorKOSP() {
+            switchTab('tab-kepsek');
+            document.getElementById('monitor-title').innerText = '📁 Monitoring Dokumen & KOSP';
+            const area = document.getElementById('area-monitor-kepsek');
+            area.innerHTML = "Memeriksa dokumen...";
+
+            rtdb.ref('sekolah_wetan').once('value', snapshot => {
+                const all = snapshot.val();
+                let html = '<div class="table-res"><table><thead><tr><th>GURU</th><th>LINK KOSP / PERANGKAT</th><th>AKSI</th></tr></thead><tbody>';
+                let any = false;
+                
+                for (let r in all) {
+                    if (r === 'KEPSEK') continue;
+                    any = true;
+                    const link = all[r].cfg ? (all[r].cfg.linkKosp || '#') : '#';
+                    const statusLink = link !== '#' ? '✅ Tersedia' : '❌ Belum Upload';
+                    
+                    html += `<tr>
+                        <td style="text-align:left">${(all[r].cfg && all[r].cfg.guru) ? all[r].cfg.guru : r}</td>
+                        <td>${statusLink}</td>
+                        <td><a href="${link}" target="_blank" class="btn ${link !== '#' ? 'btn-accent' : 'btn-dark'}" style="text-decoration:none">Buka Link</a></td>
+                    </tr>`;
+                }
+                area.innerHTML = any ? html + '</tbody></table></div>' : "Tidak ada data guru.";
+            });
+        }
+
+        // 4. MONITORING NILAI SISWA
+        function renderMonitorNilai() {
+            switchTab('tab-kepsek');
+            document.getElementById('monitor-title').innerText = '📊 Status Nilai Rapor';
+            const area = document.getElementById('area-monitor-kepsek');
+
+            rtdb.ref('sekolah_wetan').once('value', snap => {
+                const all = snap.val();
+                let html = '<div class="table-res"><table><thead><tr><th>KELAS / GURU</th><th>DATA NILAI</th></tr></thead><tbody>';
+                let any = false;
+                
+                for (let r in all) {
+                    if(r === 'KEPSEK') continue;
+                    any = true;
+                    const d = all[r];
+                    const cekNilai = d.nilai ? `✅ ${d.nilai.length} Siswa Terisi` : '❌ Belum Ada Data';
+                    
+                    html += `<tr>
+                        <td style="text-align:left"><b>${r}</b><br><small>${d.cfg ? d.cfg.guru : ''}</small></td>
+                        <td><b>${cekNilai}</b></td>
+                    </tr>`;
+                }
+                area.innerHTML = any ? html + '</tbody></table></div>' : "Belum ada data nilai.";
+            });
+        }
+
+        // FUNGSI EKSEKUSI PERSETUJUAN
+        async function appAg(r, i) {
+            if(confirm("Setujui agenda ini secara resmi?")) {
+                try {
+                    await rtdb.ref(`sekolah_wetan/${r}/agenda/${i}/status`).set('✅ Disetujui');
+                    alert('Agenda Berhasil Disetujui!');
+                } catch(e) {
+                    alert('Gagal: ' + e.message);
+                }
             }
         }
-        area.innerHTML = ada ? html + '</tbody></table></div>' : "Tidak ada agenda pending.";
-    }
-
-    async function renderMonitorKegiatan() {
-        switchTab('tab-kepsek'); document.getElementById('monitor-title').innerText = '🏆 Persetujuan Kegiatan';
-        const area = document.getElementById('area-monitor-kepsek');
-        const snap = await rtdb.ref('sekolah_wetan').once('value');
-        const allData = snap.val() || {};
-        let html = '<div class="table-res"><table><thead><tr><th>GURU</th><th>JENIS</th><th>NAMA</th><th>STATUS</th><th>AKSI</th></tr></thead><tbody>';
-        let ada = false;
-        for (let r in allData) {
-            if (allData[r].kegiatan) {
-                allData[r].kegiatan.forEach((k, i) => {
-                    if (k.status !== '✅ Disetujui') {
-                        ada = true;
-                        html += `<tr><td>${allData[r].cfg.guru}</td><td>${k.jenis}</td><td>${k.nama}</td><td>${k.status}</td><td><button class="btn btn-green" onclick="approveData('${r}', 'kegiatan', ${i})">Setujui</button></td></tr>`;
-                    }
-                });
-            }
-        }
-        area.innerHTML = ada ? html + '</tbody></table></div>' : "Tidak ada kegiatan pending.";
-    }
-
-    async function approveData(role, type, index) {
-        await rtdb.ref(`sekolah_wetan/${role}/${type}/${index}/status`).set('✅ Disetujui');
-        alert('Disetujui!');
-        if(type==='agenda') renderMonitorAgenda(); else renderMonitorKegiatan();
-    }
-
-    async function renderMonitorAbsenGuru() {
-        switchTab('tab-kepsek'); document.getElementById('monitor-title').innerText = '👨‍🏫 Presensi Guru Hari Ini';
-        const tgl = new Date().toISOString().split('T')[0];
-        const snap = await rtdb.ref(`presensi_guru/${tgl}`).once('value');
-        const data = snap.val() || {};
-        let html = '<div class="table-res"><table><thead><tr><th>NAMA</th><th>STATUS</th><th>JAM</th></tr></thead><tbody>';
-        allGurus.forEach(g => {
-            const h = data[g.id] || { status: '🔴 Belum', waktu: '-' };
-            html += `<tr><td>${g.nama}</td><td>${h.status}</td><td>${h.waktu}</td></tr>`;
-        });
-        document.getElementById('area-monitor-kepsek').innerHTML = html + '</tbody></table></div>';
-    }
-
-    async function renderMonitorAbsenSiswa() {
-        switchTab('tab-kepsek'); document.getElementById('monitor-title').innerText = '📊 Monitor Absen Siswa';
-        const snap = await rtdb.ref('sekolah_wetan').once('value');
-        const allData = snap.val() || {};
-        let html = '<div class="dashboard-grid">';
-        for(let r in allData) {
-            if(r.startsWith('gk')) {
-                const jml = allData[r].absensi ? Object.keys(allData[r].absensi).length : 0;
-                html += `<div class="card"><h4>Kelas ${r.replace('gk','')}</h4><p>Total Input: ${jml} Record</p></div>`;
-            }
-        }
-        document.getElementById('area-monitor-kepsek').innerHTML = html + '</div>';
-    }
-
-    async function renderMonitorLinkGuru() {
-        switchTab('tab-kepsek'); document.getElementById('monitor-title').innerText = '📂 Dokumen & CP/TP';
-        const snap = await rtdb.ref('sekolah_wetan').once('value');
-        const allData = snap.val() || {};
-        let html = '<div class="table-res"><table><thead><tr><th>GURU</th><th>DOKUMEN</th><th>LINK</th></tr></thead><tbody>';
-        for(let r in allData) {
-            if(allData[r].kosp) {
-                allData[r].kosp.forEach(k => {
-                    html += `<tr><td>${allData[r].cfg.guru}</td><td>${k.nama}</td><td><a href="${k.link}" target="_blank">Lihat</a></td></tr>`;
-                });
-            }
-        }
-        document.getElementById('area-monitor-kepsek').innerHTML = html + '</tbody></table></div>';
-    }
-
-    async function renderMonitorNilai() {
-        switchTab('tab-kepsek'); document.getElementById('monitor-title').innerText = '📜 Monitor Nilai & Rapor';
-        const snap = await rtdb.ref('sekolah_wetan').once('value');
-        const allData = snap.val() || {};
-        let html = '<div class="dashboard-grid">';
-        for(let r in allData) {
-            if(r.startsWith('gk')) {
-                const n = allData[r].nilai ? Object.keys(allData[r].nilai).length : 0;
-                html += `<div class="card"><h4>Kelas ${r.replace('gk','')}</h4><p>Siswa Dinilai: ${n}</p></div>`;
-            }
-        }
-        document.getElementById('area-monitor-kepsek').innerHTML = html + '</div>';
-    }
-
-    /* --- FUNGSI TAMBAHAN (Siswa, Master, dsb) --- */
-    function showMasterForm(id){ document.querySelectorAll('.hidden-form').forEach(f=>f.style.display='none'); document.getElementById(id).style.display='block'; }
-    function saveMaster(tipe) { 
-        if(!db.cp) db.cp=[]; 
-        const kls = document.getElementById('masterKls').value;
-        const mpl = document.getElementById('masterMapel').value;
-        let d = { id: Date.now(), kls: kls, mapel: mpl, tipe: tipe }; 
-        if(tipe==='CP'){ d.elemen=document.getElementById('cpElemen').value; d.isi=document.getElementById('cpIsi').value; d.kompetensi=document.getElementById('cpKompetensi').value; d.konten=document.getElementById('cpKonten').value; } 
-        else if(tipe==='TP'){ d.kode=document.getElementById('tpKode').value; d.isi=document.getElementById('tpIsi').value; d.kktp=document.getElementById('tpKktp').value; } 
-        else if(tipe==='ATP'){ d.isi=document.getElementById('atpIsi').value; d.waktu=document.getElementById('atpWaktu').value; d.dimensi=document.getElementById('atpDimensi').value; d.asesmen=document.getElementById('atpAsesmen').value; } 
-        db.cp.push(d); saveToFirebase(); renderSemuaMaster(); 
-    }
-    function renderSemuaMaster() { 
-        const k = document.getElementById('masterKls').value; 
-        const m = document.getElementById('masterMapel').value;
-        const all = db.cp ? db.cp.filter(x=>x.kls==k && x.mapel==m) : []; 
-        document.getElementById('bodyCPNew').innerHTML = all.filter(x=>x.tipe==='CP').map(x=>`<tr><td>${x.elemen}</td><td>${x.isi}</td><td>${x.kompetensi}</td><td>${x.konten}</td><td><button onclick="hM('${x.id}')">🗑️</button></td></tr>`).join(''); 
-        document.getElementById('bodyTPNew').innerHTML = all.filter(x=>x.tipe==='TP').map(x=>`<tr><td>${x.kode}</td><td>${x.isi}</td><td>${x.kktp}</td><td><button onclick="hM('${x.id}')">🗑️</button></td></tr>`).join(''); 
-        document.getElementById('bodyATPNew').innerHTML = all.filter(x=>x.tipe==='ATP').map((x,i)=>`<tr><td>${i+1}</td><td>${x.isi}</td><td>${x.waktu}</td><td>${x.asesmen}</td><td><button onclick="hM('${x.id}')">🗑️</button></td></tr>`).join(''); 
-    }
-    function hM(id){ db.cp=db.cp.filter(x=>x.id!=id); saveToFirebase(); renderSemuaMaster(); }
-
-    function saveKosp(){ if(!db.kosp) db.kosp=[]; db.kosp.push({id:Date.now(), nama:document.getElementById('ksNama').value, link:document.getElementById('ksLink').value}); saveToFirebase(); renderKosp(); }
-    function renderKosp(){ const b = document.getElementById('bodyKosp'); if(!db.kosp) return b.innerHTML=""; b.innerHTML=db.kosp.map(k=>`<tr><td>${k.nama}</td><td><a href="${k.link}" target="_blank">Buka</a></td><td><button onclick="hKosp('${k.id}')">🗑️</button></td></tr>`).join(''); }
-    function hKosp(id){ db.kosp=db.kosp.filter(x=>x.id!=id); saveToFirebase(); renderKosp(); }
-    function toggleVisibility(id) { const x = document.getElementById(id); x.style.display = (x.style.display==='none'?'block':'none'); }
-</script>
+    </script>
 </body>
 </html>
