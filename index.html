@@ -148,7 +148,13 @@
             <h3>✍️ Masuk Ruang Ulangan</h3>
             <div class="field" style="margin-bottom: 15px;">
                 <label>Pilih Kelas</label>
-                <select id="loginSwKls" onchange="loadDaftarNamaSiswa(this.value)">
+                <select id="loginSwKls" onchange="loadDaftarNamaSiswa(this.value); updateMapelLoginSiswa(this.value)">
+                    <div class="field">
+    <label>Pilih Mata Pelajaran</label>
+    <select id="loginSwMapel">
+        <option value="">-- Pilih Mapel --</option>
+    </select>
+</div>
                     <option value="">-- Pilih Kelas --</option>
                     <option value="1">Kelas 1</option><option value="2">Kelas 2</option>
                     <option value="3">Kelas 3</option><option value="4">Kelas 4</option>
@@ -475,6 +481,20 @@
     const MAX_DISTANCE = 100;
 
     const mapelData = {
+    function updateMapelLoginSiswa(kls) {
+    const select = document.getElementById('loginSwMapel');
+    if(!kls) {
+        select.innerHTML = '<option value="">-- Pilih Mapel --</option>';
+        return;
+    }
+    
+    // Pilih daftar mapel sesuai kelas (Rendah 1-2, Tinggi 3-6)
+    let list = (kls == 1 || kls == 2) ? mapelData.rendah : mapelData.tinggi;
+    let fullList = [...list, "PAI", "PJOK"]; 
+    
+    select.innerHTML = '<option value="">-- Pilih Mapel --</option>' + 
+        fullList.map(m => `<option value="${m}">${m}</option>`).join('');
+}
         rendah: ["Pendidikan Pancasila", "Matematika", "B.Indonesia", "SBDP", "Bahasa Sunda"],
         tinggi: ["Pendidikan Pancasila", "Matematika", "B.Indonesia", "SBDP", "Bahasa Sunda", "IPAS", "B.Inggris"]
     };
@@ -1342,44 +1362,34 @@
     }
 
     async function mulaiUlanganSiswa() {
-        const kls = document.getElementById('loginSwKls').value;
-        const nama = document.getElementById('loginSwNama').value;
-        if(!kls || !nama) return alert("Pilih Kelas dan Nama!");
+        async function mulaiUlanganSiswa() {
+    const kls = document.getElementById('loginSwKls').value;
+    const nama = document.getElementById('loginSwNama').value;
+    const mapel = document.getElementById('loginSwMapel').value; // Ambil mapel yang dipilih
 
-        const snap = await rtdb.ref(`ulangan_aktif/GK${kls}`).once('value');
-        const data = snap.val();
-        if(!data || data.status !== 'OPEN') return alert("Maaf, tidak ada ulangan aktif di kelas ini.");
-
-        siswaAktif = nama;
-        daftarSoal = data.soal;
-        document.getElementById('displayUlJudul').innerText = data.judul;
-        document.getElementById('displayNamaSiswa').innerText = "Siswa: " + nama;
-
-        let html = "";
-        data.soal.forEach((s, i) => {
-            let inputArea = "";
-            if(s.tipe === 'PG') {
-                inputArea = `
-                    <label><input type="radio" name="q${i}" value="A"> A. ${s.opsi[0]}</label><br>
-                    <label><input type="radio" name="q${i}" value="B"> B. ${s.opsi[1]}</label><br>
-                    <label><input type="radio" name="q${i}" value="C"> C. ${s.opsi[2]}</label><br>
-                    <label><input type="radio" name="q${i}" value="D"> D. ${s.opsi[3]}</label>
-                `;
-            } else {
-                inputArea = `<textarea id="ans-${i}" style="width:100%" rows="3" placeholder="Jawaban esai..."></textarea>`;
-            }
-
-            html += `
-            <div class="card" style="margin-bottom:15px; border-top: 2px solid #ddd;">
-                <p><b>${i+1}. [${s.tipe}] ${s.tanya}</b></p>
-                <div style="display:flex; flex-direction:column; gap:8px;">
-                    ${inputArea}
-                </div>
-            </div>`;
-        });
-        document.getElementById('konten-soal-siswa').innerHTML = html;
-        switchTab('tab-kerjakan-ulangan');
+    if(!kls || !nama || !mapel) {
+        alert("Pilih Kelas, Mapel, dan Nama dulu ya!");
+        return;
     }
+
+    const snap = await rtdb.ref(`ulangan_aktif/GK${kls}`).once('value');
+    const data = snap.val();
+
+    if(!data) {
+        alert("Maaf, tidak ada ulangan yang aktif di kelas ini.");
+        return;
+    }
+
+    // CEK: Apakah mapel yang dipilih siswa sama dengan mapel yang diaktifkan Guru?
+    if(data.metadata.mapel !== mapel) {
+        alert("Maaf, ulangan untuk mata pelajaran ini belum dibuka oleh Guru.");
+        return;
+    }
+
+    siswaAktif = nama;
+    renderSoalSiswa(data.soal, data.metadata);
+    switchTab('tab-kerjakan-ulangan');
+}
 
     async function selesaiUlangan() {
         const kls = document.getElementById('loginSwKls').value;
@@ -1429,3 +1439,4 @@
 </script>
 </body>
 </html>
+
