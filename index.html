@@ -146,6 +146,58 @@
     display: none;
 }
     </style>
+
+<style>
+
+/* ===== LOGIN TENGAH & VERTIKAL ===== */
+#tab-login .dashboard-grid{
+    display:flex !important;
+    flex-direction:column !important;
+    max-width:400px;
+    margin:40px auto;
+    gap:15px;
+}
+
+#tab-login .menu-card{
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 8px 20px rgba(0,0,0,0.1);
+    transition:0.3s;
+}
+
+#tab-login .menu-card:hover{
+    transform:scale(1.03);
+}
+
+/* ===== UMUM PERAPIAN ===== */
+.card{
+    border-radius:18px;
+}
+
+button{
+    padding:8px 15px;
+    border-radius:8px;
+    border:none;
+    cursor:pointer;
+    background:#2563eb;
+    color:white;
+}
+
+button:hover{
+    opacity:0.9;
+}
+
+table{
+    border-collapse:collapse;
+}
+
+th{
+    background:#1e3a8a;
+    color:white;
+}
+
+</style>
+
 </head>
 <body>
 <div id="print-header">
@@ -1539,6 +1591,35 @@ hasil.forEach(d=>{
 
 </script>
 
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+
+  // Tambah tombol RIWAYAT ke menu Kepsek jika ada
+  const kepsekMenu = document.getElementById("kepsek-menu");
+  if(kepsekMenu && !document.getElementById("btnRiwayatKepsek")){
+      const card = document.createElement("div");
+      card.className = "menu-card";
+      card.id = "btnRiwayatKepsek";
+      card.innerHTML = "<div class='menu-icon'>🗂️</div><h3>RIWAYAT & CETAK</h3>";
+      card.onclick = function(){ switchTab('tab-riwayat-kepsek'); };
+      kepsekMenu.appendChild(card);
+  }
+
+  // Tambah tombol RIWAYAT ke menu Guru jika ada
+  const guruMenu = document.getElementById("guru-menu");
+  if(guruMenu && !document.getElementById("btnRiwayatGuru")){
+      const card2 = document.createElement("div");
+      card2.className = "menu-card";
+      card2.id = "btnRiwayatGuru";
+      card2.innerHTML = "<div class='menu-icon'>📑</div><h3>RIWAYAT SAYA</h3>";
+      card2.onclick = function(){ switchTab('tab-riwayat-guru'); };
+      guruMenu.appendChild(card2);
+  }
+
+});
+</script>
 
 </body>
 </html>
