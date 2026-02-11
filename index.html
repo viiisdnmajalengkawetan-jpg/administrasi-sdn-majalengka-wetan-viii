@@ -67,10 +67,96 @@
             .print-footer-table { width: 100%; border: none !important; margin-top: 30px; }
             .print-footer-table td { border: none !important; text-align: center; width: 50% !important; vertical-align: top; }
         }
+        /* --- CSS KHUSUS PRINT (RINCI) --- */
+@media print {
+    /* 1. Sembunyikan semua elemen navigasi dan tombol agar tidak kotor */
+    .navbar, .btn, .btn-group, .form-group, .dashboard-grid, 
+    #back-area, .no-print, button, input, select {
+        display: none !important;
+    }
+
+    /* 2. Atur halaman agar putih bersih dan margin pas */
+    body {
+        background: white !important;
+        margin: 0;
+        padding: 0;
+        color: black;
+    }
+
+    /* 3. Tampilkan kontainer utama secara penuh */
+    .container {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* 4. Tampilkan Header & Footer cetak yang tadi disembunyikan */
+    #print-header, #print-footer {
+        display: block !important;
+    }
+
+    /* 5. Hilangkan dekorasi kartu (shadow/border biru) agar hemat tinta */
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    /* 6. ATURAN TABEL RINCI: Agar tabel terlihat seperti dokumen dinas */
+    table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        margin-top: 10px;
+        table-layout: auto;
+    }
+
+    th {
+        background-color: #eee !important; /* Warna abu muda untuk kepala tabel */
+        color: black !important;
+        border: 1px solid black !important;
+        padding: 8px !important;
+        font-size: 11pt;
+        text-transform: uppercase;
+    }
+
+    td {
+        border: 1px solid black !important;
+        padding: 6px !important;
+        font-size: 10pt;
+        background: transparent !important;
+    }
+
+    /* 7. Cegah tabel terpotong di tengah halaman */
+    tr {
+        page-break-inside: avoid;
+        page-break-after: auto;
+    }
+
+    /* 8. Paksa browser mencetak warna latar belakang (penting untuk header tabel) */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+}
+
+/* Sembunyikan elemen cetak saat dilihat di layar HP/Laptop */
+#print-header, #print-footer {
+    display: none;
+}
     </style>
 </head>
 <body>
-
+<div id="print-header">
+    <div style="text-align: center; border-bottom: 3px double #000; padding-bottom: 10px; margin-bottom: 20px;">
+        <h2 style="margin: 0; text-transform: uppercase;">Pemerintah Kabupaten Majalengka</h2>
+        <h1 style="margin: 0; text-transform: uppercase;">SD NEGERI MAJALENGKA WETAN VIII</h1>
+        <p style="margin: 5px 0; font-style: italic;">Alamat: Jl. KH. Abdul Halim No. 5, Kec. Majalengka, Kab. Majalengka</p>
+    </div>
+    <h3 id="pTitleHeader" style="text-align: center; text-decoration: underline; text-transform: uppercase;">LAPORAN MONITORING</h3>
+    <p id="pTanggalCetak" style="text-align: center; margin-top: -10px; font-size: 14px;"></p>
+</div>
 <div class="modal-overlay" id="overlayCeklok"></div>
 <div id="modalCeklok">
     <span style="font-size: 50px;">📍</span>
@@ -1295,6 +1381,40 @@
         });
     }
     async function delKg(k) { await rtdb.ref(`kegiatan/${currentRole}/${k}`).remove(); renderKegiatan(); }
+    // --- FUNGSI PROSES CETAK ---
+function jalankanCetak() {
+    // 1. Ambil judul laporan yang sedang aktif dilihat oleh Kepsek
+    const judulLaporan = document.getElementById('monitor-title').innerText;
+    document.getElementById('pTitleHeader').innerText = judulLaporan.toUpperCase();
+
+    // 2. Ambil tanggal hari ini dalam format Indonesia
+    const opsiTanggal = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    const hariIni = new Date().toLocaleDateString('id-ID', opsiTanggal);
+    const tglSingkat = new Date().toLocaleDateString('id-ID');
+
+    // 3. Masukkan tanggal ke Header dan Footer
+    document.getElementById('pTanggalCetak').innerText = "Tanggal Laporan: " + hariIni;
+    document.getElementById('fTglSekarangCetak').innerText = tglSingkat;
+
+    // 4. Ambil data Kepala Sekolah dari Database (Firebase) untuk tanda tangan
+    // Jika data di database kosong, akan menggunakan nama default
+    rtdb.ref('setup').once('value', snap => {
+        const dataSetup = snap.val() || {};
+        
+        const namaKepsek = dataSetup.kepsek || "KARYADI, S.Pd";
+        const nipKepsek = dataSetup.nipKepsek || "19700101XXXXXXXXXX";
+
+        document.getElementById('fKepsekNameCetak').innerText = namaKepsek;
+        document.getElementById('fKepsekNipCetak').innerText = nipKepsek;
+
+        // 5. Eksekusi Perintah Cetak Browser
+        // Timeout sedikit agar browser sempat merender data sebelum dialog print muncul
+        setTimeout(() => {
+            window.print();
+        }, 500);
+    });
+}
 </script>
 </body>
 </html>
+
