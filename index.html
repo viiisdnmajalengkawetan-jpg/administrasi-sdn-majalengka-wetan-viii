@@ -72,7 +72,6 @@
 </head>
 <body>
 
-<!-- SETUP SCREEN -->
 <div id="scr-setup" class="u-screen hidden">
     <div class="u-glass">
         <h2 style="font-weight:900;">AKTIVASI DATABASE</h2>
@@ -83,7 +82,6 @@
     </div>
 </div>
 
-<!-- LOGIN SCREEN -->
 <div id="scr-login" class="u-screen hidden">
     <div class="u-glass">
         <h1 id="v-school-name" style="margin:0; font-weight:900; color:var(--accent);">DIREKTORI</h1>
@@ -94,7 +92,6 @@
     </div>
 </div>
 
-<!-- GPS OVERLAY -->
 <div id="m-gps" class="u-screen hidden">
     <div class="u-glass">
         <div style="font-size:4rem;">📍</div>
@@ -105,7 +102,6 @@
     </div>
 </div>
 
-<!-- SIDEBAR -->
 <div id="sidebar" class="sidebar hidden">
     <div class="sidebar-header"><h3 id="brand">SUPREME MASTER</h3><div id="clk" style="font-size:0.7rem; color:#94a3b8;"></div></div>
     <div class="sidebar-menu">
@@ -135,7 +131,6 @@
     </div>
 </div>
 
-<!-- MAIN UI -->
 <div id="main-ui" class="main hidden">
     <div class="topbar">
         <h4 id="v-title-label" style="text-transform:uppercase; font-weight:900;">DASHBOARD</h4>
@@ -150,7 +145,6 @@
 
     <div class="container">
         
-        <!-- DASHBOARD -->
         <div id="tab-dashboard" class="tab-content active">
             <div class="card" style="background:var(--primary); color:white; text-align:center; padding:50px;">
                 <h4 id="d-date-txt" style="color:var(--success);">Tgl Hari Ini</h4>
@@ -175,7 +169,6 @@
             </div>
         </div>
 
-        <!-- GURU: SISWA -->
         <div id="tab-g-siswa" class="tab-content">
             <div class="card">
                 <h3>Buat Akun Login Siswa</h3>
@@ -192,7 +185,6 @@
             </div>
         </div>
 
-        <!-- GURU: ABSENSI -->
         <div id="tab-g-absen" class="tab-content">
             <div class="card">
                 <h3>Absensi Siswa Harian (H/S/I/A)</h3>
@@ -207,7 +199,6 @@
             </div>
         </div>
 
-        <!-- GURU: AGENDA -->
         <div id="tab-g-agenda" class="tab-content">
             <div class="card" id="print-agenda-area">
                 <div class="print-kop">
@@ -235,7 +226,6 @@
             </div>
         </div>
 
-        <!-- GURU: MODUL -->
         <div id="tab-g-modul" class="tab-content">
             <div class="card">
                 <h3>Modul Ajar Mingguan (RPP Digital)</h3>
@@ -249,7 +239,6 @@
             </div>
         </div>
 
-        <!-- GURU: UJIAN -->
         <div id="tab-g-ujian" class="tab-content">
             <div class="card">
                 <h3>Bank Soal Ujian Digital</h3>
@@ -273,19 +262,18 @@
                 </div>
                 <button onclick="saveQuestion()" class="btn btn-blue" style="width:100%; margin-top:20px;"><i class="fa fa-save"></i> SIMPAN KE BANK SOAL</button>
                 <div class="table-res" style="margin-top:20px;">
-                    <table><thead><tr><th>Soal</th><th>Tipe</th><th>Jawaban</th><th>Hapus</th></tr></thead><tbody id="tbl-ex-list"></tbody></table>
+                    <table><thead><tr><th>Soal/Judul</th><th>Tipe/Status</th><th>Info</th><th>Hapus</th></tr></thead><tbody id="tbl-ex-list"></tbody></table>
                 </div>
                 <button onclick="publishExam()" class="btn btn-green" style="width:100%; margin-top:15px;"><i class="fa fa-share-nodes"></i> KIRIM KE SISWA (PUBLISH)</button>
             </div>
         </div>
 
-        <!-- GURU: NILAI SD -->
         <div id="tab-g-nilai" class="tab-content">
             <div class="card">
                 <h3>Input Nilai Siswa SD (Semua Mapel)</h3>
                 <div class="f-row">
                     <div><label>Mapel</label>
-                        <select id="gn-mapel">
+                        <select id="gn-mapel" onchange="fetchSiswaNilai()">
                             <option>B. Indonesia</option><option>Matematika</option><option>IPA</option><option>IPS</option>
                             <option>PAI</option><option>PJOK</option><option>Seni Budaya</option><option>PKN</option>
                         </select>
@@ -299,7 +287,6 @@
             </div>
         </div>
 
-        <!-- KEPSEK: CEKLOK GURU -->
         <div id="tab-k-absen" class="tab-content">
             <div class="card">
                 <h3>Monitoring Ceklok Kehadiran Guru (Real-time)</h3>
@@ -310,7 +297,6 @@
             </div>
         </div>
 
-        <!-- KEPSEK: REVIEW AGENDA -->
         <div id="tab-k-agenda" class="tab-content">
             <div class="card">
                 <h3>Review & Persetujuan Agenda Harian Guru</h3>
@@ -320,7 +306,6 @@
             </div>
         </div>
 
-        <!-- KEPSEK: REVIEW MODUL -->
         <div id="tab-k-modul" class="tab-content">
             <div class="card">
                 <h3>Review Modul Ajar Mingguan</h3>
@@ -330,22 +315,21 @@
             </div>
         </div>
 
-        <!-- KEPSEK: REKAP NILAI -->
         <div id="tab-k-rekap" class="tab-content">
             <div class="card">
                 <h3>Rekapitulasi Nilai Seluruh Kelas & Mapel</h3>
                 <div class="f-row">
-                    <select id="kr-kls"><option value="1">Kelas 1</option><option value="2">2</option><option value="6">6</option></select>
+                    <select id="kr-kls"><option value="1">Kelas 1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select>
                     <select id="kr-mapel"><option>Matematika</option><option>B. Indonesia</option><option>PAI</option><option>PJOK</option></select>
                     <button onclick="renderRekap()" class="btn btn-blue">TAMPILKAN REKAP</button>
                 </div>
                 <div class="table-res">
-                    <table><thead><tr><th>Nama</th><th>Kelas</th><th>Avg Nilai</th><th>Ket</th></tr></thead><tbody id="tbl-k-rekap-body"></tbody></table>
+                    <table id="rekap-print-area"><thead><tr><th>Nama</th><th>Kelas</th><th>Avg Nilai</th><th>Ket</th></tr></thead><tbody id="tbl-k-rekap-body"></tbody></table>
                 </div>
+                <button onclick="printRapor()" class="btn btn-warn" style="width:100%; margin-top:15px;"><i class="fa fa-print"></i> CETAK REKAPITULASI INI</button>
             </div>
         </div>
 
-        <!-- KEPSEK: DATA STAF -->
         <div id="tab-k-staf" class="tab-content">
             <div class="card">
                 <h3>Kelola Data Staf & Guru Digital</h3>
@@ -413,7 +397,6 @@ function handleLogin() {
     const u = document.getElementById('log-u').value; 
     const p = document.getElementById('log-p').value;
     
-    // Root Admin logic
     if(u === 'admin' && p === '12345') {
         proceedLogin({u:'admin', n:'Root Master', r:'KEPSEK', id:'ROOT'});
         return;
@@ -452,7 +435,6 @@ function syncCloud() {
         window.STAF_DATA = s.val() || {};
         renderStaffTable();
         renderAbsenMonitor();
-        // Set Kepsek name for printing
         for(let id in STAF_DATA) if(STAF_DATA[id].r === 'KEPSEK') document.querySelectorAll('.v-kepsek-name').forEach(e => e.innerText = STAF_DATA[id].n);
     });
     // Sync Students
@@ -460,7 +442,16 @@ function syncCloud() {
         window.SISWA_DATA = s.val() || {};
         renderStudentTable();
     });
-    // Multi Sync for Analytics
+    // Sync Exams
+    db.ref('schools/'+sch.npsn+'/exams').on('value', s => {
+        const allEx = s.val() || {};
+        let h = '';
+        for(let id in allEx) {
+            h += `<tr><td>${allEx[id].title}</td><td><span class="badge bg-ok">PUBLISHED</span></td><td>${allEx[id].guru}</td><td><button onclick="delExam('${id}')" class="btn btn-red btn-xs">Hapus</button></td></tr>`;
+        }
+        document.getElementById('tbl-ex-list').innerHTML = h;
+    });
+
     const d = new Date().toISOString().split('T')[0];
     db.ref('schools/'+sch.npsn+'/agendas/'+d).on('value', s => {
         const ag = s.val() || {}; 
@@ -568,6 +559,10 @@ function submitModul() {
 
 // --- TEACHER: EXAM ---
 let tempEx = [];
+function toggleExType() {
+    const ty = document.getElementById('ex-type').value;
+    document.getElementById('ex-pg-ops').className = (ty === 'ES' ? 'hidden' : '');
+}
 function saveQuestion() {
     const q = document.getElementById('ex-q').value;
     const ty = document.getElementById('ex-type').value;
@@ -580,6 +575,7 @@ function saveQuestion() {
 }
 function renderExTemp() {
     let h = ''; tempEx.forEach((x, i) => { h += `<tr><td>${x.q}</td><td>${x.ty}</td><td>${x.ans}</td><td><button onclick="tempEx.splice(${i},1);renderExTemp()">X</button></td></tr>`; });
+    // Tampilkan list soal sementara sebelum dipublish
     document.getElementById('tbl-ex-list').innerHTML = h;
 }
 function publishExam() {
@@ -588,11 +584,47 @@ function publishExam() {
     db.ref('schools/'+sch.npsn+'/exams/'+Date.now()).set({ title, q: tempEx, guru: curU.n });
     alert("Ujian Dipublish ke Siswa!"); tempEx = []; renderExTemp();
 }
+function delExam(id) { if(confirm('Hapus Ujian?')) db.ref('schools/'+sch.npsn+'/exams/'+id).remove(); }
 
-// --- KEPSEK: REVIEW ---
+// --- TEACHER: NILAI SD ---
+function fetchSiswaNilai() {
+    const kls = document.getElementById('gn-kls').value;
+    const mapel = document.getElementById('gn-mapel').value;
+    db.ref('schools/'+sch.npsn+'/grades/'+kls+'/'+mapel).once('value', snapshot => {
+        const savedData = snapshot.val() || {};
+        let h = '';
+        for(let id in SISWA_DATA) {
+            if(SISWA_DATA[id].k == kls) {
+                const val = savedData[id] || {tp:0, sts:0, sas:0};
+                h += `<tr><td>${SISWA_DATA[id].n}</td>
+                    <td><input type="number" class="ni-tp" data-id="${id}" value="${val.tp}" style="width:70px"></td>
+                    <td><input type="number" class="ni-sts" data-id="${id}" value="${val.sts}" style="width:70px"></td>
+                    <td><input type="number" class="ni-sas" data-id="${id}" value="${val.sas}" style="width:70px"></td></tr>`;
+            }
+        }
+        document.getElementById('tbl-gn-list').innerHTML = h;
+    });
+}
+function saveGrades() {
+    const kls = document.getElementById('gn-kls').value;
+    const mapel = document.getElementById('gn-mapel').value;
+    const updates = {};
+    document.querySelectorAll('#tbl-gn-list tr').forEach(row => {
+        const tpInp = row.querySelector('.ni-tp');
+        const id = tpInp.dataset.id;
+        updates[id] = {
+            tp: tpInp.value,
+            sts: row.querySelector('.ni-sts').value,
+            sas: row.querySelector('.ni-sas').value
+        };
+    });
+    db.ref('schools/'+sch.npsn+'/grades/'+kls+'/'+mapel).update(updates).then(() => alert("Nilai Tersinkron!"));
+}
+
+// --- KEPSEK: REVIEW & REKAP ---
 function renderReviewAgenda(data) {
     if(!curU || curU.r !== 'KEPSEK') return;
-    let h = ''; const d = new Date().toISOString().split('T')[0];
+    let h = '';
     for(let uid in data) {
         let x = data[uid];
         h += `<tr><td>${x.tgl}</td><td>${x.n}</td><td>${x.cp}/${x.tp}</td><td><span class="badge bg-${x.st==='OK'?'ok':'pending'}">${x.st}</span></td>
@@ -603,6 +635,37 @@ function renderReviewAgenda(data) {
 function approveAgenda(uid) {
     const d = new Date().toISOString().split('T')[0];
     db.ref('schools/'+sch.npsn+'/agendas/'+d+'/'+uid+'/st').set('OK');
+}
+
+function renderRekap() {
+    const kls = document.getElementById('kr-kls').value;
+    const mapel = document.getElementById('kr-mapel').value;
+    db.ref('schools/'+sch.npsn+'/grades/'+kls+'/'+mapel).once('value', s => {
+        const data = s.val() || {};
+        let h = '';
+        for(let id in SISWA_DATA) {
+            if(SISWA_DATA[id].k == kls) {
+                const n = data[id] || {tp:0, sts:0, sas:0};
+                const avg = (parseFloat(n.tp) + parseFloat(n.sts) + parseFloat(n.sas)) / 3;
+                h += `<tr><td>${SISWA_DATA[id].n}</td><td>${kls}</td><td>${avg.toFixed(2)}</td>
+                    <td><span class="badge ${avg >= 75 ? 'bg-ok' : 'bg-pending'}">${avg >= 75 ? 'TUNTAS' : 'REMEDIAL'}</span></td></tr>`;
+            }
+        }
+        document.getElementById('tbl-k-rekap-body').innerHTML = h;
+    });
+}
+
+function printRapor() {
+    const kls = document.getElementById('kr-kls').value;
+    const mapel = document.getElementById('kr-mapel').value;
+    const content = document.getElementById('rekap-print-area').outerHTML;
+    const printWin = window.open('', '_blank');
+    printWin.document.write(`<html><head><title>Rapor ${sch.nama}</title><style>body{font-family:sans-serif;padding:40px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:12px;text-align:left}th{background:#f4f4f4}.kop{text-align:center;border-bottom:3px solid #000;margin-bottom:20px}.sig{display:flex;justify-content:space-between;margin-top:50px}</style></head><body>
+        <div class="kop"><h2>${sch.nama}</h2><p>Rekapitulasi Nilai Mapel: ${mapel} | Kelas: ${kls}</p></div>
+        ${content}
+        <div class="sig"><div>Mengetahui,<br>Kepala Sekolah<br><br><br><b>${document.querySelector('.v-kepsek-name').innerText}</b></div><div>Majalengka, ${new Date().toLocaleDateString('id-id')}<br>Guru Kelas<br><br><br><b>${curU.n}</b></div></div>
+        <script>window.print();<\/script></body></html>`);
+    printWin.document.close();
 }
 
 // --- KEPSEK: DATA STAF ---
@@ -628,6 +691,7 @@ function switchTab(id) {
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
     document.getElementById('tab-'+id).classList.add('active');
     document.getElementById('v-title-label').innerText = id.replace('g-','').replace('k-','').toUpperCase();
+    if(id === 'g-nilai') fetchSiswaNilai();
 }
 function sendWA(num, msg) { window.open("https://wa.me/"+num+"?text="+encodeURIComponent(msg), '_blank'); }
 function calcDistance(lat1, lon1, lat2, lon2) {
