@@ -168,12 +168,6 @@
     <button onclick="closeModalCeklok()" style="margin-top: 15px; background: none; border: none; color: var(--danger); cursor: pointer; font-weight: bold;">TUTUP</button>
 </div>
 
-<div id="print-header" style="display:none;">
-    <h1 id="pSekolah">NAMA SEKOLAH</h1>
-    <h2 id="pTitle">LAPORAN CAPAIAN HASIL BELAJAR</h2>
-    <hr>
-</div>
-
 <div class="navbar">
     <h2 id="main-title">🚀 ADMINISTRASI SD NEGERI MAJALENGKA WETAN VIII</h2>
 </div>
@@ -525,6 +519,9 @@
         <div class="card">
             <h3 id="monitor-title">Monitoring</h3>
             <div id="area-monitor-kepsek"></div>
+            <button class="btn btn-dark no-print" onclick="jalankanCetak()" style="margin-bottom: 15px; width: 100%;">
+    🖨️ CETAK LAPORAN INI
+</button>
         </div>
     </div>
 
@@ -538,6 +535,39 @@
     </div>
 </div>
 
+// ... kode-kode Anda yang sudah ada ...
+
+    // MASUKKAN DI SINI (SEBELUM TAG </script> PENUTUP)
+    function jalankanCetak() {
+        // 1. Ambil Judul Laporan
+        const judulLaporan = document.getElementById('monitor-title').innerText;
+        document.getElementById('pTitleHeader').innerText = judulLaporan.toUpperCase();
+
+        // 2. Atur Tanggal
+        const opsiTanggal = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const hariIni = new Date().toLocaleDateString('id-ID', opsiTanggal);
+        const tglSingkat = new Date().toLocaleDateString('id-ID');
+
+        document.getElementById('pTanggalCetak').innerText = "Tanggal Laporan: " + hariIni;
+        document.getElementById('fTglSekarangCetak').innerText = tglSingkat;
+
+        // 3. Ambil Data Nama Kepsek & NIP dari Firebase
+        rtdb.ref('setup').once('value', snap => {
+            const dataSetup = snap.val() || {};
+            
+            // Mengisi Nama dan NIP di area Tanda Tangan
+            document.getElementById('fKepsekNameCetak').innerText = dataSetup.kepsek || "KARYADI, S.Pd";
+            document.getElementById('fKepsekNipCetak').innerText = dataSetup.nipKepsek || "-";
+
+            // 4. Perintah Cetak
+            setTimeout(() => {
+                window.print();
+            }, 500);
+        });
+    }
+
+</script> </body>
+</html>
 <script>
     const firebaseConfig = {
         apiKey: "AIzaSyBDSZ5mBwxiMHem5gNBpD8lSKYqSoCFxOQ",
@@ -1417,4 +1447,5 @@ function jalankanCetak() {
 </script>
 </body>
 </html>
+
 
