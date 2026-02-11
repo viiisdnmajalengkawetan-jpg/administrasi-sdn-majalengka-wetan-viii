@@ -1415,6 +1415,131 @@ function jalankanCetak() {
     });
 }
 </script>
+
+
+<!-- ================= TAMBAHAN RIWAYAT KEPSEK ================= -->
+<div id="tab-riwayat-kepsek" class="tab-content">
+<div class="card">
+<h3>🗂️ RIWAYAT SEMUA DATA</h3>
+<input type="date" id="rkDari">
+<input type="date" id="rkSampai">
+<button onclick="filterRiwayatKepsek()">TAMPILKAN</button>
+<button onclick="window.print()">CETAK</button>
+<table border="1" width="100%">
+<thead>
+<tr>
+<th>TANGGAL</th>
+<th>JENIS</th>
+<th>KETERANGAN</th>
+<th>USER</th>
+</tr>
+</thead>
+<tbody id="bodyRiwayatKepsek"></tbody>
+</table>
+</div>
+</div>
+
+<!-- ================= TAMBAHAN RIWAYAT GURU ================= -->
+<div id="tab-riwayat-guru" class="tab-content">
+<div class="card">
+<h3>📑 RIWAYAT DATA SAYA</h3>
+<input type="date" id="rgDari">
+<input type="date" id="rgSampai">
+<button onclick="filterRiwayatGuru()">TAMPILKAN</button>
+<button onclick="window.print()">CETAK</button>
+<table border="1" width="100%">
+<thead>
+<tr>
+<th>TANGGAL</th>
+<th>JENIS</th>
+<th>KETERANGAN</th>
+</tr>
+</thead>
+<tbody id="bodyRiwayatGuru"></tbody>
+</table>
+</div>
+</div>
+
+<script>
+
+function openRiwayatKepsek(){ switchTab('tab-riwayat-kepsek'); }
+function openRiwayatGuru(){ switchTab('tab-riwayat-guru'); }
+
+function filterRiwayatKepsek(){
+const dari = document.getElementById('rkDari').value;
+const sampai = document.getElementById('rkSampai').value;
+const tbody = document.getElementById('bodyRiwayatKepsek');
+tbody.innerHTML = "";
+if(!dari || !sampai) return;
+
+let hasil=[];
+
+Object.values(db.agenda||{}).forEach(a=>{
+ if(a.tanggal>=dari && a.tanggal<=sampai)
+ hasil.push({tgl:a.tanggal,jenis:'Agenda',ket:a.materi,user:a.guru});
+});
+
+Object.values(db.kegiatan||{}).forEach(k=>{
+ if(k.tanggal>=dari && k.tanggal<=sampai)
+ hasil.push({tgl:k.tanggal,jenis:'Kegiatan',ket:k.nama,user:k.guru});
+});
+
+Object.values(db.nilai_data||{}).forEach(n=>{
+ if(n.tanggal>=dari && n.tanggal<=sampai)
+ hasil.push({tgl:n.tanggal,jenis:'Nilai',ket:n.mapel,user:n.guru});
+});
+
+hasil.sort((a,b)=>a.tgl.localeCompare(b.tgl));
+
+hasil.forEach(d=>{
+ tbody.innerHTML+=`<tr>
+ <td>${d.tgl}</td>
+ <td>${d.jenis}</td>
+ <td>${d.ket}</td>
+ <td>${d.user}</td>
+ </tr>`;
+});
+}
+
+function filterRiwayatGuru(){
+const dari = document.getElementById('rgDari').value;
+const sampai = document.getElementById('rgSampai').value;
+const tbody = document.getElementById('bodyRiwayatGuru');
+tbody.innerHTML = "";
+if(!dari || !sampai) return;
+
+const namaGuru = currentUser?.nama || "";
+let hasil=[];
+
+Object.values(db.agenda||{}).forEach(a=>{
+ if(a.guru==namaGuru && a.tanggal>=dari && a.tanggal<=sampai)
+ hasil.push({tgl:a.tanggal,jenis:'Agenda',ket:a.materi});
+});
+
+Object.values(db.kegiatan||{}).forEach(k=>{
+ if(k.guru==namaGuru && k.tanggal>=dari && k.tanggal<=sampai)
+ hasil.push({tgl:k.tanggal,jenis:'Kegiatan',ket:k.nama});
+});
+
+Object.values(db.nilai_data||{}).forEach(n=>{
+ if(n.guru==namaGuru && n.tanggal>=dari && n.tanggal<=sampai)
+ hasil.push({tgl:n.tanggal,jenis:'Nilai',ket:n.mapel});
+});
+
+hasil.sort((a,b)=>a.tgl.localeCompare(b.tgl));
+
+hasil.forEach(d=>{
+ tbody.innerHTML+=`<tr>
+ <td>${d.tgl}</td>
+ <td>${d.jenis}</td>
+ <td>${d.ket}</td>
+ </tr>`;
+});
+}
+
+</script>
+
+
 </body>
 </html>
 
