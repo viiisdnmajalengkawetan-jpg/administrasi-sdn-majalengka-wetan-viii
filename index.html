@@ -1621,6 +1621,121 @@ document.addEventListener("DOMContentLoaded", function(){
 });
 </script>
 
+
+<!-- ================= ROLE SELECTOR ================= -->
+<div id="role-selector" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:20px;">
+    <h2>PILIH LOGIN SEBAGAI</h2>
+    <button onclick="pilihRole('guru')" style="width:250px;">GURU</button>
+    <button onclick="pilihRole('kepsek')" style="width:250px;background:#16a34a;">KEPALA SEKOLAH</button>
+</div>
+
+<script>
+function pilihRole(role){
+    document.getElementById('role-selector').style.display='none';
+    document.getElementById('tab-login').style.display='block';
+    if(role==='guru'){
+        document.getElementById('tab-login').scrollIntoView();
+    }
+    if(role==='kepsek'){
+        document.querySelectorAll('#tab-login .menu-card').forEach(card=>{
+            if(!card.innerText.toLowerCase().includes('kepala')){
+                card.style.display='none';
+            }
+        });
+    }
+}
+document.getElementById('tab-login').style.display='none';
+</script>
+
+<script>
+
+function tambahRiwayatButton(targetFunctionName, jenisData){
+
+    const oldFunc = window[targetFunctionName];
+
+    window[targetFunctionName] = function(){
+
+        oldFunc && oldFunc();
+
+        setTimeout(()=>{
+
+            const area = document.querySelector('.card');
+            if(!area) return;
+
+            if(!area.querySelector('.btn-riwayat')){
+
+                const btn = document.createElement('button');
+                btn.innerText = 'RIWAYAT ' + jenisData.toUpperCase();
+                btn.className = 'btn-riwayat';
+                btn.style.marginLeft='10px';
+                btn.onclick = function(){
+                    tampilRiwayatPerMenu(jenisData);
+                };
+
+                area.appendChild(btn);
+            }
+
+        },300);
+
+    }
+
+}
+
+function tampilRiwayatPerMenu(jenis){
+
+    const dari = prompt("Dari tanggal (YYYY-MM-DD)");
+    const sampai = prompt("Sampai tanggal (YYYY-MM-DD)");
+    if(!dari || !sampai) return;
+
+    let hasil = [];
+
+    if(jenis==='agenda'){
+        Object.values(db.agenda||{}).forEach(a=>{
+            if(a.tanggal>=dari && a.tanggal<=sampai){
+                hasil.push(a);
+            }
+        });
+    }
+
+    if(jenis==='kegiatan'){
+        Object.values(db.kegiatan||{}).forEach(a=>{
+            if(a.tanggal>=dari && a.tanggal<=sampai){
+                hasil.push(a);
+            }
+        });
+    }
+
+    if(jenis==='absen'){
+        Object.keys(db.absenGuru||{}).forEach(tgl=>{
+            if(tgl>=dari && tgl<=sampai){
+                hasil.push({tanggal:tgl,data:db.absenGuru[tgl]});
+            }
+        });
+    }
+
+    if(jenis==='nilai'){
+        Object.values(db.nilai_data||{}).forEach(a=>{
+            if(a.tanggal>=dari && a.tanggal<=sampai){
+                hasil.push(a);
+            }
+        });
+    }
+
+    alert("Total data ditemukan: " + hasil.length);
+    console.log("Riwayat",jenis,hasil);
+}
+
+document.addEventListener("DOMContentLoaded",function(){
+
+    tambahRiwayatButton('renderAgendaGuru','agenda');
+    tambahRiwayatButton('renderKegiatanGuru','kegiatan');
+    tambahRiwayatButton('renderMonitorAbsenGuru','absen');
+    tambahRiwayatButton('renderMonitorNilai','nilai');
+
+});
+
+</script>
+
 </body>
 </html>
 
