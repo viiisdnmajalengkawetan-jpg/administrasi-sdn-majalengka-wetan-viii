@@ -68,7 +68,78 @@
             .sign-box { margin-top: 60px; font-weight: 900; text-decoration: underline; }
         }
         .print-kop, .signature { display: none; }
-    </style>
+    
+/* =========================
+   MOBILE RESPONSIVE FIX
+========================= */
+@media (max-width: 768px) {
+
+    body {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        position: fixed;
+        left: -280px;
+        top: 0;
+        width: 260px;
+        height: 100%;
+        transition: 0.3s ease;
+    }
+
+    .sidebar.show {
+        left: 0;
+    }
+
+    .main {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+
+    .topbar {
+        height: 65px;
+        padding: 0 15px;
+    }
+
+    .container {
+        padding: 15px;
+    }
+
+    .card {
+        padding: 18px;
+        border-radius: 16px;
+    }
+
+    .f-row {
+        grid-template-columns: 1fr !important;
+    }
+
+    .table-res {
+        overflow-x: auto;
+    }
+
+    table {
+        min-width: 600px;
+    }
+
+    #d-clock-txt {
+        font-size: 2.5rem !important;
+        letter-spacing: -1px !important;
+    }
+
+    .btn {
+        font-size: 0.8rem;
+        padding: 12px;
+    }
+
+    #p-avatar {
+        width: 38px;
+        height: 38px;
+        font-size: 1rem;
+    }
+}
+
+</style>
 </head>
 <body>
 
@@ -133,6 +204,8 @@
 
 <div id="main-ui" class="main hidden">
     <div class="topbar">
+<button onclick="toggleMenu()" class="btn" style="display:none;" id="mobileMenuBtn">☰</button>
+
         <h4 id="v-title-label" style="text-transform:uppercase; font-weight:900;">DASHBOARD</h4>
         <div style="display:flex; align-items:center; gap:15px;">
             <div style="text-align:right;">
@@ -319,8 +392,8 @@
             <div class="card">
                 <h3>Rekapitulasi Nilai Seluruh Kelas & Mapel</h3>
                 <div class="f-row">
-                    <select id="kr-kls"><option value="1">Kelas 1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select>
-                    <select id="kr-mapel"><option>Matematika</option><option>B. Indonesia</option><option>PAI</option><option>PJOK</option></select>
+                    <select id="kr-kls" onchange="setRekapMapelByKelas()"><option value="1">Kelas 1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select>
+                    <select id="kr-mapel"></select>
                     <button onclick="renderRekap()" class="btn btn-blue">TAMPILKAN REKAP</button>
                 </div>
                 <div class="table-res">
@@ -339,7 +412,13 @@
                     <input type="text" id="ks-u" placeholder="ID Akun Login">
                     <input type="text" id="ks-p" placeholder="Security PIN">
                     <input type="text" id="ks-wa" placeholder="No HP/WA (62...)">
-                    <select id="ks-r"><option value="GURU">GURU KELAS</option><option value="KEPSEK">KEPALA SEKOLAH</option></select>
+                    <select id="ks-r">
+<option value="GURU12">GURU KELAS 1-2</option>
+<option value="GURU36">GURU KELAS 3-6</option>
+<option value="PAI">GURU PAI</option>
+<option value="PJOK">GURU PJOK</option>
+<option value="KEPSEK">KEPALA SEKOLAH</option>
+</select>
                 </div>
                 <button onclick="saveStaff()" class="btn btn-blue" style="width:100%;"><i class="fa fa-save"></i> TAMBAH/UPDATE STAF</button>
                 <div class="table-res" style="margin-top:20px;">
@@ -427,6 +506,8 @@ function proceedLogin(user) {
         document.getElementById('menu-area-guru').classList.remove('hidden');
     }
     switchTab('dashboard');
+    setMapelByRole();
+    if(curU.r === 'KEPSEK'){ setRekapMapelByKelas(); }
 }
 
 function syncCloud() {
@@ -442,6 +523,26 @@ function syncCloud() {
         window.SISWA_DATA = s.val() || {};
         renderStudentTable();
     });
+    
+    // Sync Modul untuk Kepsek (Realtime)
+    db.ref('schools/'+sch.npsn+'/moduls').on('value', s => {
+        const data = s.val() || {};
+        if(!curU || curU.r !== 'KEPSEK') return;
+
+        let h = '';
+        for(let id in data) {
+            let x = data[id];
+            h += `<tr>
+                <td>${x.n}</td>
+                <td>${x.t} / ${x.m}</td>
+                <td><span class="badge bg-${x.st==='OK'?'ok':'pending'}">${x.st}</span></td>
+                <td><button onclick="approveModul('${id}')" class="btn btn-green btn-xs">Setuju</button></td>
+            </tr>`;
+        }
+
+        document.getElementById('tbl-k-rev-modul-body').innerHTML = h;
+    });
+
     // Sync Exams
     db.ref('schools/'+sch.npsn+'/exams').on('value', s => {
         const allEx = s.val() || {};
@@ -540,6 +641,23 @@ function renderAbsenSiswa() {
     document.getElementById('tbl-ga-list').innerHTML = h;
 }
 
+
+function saveAbsenSiswa() {
+    const kls = document.getElementById('ga-kls-sel').value;
+    const d = new Date().toISOString().split('T')[0];
+
+    let updates = {};
+
+    document.querySelectorAll('.abs-sw-val').forEach(sel => {
+        updates[sel.dataset.id] = sel.value;
+    });
+
+    db.ref('schools/'+sch.npsn+'/absen_siswa/'+d+'/'+kls).set({
+        guru: curU.n,
+        data: updates
+    }).then(() => alert("Absensi Siswa Tersimpan!"));
+}
+
 // --- TEACHER: AGENDA & MODUL ---
 function submitAgenda() {
     const cp = document.getElementById('gag-cp').value; const tp = document.getElementById('gag-tp').value;
@@ -555,6 +673,11 @@ function submitModul() {
     const c = document.getElementById('gm-logic').value;
     db.ref('schools/'+sch.npsn+'/moduls/'+curU.u).set({ t, m, c, n: curU.n, st: 'PENDING' });
     alert("Modul Berhasil Dikirim!");
+}
+
+
+function approveModul(id) {
+    db.ref('schools/'+sch.npsn+'/moduls/'+id+'/st').set('OK');
 }
 
 // --- TEACHER: EXAM ---
@@ -660,7 +783,78 @@ function printRapor() {
     const mapel = document.getElementById('kr-mapel').value;
     const content = document.getElementById('rekap-print-area').outerHTML;
     const printWin = window.open('', '_blank');
-    printWin.document.write(`<html><head><title>Rapor ${sch.nama}</title><style>body{font-family:sans-serif;padding:40px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:12px;text-align:left}th{background:#f4f4f4}.kop{text-align:center;border-bottom:3px solid #000;margin-bottom:20px}.sig{display:flex;justify-content:space-between;margin-top:50px}</style></head><body>
+    printWin.document.write(`<html><head><title>Rapor ${sch.nama}</title><style>body{font-family:sans-serif;padding:40px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:12px;text-align:left}th{background:#f4f4f4}.kop{text-align:center;border-bottom:3px solid #000;margin-bottom:20px}.sig{display:flex;justify-content:space-between;margin-top:50px}
+/* =========================
+   MOBILE RESPONSIVE FIX
+========================= */
+@media (max-width: 768px) {
+
+    body {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        position: fixed;
+        left: -280px;
+        top: 0;
+        width: 260px;
+        height: 100%;
+        transition: 0.3s ease;
+    }
+
+    .sidebar.show {
+        left: 0;
+    }
+
+    .main {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+
+    .topbar {
+        height: 65px;
+        padding: 0 15px;
+    }
+
+    .container {
+        padding: 15px;
+    }
+
+    .card {
+        padding: 18px;
+        border-radius: 16px;
+    }
+
+    .f-row {
+        grid-template-columns: 1fr !important;
+    }
+
+    .table-res {
+        overflow-x: auto;
+    }
+
+    table {
+        min-width: 600px;
+    }
+
+    #d-clock-txt {
+        font-size: 2.5rem !important;
+        letter-spacing: -1px !important;
+    }
+
+    .btn {
+        font-size: 0.8rem;
+        padding: 12px;
+    }
+
+    #p-avatar {
+        width: 38px;
+        height: 38px;
+        font-size: 1rem;
+    }
+}
+
+</style></head><body>
         <div class="kop"><h2>${sch.nama}</h2><p>Rekapitulasi Nilai Mapel: ${mapel} | Kelas: ${kls}</p></div>
         ${content}
         <div class="sig"><div>Mengetahui,<br>Kepala Sekolah<br><br><br><b>${document.querySelector('.v-kepsek-name').innerText}</b></div><div>Majalengka, ${new Date().toLocaleDateString('id-id')}<br>Guru Kelas<br><br><br><b>${curU.n}</b></div></div>
@@ -687,7 +881,74 @@ function renderStaffTable() {
 function delStaf(id) { if(confirm('Hapus?')) db.ref('schools/'+sch.npsn+'/staff/'+id).remove(); }
 
 // --- UTILS ---
+
+
+function setRekapMapelByKelas() {
+
+    const kls = document.getElementById('kr-kls').value;
+    const sel = document.getElementById('kr-mapel');
+    if(!sel) return;
+
+    sel.innerHTML = '';
+
+    let mapels = [];
+
+    if(kls == 1 || kls == 2) {
+        mapels = ["Matematika","B. Indonesia","Pendidikan Pancasila","Bahasa Sunda","Seni Budaya"];
+    }
+
+    if(kls >= 3 && kls <= 6) {
+        mapels = ["Matematika","B. Indonesia","Pendidikan Pancasila","Bahasa Sunda","Seni Budaya","IPAS","Bahasa Inggris"];
+    }
+
+    mapels.push("PAI");
+    mapels.push("PJOK");
+
+    mapels.forEach(m => {
+        sel.innerHTML += `<option>${m}</option>`;
+    });
+}
+
+function setMapelByRole() {
+
+    const sel = document.getElementById('gn-mapel');
+    if(!sel || !curU) return;
+
+    sel.innerHTML = '';
+
+    let mapels = [];
+
+    if(curU.r === 'GURU12') {
+        mapels = ["Matematika","B. Indonesia","Pendidikan Pancasila","Bahasa Sunda","Seni Budaya"];
+    }
+
+    if(curU.r === 'GURU36') {
+        mapels = ["Matematika","B. Indonesia","Pendidikan Pancasila","Bahasa Sunda","Seni Budaya","IPAS","Bahasa Inggris"];
+    }
+
+    if(curU.r === 'PAI') {
+        mapels = ["PAI"];
+    }
+
+    if(curU.r === 'PJOK') {
+        mapels = ["PJOK"];
+    }
+
+    if(curU.r === 'KEPSEK') {
+        mapels = ["Matematika","B. Indonesia","Pendidikan Pancasila","Bahasa Sunda","Seni Budaya","IPAS","Bahasa Inggris","PAI","PJOK"];
+    }
+
+    mapels.forEach(m => {
+        sel.innerHTML += `<option>${m}</option>`;
+    });
+}
+
 function switchTab(id) {
+
+    if(id.startsWith('k-') && curU.r !== 'KEPSEK') {
+        alert("Akses Ditolak!");
+        return;
+    }
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
     document.getElementById('tab-'+id).classList.add('active');
     document.getElementById('v-title-label').innerText = id.replace('g-','').replace('k-','').toUpperCase();
@@ -708,6 +969,22 @@ setInterval(() => {
     document.querySelectorAll('.global-text-date').forEach(e => e.innerText = d.toLocaleDateString('id-id'));
     document.querySelectorAll('.global-date-inp').forEach(e => e.value = d.toLocaleDateString('id-id'));
 }, 1000);
+
+function toggleMenu() {
+    document.getElementById('sidebar').classList.toggle('show');
+}
+
+function checkMobile() {
+    if (window.innerWidth <= 768) {
+        document.getElementById('mobileMenuBtn').style.display = "block";
+    } else {
+        document.getElementById('mobileMenuBtn').style.display = "none";
+    }
+}
+
+window.addEventListener('resize', checkMobile);
+window.addEventListener('load', checkMobile);
+
 </script>
 </body>
 </html>
