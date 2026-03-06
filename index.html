@@ -1,611 +1,483 @@
 <!doctype html>
 <html lang="id">
- <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>ADMINISTRASI GURU v45 SUPREME - PER KELAS</title>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>ADMINISTRASI GURU v46 FINAL</title>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* --- Variables & Reset --- */
         :root {
-            --primary: #0f172a; --accent: #2563eb; --sidebar: #1e293b;
-            --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
-            --white: #ffffff; --bg: #f8fafc; --shadow: 0 10px 30px -5px rgba(0,0,0,0.1);
+            --primary: #0f172a; --accent: #2563eb; --accent-light: #60a5fa;
+            --sidebar: #111827; --sidebar-hover: #1f2937;
+            --success: #059669; --danger: #dc2626; --warning: #d97706;
+            --white: #ffffff; --bg-main: #f3f4f6; --bg-card: #ffffff;
+            --text-main: #1f293b; --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --radius: 10px; --radius-lg: 16px;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body { height: 100%; width: 100%; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); display: flex; color: var(--primary); }
-        
-        .u-screen { position: fixed; inset: 0; background: var(--primary); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
-        .u-glass { background: white; padding: 35px; border-radius: 30px; width: 100%; max-width: 450px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
-        .u-glass h2 { font-weight: 900; margin-bottom: 10px; color: var(--primary); }
-        .u-glass p { color: #64748b; margin-bottom: 20px; font-size: 0.9rem; }
-        .u-glass input { width: 100%; padding: 12px; margin-bottom: 10px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 0.95rem; }
-        .u-glass button { width: 100%; padding: 14px; margin-top: 10px; }
-        .u-glass select { width: 100%; padding: 12px; margin-bottom: 10px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 0.95rem; background: white; }
-        .hidden { display: none !important; }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        html, body { height: 100%; width: 100%; overflow: hidden; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg-main); color: var(--text-main); display: flex; }
 
-        .sidebar { width: 280px; background: var(--sidebar); color: white; height: 100vh; position: fixed; display: flex; flex-direction: column; z-index: 1000; overflow-y: auto; }
-        .sidebar-header { padding: 35px 25px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .sidebar-header h3 { font-size: 1.2rem; margin-bottom: 8px; }
-        .rombel-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 15px 0; }
-        .rombel-btn { padding: 8px; border: 2px solid rgba(255,255,255,0.2); background: transparent; color: white; border-radius: 10px; cursor: pointer; font-weight: 800; font-size: 0.75rem; transition: all 0.2s; }
-        .rombel-btn.active { background: var(--accent); border-color: var(--accent); }
-        .rombel-btn:hover { border-color: var(--accent); }
-        
-        .m-lbl { font-size: 0.65rem; color: #64748b; text-transform: uppercase; padding: 20px 25px 8px; font-weight: 800; letter-spacing: 1.5px; }
-        .m-item { display: flex; align-items: center; padding: 13px 25px; color: #94a3b8; cursor: pointer; border-left: 4px solid transparent; font-size: 0.9rem; }
-        .m-item i { width: 28px; font-size: 1rem; margin-right: 8px; }
-        .m-item:hover, .m-item.active { background: rgba(59, 130, 246, 0.1); color: var(--accent); border-left-color: var(--accent); }
-        .logout { margin-top: auto; padding: 20px 25px; border-top: 1px solid rgba(255,255,255,0.1); color: var(--danger); font-weight: 900; text-align: center; cursor: pointer; }
+        /* --- Components --- */
+        .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.5); }
 
-        .main { flex: 1; margin-left: 280px; width: calc(100% - 280px); display: flex; flex-direction: column; height: 100vh; }
-        .topbar { background: white; height: 75px; display: flex; align-items: center; justify-content: space-between; padding: 0 35px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); position: sticky; top: 0; z-index: 990; }
-        .topbar h4 { font-size: 1rem; font-weight: 900; color: var(--primary); text-transform: uppercase; margin: 0; }
-        .rombel-badge { background: #dbeafe; color: var(--accent); padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 900; margin-left: 10px; }
-        .topbar-right { display: flex; align-items: center; gap: 20px; }
-        .user-info { text-align: right; }
-        .user-info div:first-child { font-weight: 900; font-size: 0.95rem; }
-        .user-info div:last-child { font-size: 0.65rem; color: var(--accent); font-weight: 800; }
-        #p-avatar { width: 48px; height: 48px; border-radius: 12px; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.3rem; }
+        /* --- Overlay Screens (Login/Setup/GPS) --- */
+        .u-screen { position: fixed; inset: 0; z-index: 10000; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); display: flex; align-items: center; justify-content: center; padding: 20px; transition: opacity 0.3s; }
+        .u-screen.hidden { opacity: 0; pointer-events: none; }
+        .u-glass { background: white; padding: 40px; border-radius: 24px; width: 100%; max-width: 400px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); text-align: center; }
+        .u-glass h2 { font-weight: 800; margin-bottom: 5px; color: var(--primary); }
+        .u-glass p { color: var(--text-muted); margin-bottom: 25px; font-size: 0.9rem; }
+        .u-glass input, .u-glass select { width: 100%; padding: 14px; margin-bottom: 12px; border: 2px solid var(--border); border-radius: var(--radius); font-size: 0.95rem; transition: border-color 0.2s; }
+        .u-glass input:focus, .u-glass select:focus { border-color: var(--accent); outline: none; }
 
-        .container { padding: 30px; max-width: 1400px; margin: 0 auto; width: 100%; overflow-y: auto; height: calc(100vh - 75px); }
+        /* --- Sidebar --- */
+        .sidebar { width: 260px; background: var(--sidebar); color: #fff; height: 100vh; position: fixed; display: flex; flex-direction: column; z-index: 1000; transition: transform 0.3s; }
+        .sidebar-header { padding: 25px 20px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center; }
+        .sidebar-header h3 { font-size: 1.1rem; font-weight: 700; letter-spacing: 0.5px; }
+        .sidebar-header span { font-size: 0.75rem; color: var(--accent-light); font-weight: 600; }
         
-        .card { background: white; border-radius: 20px; box-shadow: var(--shadow); padding: 25px; margin-bottom: 20px; border: 1px solid #f1f5f9; }
-        .card h3 { margin: 0 0 20px 0; font-size: 1.1rem; color: var(--primary); }
-        .card h4 { margin: 15px 0 10px 0; font-size: 0.95rem; color: var(--primary); }
-        
-        .tab-content { display: none; } 
-        .tab-content.active { display: block; animation: fadeInUp 0.3s ease-out; }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .rombel-selector { display: flex; justify-content: center; gap: 8px; margin-top: 15px; }
+        .rombel-btn { padding: 6px 12px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: #9ca3af; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 0.8rem; transition: all 0.2s; }
+        .rombel-btn.active { background: var(--accent); border-color: var(--accent); color: white; }
+        .rombel-btn:hover:not(.active) { border-color: var(--accent); color: white; }
 
-        .f-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        label { font-size: 0.75rem; font-weight: 800; color: #475569; margin-bottom: 8px; display: block; text-transform: uppercase; }
-        input, select, textarea { width: 100%; padding: 11px 14px; border: 2px solid #e2e8f0; border-radius: 12px; font-family: inherit; background: #f8fafc; font-size: 0.95rem; }
-        input:focus, select:focus, textarea:focus { border-color: var(--accent); outline: none; background: white; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        .m-lbl { font-size: 0.65rem; color: #6b7280; text-transform: uppercase; padding: 20px 20px 8px; font-weight: 700; letter-spacing: 1px; }
+        .m-item { display: flex; align-items: center; padding: 12px 20px; color: #9ca3af; cursor: pointer; border-left: 3px solid transparent; font-size: 0.9rem; transition: all 0.2s; }
+        .m-item i { width: 22px; margin-right: 12px; font-size: 1rem; }
+        .m-item:hover, .m-item.active { background: var(--sidebar-hover); color: white; }
+        .m-item.active { border-color: var(--accent); }
+        
+        .logout { margin-top: auto; padding: 15px; }
+        .logout-btn { width: 100%; padding: 10px; background: rgba(239, 68, 68, 0.1); color: #fca5a5; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; transition: all 0.2s; }
+        .logout-btn:hover { background: var(--danger); color: white; }
+
+        /* --- Main Content --- */
+        .main { flex: 1; margin-left: 260px; width: calc(100% - 260px); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        .topbar { background: var(--bg-card); height: 65px; display: flex; align-items: center; justify-content: space-between; padding: 0 25px; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+        .topbar h4 { font-size: 1rem; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+        .badge { padding: 3px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 800; background: #eff6ff; color: var(--accent); }
+        .badge-red { background: #fef2f2; color: var(--danger); }
+        .badge-green { background: #f0fdf4; color: var(--success); }
+        
+        .topbar-right { display: flex; align-items: center; gap: 15px; text-align: right; }
+        .user-info div:first-child { font-weight: 700; font-size: 0.9rem; }
+        .user-info div:last-child { font-size: 0.7rem; color: var(--text-muted); font-weight: 600; }
+        #p-avatar { width: 40px; height: 40px; border-radius: 10px; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; }
+
+        .container { padding: 20px 25px; overflow-y: auto; height: calc(100vh - 65px); }
+        
+        /* --- Cards & Widgets --- */
+        .card { background: var(--bg-card); border-radius: var(--radius-lg); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); padding: 24px; margin-bottom: 20px; border: 1px solid var(--border); }
+        .card h3 { margin: 0 0 20px 0; font-size: 1rem; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+        .card h3 i { color: var(--accent); }
+
+        /* --- Forms & Tables --- */
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 15px; }
+        input, select, textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius); font-family: inherit; background: #f9fafb; font-size: 0.9rem; transition: all 0.2s; }
+        input:focus, select:focus { border-color: var(--accent); background: white; outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
         
         table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-        th { background: #f1f5f9; padding: 12px 14px; text-align: left; font-size: 0.7rem; color: #64748b; text-transform: uppercase; font-weight: 800; }
-        td { padding: 12px 14px; border-bottom: 1px solid #f1f5f9; }
-        tr:last-child td { border-bottom: none; }
-        .table-res { border-radius: 14px; overflow: hidden; border: 1px solid #e2e8f0; margin-bottom: 15px; }
+        th { background: #f9fafb; padding: 10px 12px; text-align: left; font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; border-bottom: 1px solid var(--border); }
+        td { padding: 10px 12px; border-bottom: 1px solid #f3f4f6; }
+        tr:hover td { background: #f9fafb; }
+        .table-res { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-top: 15px; }
 
-        .btn { padding: 11px 20px; border-radius: 11px; font-weight: 800; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 8px; justify-content: center; font-size: 0.9rem; transition: all 0.2s; }
+        /* --- Buttons --- */
+        .btn { padding: 10px 16px; border-radius: var(--radius); font-weight: 700; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; transition: all 0.2s; font-family: inherit; }
         .btn-blue { background: var(--accent); color: white; }
         .btn-green { background: var(--success); color: white; }
         .btn-red { background: var(--danger); color: white; }
-        .btn-warn { background: var(--warning); color: white; }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(0,0,0,0.15); }
-        .btn-xs { padding: 6px 10px; font-size: 0.65rem; border-radius: 8px; }
-
-        .badge { padding: 5px 12px; border-radius: 10px; font-size: 0.65rem; font-weight: 800; }
-        .bg-pending { background: #fff7ed; color: #c2410c; }
-        .bg-ok { background: #f0fdf4; color: #15803d; }
-        .bg-info { background: #dbeafe; color: #0369a1; }
-
-        .exam-section { background: #f1f5f9; padding: 18px; border-radius: 14px; margin-bottom: 18px; }
-        .correction-item { background: #f8fafc; padding: 14px; border-radius: 12px; margin-bottom: 12px; border-left: 4px solid var(--accent); }
-
-        .schedule-row { display: grid; grid-template-columns: 60px 80px 80px 120px 200px 300px 150px; gap: 10px; padding: 12px; background: white; border-radius: 12px; margin-bottom: 10px; border: 1px solid #e2e8f0; align-items: center; }
-        .schedule-row.active { background: #f0fdf4; border-color: var(--success); }
-        .sch-col { font-size: 0.8rem; }
-        .sch-col-title { font-weight: 800; color: var(--primary); }
-        .sch-attendance { max-height: 80px; overflow-y: auto; font-size: 0.7rem; }
-        .sch-attendance-item { padding: 4px 6px; background: #f1f5f9; border-radius: 6px; margin: 2px 0; display: flex; justify-content: space-between; }
-        .sch-attendance-item.hadir { background: #f0fdf4; color: #15803d; }
-        .sch-attendance-item.alpa { background: #fef2f2; color: #b91c1c; }
-
-        @media (max-width: 1024px) {
-            .sidebar { width: 240px; }
-            .main { margin-left: 240px; width: calc(100% - 240px); }
-            .topbar { padding: 0 25px; }
-            .container { padding: 20px; }
-            .schedule-row { grid-template-columns: 50px 70px 1fr; gap: 8px; }
-        }
-
-        @media (max-width: 768px) {
-            body { flex-direction: column; }
-            .sidebar { position: fixed; left: -100%; top: 0; width: 280px; height: 100vh; transition: left 0.3s ease; box-shadow: 2px 0 15px rgba(0,0,0,0.2); }
-            .sidebar.show { left: 0; }
-            .main { margin-left: 0 !important; width: 100% !important; }
-            .topbar { height: 65px; padding: 0 12px; }
-            .topbar h4 { font-size: 0.95rem; }
-            .rombel-badge { font-size: 0.6rem; padding: 3px 8px; margin-left: 5px; }
-            .topbar-right { gap: 12px; }
-            #p-avatar { width: 40px; height: 40px; font-size: 1rem; border-radius: 10px; }
-            .user-info div:first-child { font-size: 0.85rem; }
-            .user-info div:last-child { font-size: 0.6rem; }
-            .container { padding: 12px; height: calc(100vh - 65px); }
-            .card { padding: 14px; margin-bottom: 12px; border-radius: 14px; }
-            .card h3 { font-size: 1rem; margin-bottom: 14px; }
-            .f-row { grid-template-columns: 1fr; gap: 10px; }
-            label { font-size: 0.7rem; margin-bottom: 6px; }
-            input, select, textarea { padding: 10px 12px; font-size: 0.9rem; border-radius: 10px; }
-            table { font-size: 0.8rem; }
-            th { padding: 10px 8px; font-size: 0.65rem; }
-            td { padding: 10px 8px; }
-            .btn { font-size: 0.8rem; padding: 10px 14px; border-radius: 10px; }
-            .btn-xs { padding: 5px 8px; font-size: 0.6rem; }
-            .schedule-row { grid-template-columns: 1fr; }
-        }
-
-        #mobileMenuBtn { display: none; background: transparent; color: var(--primary); border: none; cursor: pointer; padding: 8px; font-size: 1.3rem; }
+        .btn-outline { background: transparent; border: 2px solid var(--border); color: var(--text-main); }
+        .btn:hover { transform: translateY(-1px); filter: brightness(1.1); }
+        .btn-xs { padding: 6px 10px; font-size: 0.75rem; }
         
-        .login-buttons { display: flex; gap: 10px; flex-wrap: wrap; margin: 25px 0; }
-        .login-btn { flex: 1; padding: 14px; border: 2px solid #e2e8f0; border-radius: 14px; background: white; cursor: pointer; text-align: center; transition: all 0.2s; min-width: 140px; font-weight: 800; }
-        .login-btn:hover { border-color: var(--accent); background: #dbeafe; color: var(--accent); }
-        .login-btn.active { border-color: var(--accent); background: var(--accent); color: white; }
+        /* --- Specific Components --- */
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        .comp-btn { padding: 10px 12px; margin: 4px; border-radius: 10px; border: none; cursor: pointer; font-weight: 800; font-size: 0.8rem; transition: all 0.2s; }
-        .comp-btn.selected { box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3); transform: scale(1.05); }
-        .comp-btn:hover { transform: translateY(-2px); }
+        .section-box { background: #f3f4f6; border: 1px solid var(--border); border-radius: var(--radius); padding: 15px; margin-bottom: 15px; }
+        
+        /* --- Toast Notification --- */
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 99999; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background: white; padding: 16px 20px; border-radius: var(--radius); box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 12px; min-width: 280px; transform: translateX(120%); transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); border-left: 4px solid var(--accent); }
+        .toast.show { transform: translateX(0); }
+        .toast.success { border-color: var(--success); }
+        .toast.error { border-color: var(--danger); }
+        
+        /* --- Responsive --- */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); width: 280px; }
+            .sidebar.open { transform: translateX(0); }
+            .main { margin-left: 0; width: 100%; }
+            .topbar { padding: 0 15px; height: 60px; }
+            .container { padding: 15px; height: calc(100vh - 60px); }
+            #mobile-menu-btn { display: flex !important; }
+        }
 
-        .cp-structure-guide { background: linear-gradient(135deg, #dbeafe 0%, #f0fdf4 100%); padding: 15px; border-radius: 12px; border-left: 5px solid var(--accent); margin-bottom: 20px; }
-
-        .progress-bar { width: 100%; height: 8px; background: #e2e8f0; border-radius: 10px; overflow: hidden; margin: 10px 0; }
-        .progress-fill { height: 100%; background: var(--success); transition: width 0.3s; }
-
-        #loading-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 99999; }
-        .loading-spinner { width: 50px; height: 50px; border: 5px solid #e2e8f0; border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
+        #mobile-menu-btn { display: none; background: transparent; border: none; font-size: 1.3rem; color: var(--primary); cursor: pointer; }
+        
+        /* Loading Spinner */
+        .spinner { width: 40px; height: 40px; border: 4px solid #f3f4f6; border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
+        
+        /* Print Style */
+        @media print {
+            body * { visibility: hidden; }
+            #printArea, #printArea * { visibility: visible; }
+            #printArea { position: absolute; left: 0; top: 0; width: 100%; }
+        }
     </style>
-  <style>body { box-sizing: border-box; }</style>
-  <script src="https://cdn.tailwindcss.com/3.4.17" type="text/javascript"></script>
-  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
-  <script src="/_sdk/element_sdk.js" type="text/javascript"></script>
- </head>
- <body>
-  <div id="scr-setup" class="u-screen hidden">
-   <div class="u-glass">
-    <h2>🏫 AKTIVASI SISTEM KEPALA SEKOLAH</h2>
-    <p>Hanya Kepala Sekolah yang dapat mengaktifkan sistem</p><input type="text" id="reg-npsn" placeholder="NPSN (8 Digit)" maxlength="8"> <input type="text" id="reg-nama" placeholder="Nama Sekolah"> <input type="text" id="reg-lat" placeholder="Latitude: -6.835"> <input type="text" id="reg-lng" placeholder="Longitude: 108.241">
-    <p style="font-size:0.8rem; color:#64748b; margin:15px 0;">📍 Contoh Majalengka: -6.835, 108.241</p><button onclick="saveActivation()" class="btn btn-blue">AKTIFKAN SISTEM v45</button>
-    <p style="font-size:0.7rem; color:#64748b; margin-top:15px;">🔒 Hanya sekali saja. Aktivasi tidak akan muncul lagi.</p>
-   </div>
-  </div>
-  <div id="scr-login" class="u-screen hidden">
-   <div class="u-glass">
-    <div style="font-size:3rem; margin-bottom:15px;">
-     📚
-    </div>
-    <h2 id="v-school-name" style="margin:0 0 5px 0; color:var(--accent);">PORTAL GURU</h2>
-    <p id="v-school-npsn" style="font-size:0.75rem; color:#64748b; margin-bottom:15px;"></p><input type="text" id="log-u" placeholder="ID User Account" autofocus> <input type="password" id="log-p" placeholder="Security PIN" onkeypress="if(event.key==='Enter') handleLogin()"> <button onclick="handleLogin()" class="btn btn-blue">LOGIN PORTAL</button>
-    <p style="font-size:0.7rem; color:#64748b; margin-top:15px;">Demo | Guru: guru1/12345 | Kepsek: admin/12345</p>
-   </div>
-  </div>
-  <div id="loading-modal" class="hidden">
-   <div class="loading-spinner"></div>
-  </div>
-  <div id="m-gps" class="u-screen hidden">
-   <div class="u-glass">
-    <div style="font-size:3.5rem; margin-bottom:10px;">
-     📍
-    </div>
-    <h3 style="margin:0 0 15px 0;">CEK LOKASI KEHADIRAN</h3>
-    <p id="t-dist" style="font-size:1.2rem; font-weight:900; color:var(--accent); margin:20px 0;">Mendeteksi lokasi...</p><button id="b-ab-done" class="btn btn-green" style="width:100%; padding:15px; margin-bottom:10px;" onclick="execAbsen()" disabled>KONFIRMASI HADIR</button> <button onclick="closeGps()" class="btn" style="width:100%; background:#e2e8f0; color:var(--primary);">Batal</button>
-   </div>
-  </div>
-  <div id="sidebar" class="sidebar hidden">
-   <div class="sidebar-header">
-    <h3>SUPREME v45</h3>
-    <div id="clk" style="font-size:0.75rem; color:#94a3b8; margin-top:8px;"></div>
-    <p id="p-kelas-label" style="font-size:0.7rem; color:#60a5fa; margin-top:5px; margin-bottom:0;">GURU</p>
-    <div id="rombel-selector-sidebar" class="rombel-selector hidden" style="margin-top:15px;"><button onclick="selectRombel('A')" class="rombel-btn active" data-rombel="A">🔵 A</button> <button onclick="selectRombel('B')" class="rombel-btn" data-rombel="B">🟢 B</button> <button onclick="selectRombel('C')" class="rombel-btn" data-rombel="C">🟡 C</button>
-    </div>
-   </div>
-   <div style="flex:1; overflow-y: auto;">
-    <div onclick="switchTab('dashboard'); document.getElementById('sidebar').classList.remove('show');" class="m-item active">
-     <i class="fa fa-home"></i>Dashboard
-    </div>
-    <div id="menu-area-guru" class="hidden">
-     <p class="m-lbl">📋 Administrasi Guru</p>
-     <div onclick="switchTab('g-jadwal'); document.getElementById('sidebar').classList.remove('show');" class="m-item">
-      <i class="fa fa-calendar-alt"></i>Jadwal Harian
-     </div>
-     <div onclick="switchTab('g-siswa'); document.getElementById('sidebar').classList.remove('show');" class="m-item">
-      <i class="fa fa-user-graduate"></i>Akun Siswa
-     </div>
-     <div onclick="switchTab('g-absen'); document.getElementById('sidebar').classList.remove('show');" class="m-item">
-      <i class="fa fa-calendar-check"></i>Absensi Siswa
-     </div>
-     <div onclick="switchTab('g-agenda'); document.getElementById('sidebar').classList.remove('show');" class="m-item">
-      <i class="fa fa-book"></i>Agenda Harian (CP)
-     </div>
-     <div onclick="switchTab('g-modul'); document.getElementById('sidebar').classList.remove('show');" class="m-item">
-      <i class="fa fa-folder-open"></i>Modul Mingguan
-     </div>
-     <div onclick="switchTab('g-ujian'); document.getElementById('sidebar').classList.remove('show');" class="m-item">
-      <i class="fa fa-file-signature"></i>Buat Soal Ujian
-     </div>
-     <div onclick="switchTab('g-koreksi'); document.getElementById('sidebar').classList.remove('show');" class="m-item">
-      <i class="fa fa-check-circle"></i>Koreksi Jawaban
-     </div>
-     <div onclick="switchTab('g-nilai'); document.getElementById('sidebar').classList.remove('show');" class="m-item">
-      <i class="fa fa-award"></i>Input Nilai
-     </div>
-    </div>
-    <div id="menu-area-kepsek" class="hidden">
-     <p class="m-lbl">👨‍💼 Monitoring Kepsek</p>
-     <div onclick="switchTab('k-absen'); document.getElementById('sidebar').classList.remove('show');" class="m-item">
-      <i class="fa fa-user-clock"></i>Ceklok Guru
-     </div>
-     <div onclick="switchTab('k-agenda'); document.getElementById('sidebar').classList.remove('show');" class="m-item">
-      <i class="fa fa-check-double"></i>Review Agenda CP
-     </div>
-     <div onclick="switchTab('k-modul'); document.getElementById('sidebar').classList.remove('show');" class="m-item">
-      <i class="fa fa-paste"></i>Review Modul
-     </div>
-     <div onclick="switchTab('k-rekap'); document.getElementById('sidebar').classList.remove('show');" class="m-item">
-      <i class="fa fa-list-ol"></i>Rekap Nilai
-     </div>
-     <p class="m-lbl">⚙️ Pengaturan</p>
-     <div onclick="switchTab('k-staf'); document.getElementById('sidebar').classList.remove('show');" class="m-item" style="color:var(--success);">
-      <i class="fa fa-users-cog"></i>Data Staf &amp; PIN
-     </div>
-    </div>
-   </div>
-   <div onclick="location.reload()" class="logout">
-    <i class="fa fa-sign-out"></i> LOGOUT
-   </div>
-  </div>
-  <div id="main-ui" class="main hidden">
-   <div class="topbar"><button onclick="toggleMenu()" class="btn" id="mobileMenuBtn"><i class="fa fa-bars"></i></button>
-    <div style="display:flex; align-items:center;">
-     <h4 id="v-title-label" style="margin:0;">DASHBOARD</h4>
-     <div id="rombel-badge-topbar" class="rombel-badge hidden">
-      ROMBEL A
-     </div>
-    </div>
-    <div class="topbar-right">
-     <div class="user-info">
-      <div id="p-name">
-       ...
-      </div>
-      <div id="p-role">
-       GURU
-      </div>
-     </div>
-     <div id="p-avatar">
-      ?
-     </div>
-    </div>
-   </div>
-   <div class="container">
-    <div id="tab-dashboard" class="tab-content active">
-     <div class="card" style="background: linear-gradient(135deg, var(--primary) 0%, #1e40af 100%); color:white; text-align:center; padding:40px 25px;">
-      <h4 id="d-date-txt" style="color:rgba(255,255,255,0.8); margin:0 0 15px 0;">Tgl Hari Ini</h4>
-      <h1 id="d-clock-txt" style="font-size:4.5rem; margin:10px 0; font-weight:900;">00:00:00</h1>
-      <p id="p-mapel-label" style="opacity:0.8; margin:15px 0 20px 0; font-size:0.9rem;">📍 Radius 200m | Aktifkan GPS</p><button onclick="openGps()" class="btn btn-green" style="width:100%; padding:14px; font-size:0.95rem;"><i class="fa fa-map-marker-alt"></i> CEKLOK HADIR SEKARANG</button>
-     </div>
-     <div id="k-stats-row" class="hidden" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap:15px;">
-      <div class="card" style="border-left:5px solid var(--accent); padding:15px;">
-       <p style="margin:0 0 8px 0; font-size:0.8rem; color:#64748b;">Guru Hadir</p>
-       <h2 id="sk-absen" style="margin:0; font-size:2rem; color:var(--accent);">0</h2>
-      </div>
-      <div class="card" style="border-left:5px solid var(--warning); padding:15px;">
-       <p style="margin:0 0 8px 0; font-size:0.8rem; color:#64748b;">Agenda CP Pending</p>
-       <h2 id="sk-agenda" style="margin:0; font-size:2rem; color:var(--warning);">0</h2>
-      </div>
-      <div class="card" style="border-left:5px solid var(--danger); padding:15px;">
-       <p style="margin:0 0 8px 0; font-size:0.8rem; color:#64748b;">Modul Belum</p>
-       <h2 id="sk-modul" style="margin:0; font-size:2rem; color:var(--danger);">0</h2>
-      </div>
-     </div>
-    </div><!-- TAB JADWAL HARIAN -->
-    <div id="tab-g-jadwal" class="tab-content">
-     <div class="card">
-      <h3>📅 Jadwal Harian Guru <span id="jadwal-rombel-label" class="rombel-badge" style="margin-left:10px;"></span></h3>
-      <p style="font-size:0.8rem; color:#64748b; margin-bottom:15px;">Jadwal harian dengan absensi siswa real-time &amp; catatan per jam</p>
-      <div style="margin-bottom:20px; display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:10px;">
-       <div><label>📅 Tanggal</label> <input type="text" id="jdw-date" class="global-date-inp" readonly>
-       </div>
-      </div>
-      <div style="background:#dbeafe; padding:15px; border-radius:12px; margin-bottom:15px; border-left:4px solid var(--accent);">
-       <h4 style="margin-top:0; color:var(--accent); font-weight:900;">⬇️ SETUP JADWAL HARIAN</h4>
-       <p style="font-size:0.75rem; color:#64748b; margin:10px 0 15px 0;">Tambahkan jam pelajaran untuk hari ini</p>
-       <div style="display:grid; grid-template-columns: 60px 80px 1fr 1fr 1fr auto; gap:10px; margin-bottom:10px;"><input type="number" id="jdw-jam" min="1" max="8" placeholder="Jam (1-8)" style="font-size:0.85rem;"> <input type="time" id="jdw-waktu" style="font-size:0.85rem;"> <select id="jdw-kelas" style="font-size:0.85rem;"><option>-- Kelas --</option></select> <select id="jdw-mapel" style="font-size:0.85rem;"><option>-- Mapel --</option></select> <input type="text" id="jdw-materi" placeholder="Materi/KD" style="font-size:0.85rem;"> <button onclick="addScheduleRow()" class="btn btn-green btn-xs">➕ TAMBAH</button>
-       </div>
-      </div>
-      <div style="margin-bottom:15px;">
-       <h4>⏰ JADWAL HARI INI</h4>
-       <div style="background:#f8fafc; border:2px solid #e2e8f0; border-radius:14px; padding:15px;">
-        <div id="schedule-container" style="display:grid; gap:10px;">
-         <p style="color:#64748b; font-size:0.8rem; text-align:center;">Belum ada jadwal. Setup di atas ↑</p>
+</head>
+<body>
+
+    <div id="toast-container"></div>
+
+    <!-- Setup Screen -->
+    <div id="scr-setup" class="u-screen hidden">
+        <div class="u-glass">
+            <h2>🏫 Aktivasi Sistem</h2>
+            <p>Masukkan data sekolah untuk memulai</p>
+            <input type="text" id="reg-npsn" placeholder="NPSN (8 Digit)" maxlength="8">
+            <input type="text" id="reg-nama" placeholder="Nama Sekolah">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <input type="text" id="reg-lat" placeholder="Latitude">
+                <input type="text" id="reg-lng" placeholder="Longitude">
+            </div>
+            <button onclick="saveActivation()" class="btn btn-blue" style="width: 100%; margin-top: 10px;">Aktifkan Sistem</button>
         </div>
-       </div>
-      </div><button onclick="saveScheduleDay()" class="btn btn-blue" style="width:100%;"><i class="fa fa-save"></i> SIMPAN JADWAL HARI INI</button>
-     </div>
-    </div><!-- TAB SISWA -->
-    <div id="tab-g-siswa" class="tab-content">
-     <div class="card">
-      <h3>👤 Kelola Akun Siswa <span id="siswa-rombel-label" class="rombel-badge" style="margin-left:10px;"></span></h3>
-      <p style="font-size:0.8rem; color:#64748b; margin-bottom:15px;">Tambah siswa satu per satu atau import dari Excel</p>
-      <div style="background:#f0fdf4; padding:15px; border-radius:12px; margin-bottom:15px; border-left:4px solid var(--success);">
-       <h4 style="margin-top:0; color:#15803d;">⬇️ IMPORT DARI EXCEL</h4>
-       <p style="font-size:0.75rem; color:#64748b; margin:10px 0;">Unduh template → Isi data siswa → Upload kembali</p>
-       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;"><button onclick="downloadStudentTemplate()" class="btn btn-green" style="width:100%;"><i class="fa fa-download"></i> Template Excel</button> <input type="file" id="file-siswa-inp" accept=".xlsx, .xls" onchange="importSiswaExcel()" style="display:none;"> <button onclick="document.getElementById('file-siswa-inp').click()" class="btn btn-blue" style="width:100%;"><i class="fa fa-upload"></i> Upload Excel</button>
-       </div>
-      </div>
-      <div style="border-top:2px solid #e2e8f0; padding-top:15px; margin-top:15px;">
-       <h4>➕ TAMBAH SISWA MANUAL</h4>
-       <div class="f-row"><input type="text" id="gs-nama" placeholder="Nama Lengkap Siswa"> <input type="text" id="gs-user" placeholder="Username Login">
-       </div>
-       <div class="f-row"><input type="text" id="gs-pass" placeholder="Password">
-       </div><button onclick="addStudent()" class="btn btn-blue" style="width:100%;"><i class="fa fa-plus"></i> DAFTARKAN SISWA</button>
-      </div>
-      <div class="table-res" style="margin-top:15px;">
-       <table>
-        <thead>
-         <tr>
-          <th>User</th>
-          <th>Nama</th>
-          <th>Rombel</th>
-          <th>Pass</th>
-          <th>Aksi</th>
-         </tr>
-        </thead>
-        <tbody id="tbl-gs-list"></tbody>
-       </table>
-      </div>
-     </div>
-    </div><!-- TAB ABSEN SISWA -->
-    <div id="tab-g-absen" class="tab-content">
-     <div class="card">
-      <h3>📋 Absensi Siswa Harian <span id="absen-rombel-label" class="rombel-badge" style="margin-left:10px;"></span></h3>
-      <div class="f-row"><input type="text" class="global-date-inp" readonly>
-      </div>
-      <div class="table-res">
-       <table>
-        <thead>
-         <tr>
-          <th>Nama Siswa</th>
-          <th>Status (H/S/I/A)</th>
-         </tr>
-        </thead>
-        <tbody id="tbl-ga-list"></tbody>
-       </table>
-      </div><button onclick="saveAbsenSiswa()" class="btn btn-green" style="width:100%; margin-top:15px;"><i class="fa fa-save"></i> SIMPAN ABSENSI</button>
-     </div>
-    </div><!-- TAB AGENDA CP -->
-    <div id="tab-g-agenda" class="tab-content">
-     <div class="cp-structure-guide">
-      <h4 style="margin-top:0; color:var(--accent); font-weight:900;">📋 STRUKTUR CP &amp; TP KURIKULUM MERDEKA</h4>
-      <p style="font-size:0.75rem; color:#64748b; margin:10px 0; margin-bottom:0;"><strong>📌 PANDUAN:</strong> Isi setiap elemen sesuai standar Kurikulum Merdeka</p>
-     </div>
-     <div class="card">
-      <h3>📝 Agenda Harian Guru - CP &amp; TP <span id="agenda-rombel-label" class="rombel-badge" style="margin-left:10px;"></span></h3>
-      <div class="f-row">
-       <div><label>📅 Tanggal</label> <input type="text" class="global-date-inp" readonly>
-       </div>
-       <div><label>📚 Mata Pelajaran</label> <select id="gag-mapel-sel" style="margin-bottom:0;"> <option>-- Pilih Mapel --</option> </select>
-       </div>
-      </div>
-      <div class="exam-section" style="background:#f0fdf4; border-left:4px solid var(--success);">
-       <h4 style="color:#15803d; margin-top:0;">1️⃣ ELEMEN PEMBELAJARAN</h4><select id="gag-elemen" style="margin-bottom:0;"> <option value="">-- Pilih Elemen --</option> <option value="Pemahaman Konsep">🧠 Pemahaman Konsep</option> <option value="Penerapan Prosedur">⚙️ Penerapan Prosedur</option> <option value="Penalaran &amp; Kreativitas">💡 Penalaran &amp; Kreativitas</option> <option value="Komunikasi &amp; Kolaborasi">🤝 Komunikasi &amp; Kolaborasi</option> <option value="Kesadaran Sosial">❤️ Kesadaran Sosial</option> </select>
-      </div>
-      <div class="exam-section" style="background:#fef2f2; border-left:4px solid var(--danger);">
-       <h4 style="color:#b91c1c; margin-top:0;">2️⃣ CAPAIAN PEMBELAJARAN (CP)</h4><textarea id="gag-cp" rows="3" placeholder="Target pembelajaran..." style="margin-bottom:0;"></textarea>
-      </div>
-      <div class="exam-section" style="background:#f5f3ff; border-left:4px solid #8b5cf6;">
-       <h4 style="color:#7c3aed; margin-top:0;">3️⃣ KOMPETENSI (BLOOM)</h4>
-       <div class="f-row" style="gap:8px; margin-bottom:10px; grid-template-columns: repeat(2, 1fr);"><button onclick="selectKompetensi('C1 - Mengingat')" class="comp-btn" style="background:#e0e7ff; color:#3730a3;">C1 Ingat</button> <button onclick="selectKompetensi('C2 - Memahami')" class="comp-btn" style="background:#ddd6fe; color:#5b21b6;">C2 Pahami</button> <button onclick="selectKompetensi('C3 - Menerapkan')" class="comp-btn" style="background:#d8d5f8; color:#6d28d9;">C3 Terapkan</button> <button onclick="selectKompetensi('C4 - Menganalisis')" class="comp-btn" style="background:#e5d4ff; color:#7c3aed;">C4 Analisis</button> <button onclick="selectKompetensi('C5 - Mengevaluasi')" class="comp-btn" style="background:#f3e8ff; color:#a855f7;">C5 Evaluasi</button> <button onclick="selectKompetensi('C6 - Menciptakan')" class="comp-btn" style="background:#faf5ff; color:#d946ef;">C6 Ciptakan</button>
-       </div><input type="text" id="gag-kompetensi" readonly style="background:#f5f3ff; font-weight:800; text-align:center;" placeholder="Pilih kompetensi...">
-      </div>
-      <div class="exam-section" style="background:#fffbeb; border-left:4px solid var(--warning);">
-       <h4 style="color:#b45309; margin-top:0;">4️⃣ LINGKUP MATERI</h4><textarea id="gag-lingkup" rows="3" placeholder="Konten utama..." style="margin-bottom:0;"></textarea>
-      </div>
-      <div class="exam-section" style="background:#f0fdf4; border-left:4px solid var(--success);">
-       <h4 style="color:#15803d; margin-top:0;">5️⃣ TUJUAN PEMBELAJARAN (TP)</h4><textarea id="gag-tp" rows="3" placeholder="Target spesifik hari ini..." style="margin-bottom:0;"></textarea>
-      </div><button onclick="submitAgenda()" class="btn btn-blue" style="width:100%; margin-top:15px; padding:14px;"><i class="fa fa-paper-plane"></i> AJUKAN AGENDA KE KEPSEK</button>
-     </div>
-    </div><!-- TAB MODUL -->
-    <div id="tab-g-modul" class="tab-content">
-     <div class="card">
-      <h3>📚 Modul Ajar Mingguan <span id="modul-rombel-label" class="rombel-badge" style="margin-left:10px;"></span></h3><input type="text" id="gm-title" placeholder="Judul Modul" style="margin-bottom:10px;"> <select id="gm-mapel" style="margin-bottom:10px;"> <option>-- Pilih Mata Pelajaran --</option> </select> <textarea id="gm-logic" rows="6" placeholder="Langkah-langkah Pembelajaran..."></textarea> <button onclick="submitModul()" class="btn btn-green" style="width:100%; margin-top:15px;"><i class="fa fa-upload"></i> KIRIM KE KEPSEK</button>
-     </div>
-    </div><!-- TAB UJIAN -->
-    <div id="tab-g-ujian" class="tab-content">
-     <div class="card">
-      <h3>📖 Bank Soal Ujian <span id="ujian-rombel-label" class="rombel-badge" style="margin-left:10px;"></span></h3>
-      <div style="background:#fef3c7; padding:15px; border-radius:12px; margin-bottom:15px; border-left:4px solid var(--warning);">
-       <h4 style="margin-top:0; color:#b45309;">⬇️ IMPORT SOAL DARI EXCEL</h4>
-       <p style="font-size:0.75rem; color:#64748b; margin:10px 0;">Format: Pertanyaan | Tipe Soal | Opsi A-D | Kunci Jawaban</p>
-       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;"><button onclick="downloadExamTemplate()" class="btn btn-warn" style="width:100%;"><i class="fa fa-download"></i> Template Soal</button> <input type="file" id="file-soal-inp" accept=".xlsx, .xls" onchange="importSoalExcel(event)" style="display:none;"> <button onclick="document.getElementById('file-soal-inp').click()" class="btn btn-blue" style="width:100%;"><i class="fa fa-upload"></i> Upload Soal</button>
-       </div>
-      </div>
-      <div style="border-top:2px solid #e2e8f0; padding-top:15px; margin-top:15px;">
-       <h4>➕ TAMBAH SOAL MANUAL</h4><input type="text" id="ex-header" placeholder="Judul Ujian" style="margin-bottom:10px;">
-       <div class="f-row"><select id="ex-jenis"><option value="UH">Ulangan Harian (UH)</option><option value="STS">STS</option><option value="SAS">SAS/SAT</option></select> <select id="ex-mapel" style="margin-bottom:0;"> <option>-- Mata Pelajaran --</option> </select>
-       </div>
-       <div class="f-row"><select id="ex-type" onchange="toggleExType()"><option value="PG">Pilihan Ganda</option><option value="ES">Essay</option></select>
-       </div>
-       <div style="background:#f1f5f9; padding:15px; border-radius:12px; margin-bottom:15px;"><textarea id="ex-q" rows="3" placeholder="Butir Pertanyaan..." style="margin-bottom:10px;"></textarea>
-        <div id="ex-pg-ops"><input type="text" id="ex-oa" placeholder="Opsi A" style="margin-bottom:5px;"> <input type="text" id="ex-ob" placeholder="Opsi B" style="margin-bottom:5px;"> <input type="text" id="ex-oc" placeholder="Opsi C" style="margin-bottom:5px;"> <input type="text" id="ex-od" placeholder="Opsi D" style="margin-bottom:5px;">
-        </div><input type="text" id="ex-ans" placeholder="Kunci Jawaban">
-       </div><button onclick="saveQuestion()" class="btn btn-blue" style="width:100%;"><i class="fa fa-save"></i> SIMPAN SOAL</button>
-      </div>
-      <div class="table-res" style="margin-top:15px;">
-       <table>
-        <thead>
-         <tr>
-          <th>Soal</th>
-          <th>Jenis</th>
-          <th>Tipe</th>
-          <th>Aksi</th>
-         </tr>
-        </thead>
-        <tbody id="tbl-ex-list"></tbody>
-       </table>
-      </div><button onclick="publishExam()" class="btn btn-green" style="width:100%; margin-top:10px;"><i class="fa fa-share-nodes"></i> PUBLISH KE SISWA</button>
-     </div>
-    </div><!-- TAB KOREKSI -->
-    <div id="tab-g-koreksi" class="tab-content">
-     <div class="card">
-      <h3>✏️ Koreksi Jawaban Siswa <span id="koreksi-rombel-label" class="rombel-badge" style="margin-left:10px;"></span></h3>
-      <div class="f-row"><select id="kor-exam-sel" onchange="loadExamAnswers()"><option value="">-- Pilih Ujian --</option></select> <select id="kor-siswa-sel" onchange="loadStudentAnswers()"><option value="">-- Pilih Siswa --</option></select>
-      </div>
-      <div id="kor-detail-area" style="display:none;">
-       <div class="exam-section">
-        <h4 id="kor-exam-title">Nama Ujian</h4>
-        <p id="kor-exam-info" style="font-size:0.75rem; color:#64748b; margin:0;"></p>
-       </div>
-       <div id="kor-questions-area"></div>
-       <div class="card" style="background:#f0fdf4; border-left:4px solid var(--success);">
-        <h4>📊 Nilai Akhir</h4><input type="number" id="kor-nilai-akhir" min="0" max="100" value="0" style="margin-bottom:10px;"> <select id="kor-status" style="margin-bottom:10px;"><option value="TUNTAS">TUNTAS (≥75)</option><option value="REMEDIAL">REMEDIAL (&lt;75)</option></select> <button onclick="saveCorrection()" class="btn btn-green" style="width:100%;"><i class="fa fa-save"></i> SIMPAN KOREKSI</button>
-       </div>
-      </div>
-     </div>
-    </div><!-- TAB NILAI -->
-    <div id="tab-g-nilai" class="tab-content">
-     <div class="card">
-      <h3>📊 Input Nilai Siswa <span id="nilai-rombel-label" class="rombel-badge" style="margin-left:10px;"></span></h3>
-      <div class="f-row"><select id="gn-mapel" onchange="fetchSiswaNilai()"> <option>-- Pilih Mata Pelajaran --</option> </select>
-      </div>
-      <div style="margin-bottom:15px; display:grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap:10px;">
-       <div>
-        <label>Tugas Penilaian (TP)</label>
-       </div>
-       <div>
-        <label>STS Semester 1</label>
-       </div>
-       <div>
-        <label>STS Semester 2</label>
-       </div>
-       <div>
-        <label>SAS</label>
-       </div>
-       <div>
-        <label>SAT</label>
-       </div>
-      </div>
-      <div class="table-res">
-       <table>
-        <thead>
-         <tr>
-          <th>Siswa</th>
-          <th>TP</th>
-          <th>STS S1</th>
-          <th>STS S2</th>
-          <th>SAS</th>
-          <th>SAT</th>
-         </tr>
-        </thead>
-        <tbody id="tbl-gn-list"></tbody>
-       </table>
-      </div><button onclick="saveGrades()" class="btn btn-green" style="width:100%; margin-top:15px;"><i class="fa fa-save"></i> SIMPAN SEMUA NILAI</button>
-     </div>
-    </div><!-- TAB KEPSEK ABSEN -->
-    <div id="tab-k-absen" class="tab-content">
-     <div class="card">
-      <h3>👥 Monitoring Ceklok Guru</h3>
-      <div class="table-res">
-       <table>
-        <thead>
-         <tr>
-          <th>Guru</th>
-          <th>Status</th>
-          <th>Jam</th>
-          <th>Lokasi</th>
-          <th>Aksi</th>
-         </tr>
-        </thead>
-        <tbody id="tbl-k-abs"></tbody>
-       </table>
-      </div>
-     </div>
-    </div><!-- TAB KEPSEK AGENDA -->
-    <div id="tab-k-agenda" class="tab-content">
-     <div class="card">
-      <h3>📋 Review Agenda CP &amp; TP</h3>
-      <p style="font-size:0.8rem; color:#64748b; margin-bottom:15px;">Verifikasi struktur CP &amp; TP yang diajukan guru</p>
-      <div class="table-res">
-       <table>
-        <thead>
-         <tr>
-          <th>Tgl</th>
-          <th>Guru / Mapel</th>
-          <th>Rombel</th>
-          <th>Kompetensi</th>
-          <th>TP (Ringkas)</th>
-          <th>Status</th>
-          <th>Aksi</th>
-         </tr>
-        </thead>
-        <tbody id="tbl-k-rev-agenda"></tbody>
-       </table>
-      </div>
-     </div>
-    </div><!-- TAB KEPSEK MODUL -->
-    <div id="tab-k-modul" class="tab-content">
-     <div class="card">
-      <h3>📚 Review Modul Ajar</h3>
-      <div class="table-res">
-       <table>
-        <thead>
-         <tr>
-          <th>Guru</th>
-          <th>Tema/Mapel</th>
-          <th>Rombel</th>
-          <th>Status</th>
-          <th>Aksi</th>
-         </tr>
-        </thead>
-        <tbody id="tbl-k-rev-modul-body"></tbody>
-       </table>
-      </div>
-     </div>
-    </div><!-- TAB KEPSEK REKAP -->
-    <div id="tab-k-rekap" class="tab-content">
-     <div class="card">
-      <h3>📈 Rekapitulasi Nilai</h3>
-      <div class="f-row"><select id="kr-kelas"> <option value="KELAS1">KELAS 1</option> <option value="KELAS2">KELAS 2</option> <option value="KELAS3">KELAS 3</option> <option value="KELAS4">KELAS 4</option> <option value="KELAS5">KELAS 5</option> <option value="KELAS6">KELAS 6</option> </select> <select id="kr-mapel"></select> <button onclick="renderRekap()" class="btn btn-blue">TAMPILKAN</button>
-      </div>
-      <div class="table-res">
-       <table id="rekap-print-area">
-        <thead>
-         <tr>
-          <th>Nama</th>
-          <th>Kelas</th>
-          <th>Rata-rata</th>
-          <th>Ket</th>
-         </tr>
-        </thead>
-        <tbody id="tbl-k-rekap-body"></tbody>
-       </table>
-      </div><button onclick="printRapor()" class="btn btn-warn" style="width:100%; margin-top:15px;"><i class="fa fa-print"></i> CETAK REKAP</button>
-     </div>
-    </div><!-- TAB KEPSEK STAF -->
-    <div id="tab-k-staf" class="tab-content">
-     <div class="card" style="background:#f0f9ff; border:1px solid #bae6fd;">
-      <h4 style="margin:0 0 10px 0; font-weight:800; color:var(--accent);">⚙️ PENGATURAN GPS SEKOLAH</h4>
-      <p style="font-size:0.8rem; margin-bottom:15px; color:#64748b;">Update koordinat sekolah untuk Ceklok Guru</p>
-      <div class="f-row"><input type="text" id="conf-lat" placeholder="Latitude"> <input type="text" id="conf-lng" placeholder="Longitude">
-      </div><button onclick="updateConfig()" class="btn btn-green" style="width:100%;"><i class="fa fa-save"></i> SIMPAN KOORDINAT</button>
-     </div>
-     <div class="card">
-      <h3>👨‍💼 Kelola Data Staf Guru</h3><input type="text" id="ks-n" placeholder="Nama Lengkap" style="margin-bottom:10px;"> <input type="text" id="ks-nip" placeholder="NIP" style="margin-bottom:10px;"> <input type="text" id="ks-u" placeholder="ID Akun Login" style="margin-bottom:10px;"> <input type="text" id="ks-p" placeholder="Security PIN" style="margin-bottom:10px;"> <input type="text" id="ks-wa" placeholder="No WA (62...)" style="margin-bottom:10px;"> <select id="ks-r" style="margin-bottom:10px;"> <option value="KELAS1">GURU KELAS 1</option> <option value="KELAS2">GURU KELAS 2</option> <option value="KELAS3">GURU KELAS 3</option> <option value="KELAS4">GURU KELAS 4</option> <option value="KELAS5">GURU KELAS 5</option> <option value="KELAS6">GURU KELAS 6</option> <option value="PAI">GURU PAI</option> <option value="PJOK">GURU PJOK</option> <option value="KEPSEK">KEPALA SEKOLAH</option> </select> <input type="text" id="ks-rombel" placeholder="Rombel (A,B,C atau A,B atau SEMUA)" style="margin-bottom:10px;"> <button onclick="saveStaff()" class="btn btn-blue" style="width:100%;"><i class="fa fa-save"></i> SIMPAN DATA STAF</button>
-      <div class="table-res" style="margin-top:15px;">
-       <table>
-        <thead>
-         <tr>
-          <th>Nama</th>
-          <th>ID</th>
-          <th>PIN</th>
-          <th>Rombel</th>
-          <th>Aksi</th>
-         </tr>
-        </thead>
-        <tbody id="tbl-ks-list"></tbody>
-       </table>
-      </div>
-     </div>
     </div>
-   </div>
-  </div>
-  <script>
+
+    <!-- Login Screen -->
+    <div id="scr-login" class="u-screen hidden">
+        <div class="u-glass">
+            <div style="width: 60px; height: 60px; background: #eff6ff; border-radius: 16px; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 1.8rem;">
+                <i class="fas fa-user-shield"></i>
+            </div>
+            <h2 id="v-school-name">Portal Guru</h2>
+            <p id="v-school-npsn">Memuat data...</p>
+            <input type="text" id="log-u" placeholder="ID User / NIP">
+            <input type="password" id="log-p" placeholder="Security PIN" onkeypress="if(event.key==='Enter') handleLogin()">
+            <button onclick="handleLogin()" class="btn btn-blue" style="width: 100%; margin-top: 10px;"><i class="fas fa-sign-in-alt"></i> Login</button>
+            <p style="margin-top: 15px; font-size: 0.75rem; color: var(--text-muted);">Demo: admin/12345 | guru1/12345</p>
+        </div>
+    </div>
+
+    <!-- GPS Modal -->
+    <div id="m-gps" class="u-screen hidden">
+        <div class="u-glass">
+            <div style="font-size: 3rem; color: var(--accent); margin-bottom: 10px;"><i class="fas fa-map-marker-alt"></i></div>
+            <h3 style="margin: 0 0 5px 0;">Verifikasi Lokasi</h3>
+            <div id="gps-status" style="margin: 20px 0;">
+                <div class="spinner" style="margin: 0 auto;"></div>
+            </div>
+            <button id="b-ab-done" class="btn btn-green" style="width: 100%;" onclick="execAbsen()" disabled>Konfirmasi Hadir</button>
+            <button onclick="closeGps()" class="btn btn-outline" style="width: 100%; margin-top: 10px;">Batal</button>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div id="sidebar" class="sidebar hidden">
+        <div class="sidebar-header">
+            <h3>SUPREME <span>v46</span></h3>
+            <div id="clk" style="font-size: 0.75rem; color: #6b7280; margin-top: 5px;">--:--</div>
+        </div>
+        
+        <div style="padding: 15px;">
+            <div id="rombel-selector-sidebar" class="rombel-selector hidden">
+                <button onclick="selectRombel('A')" class="rombel-btn active" data-rombel="A">A</button>
+                <button onclick="selectRombel('B')" class="rombel-btn" data-rombel="B">B</button>
+                <button onclick="selectRombel('C')" class="rombel-btn" data-rombel="C">C</button>
+            </div>
+        </div>
+
+        <div style="flex: 1; overflow-y: auto;">
+            <div onclick="switchTab('dashboard')" class="m-item active"><i class="fas fa-th-large"></i>Dashboard</div>
+            
+            <div id="menu-guru" class="hidden">
+                <div class="m-lbl">Administrasi</div>
+                <div onclick="switchTab('g-jadwal')" class="m-item"><i class="fas fa-calendar"></i>Jadwal Harian</div>
+                <div onclick="switchTab('g-siswa')" class="m-item"><i class="fas fa-users"></i>Data Siswa</div>
+                <div onclick="switchTab('g-absen')" class="m-item"><i class="fas fa-user-check"></i>Absensi</div>
+                <div onclick="switchTab('g-agenda')" class="m-item"><i class="fas fa-book-open"></i>Agenda CP</div>
+                <div onclick="switchTab('g-modul')" class="m-item"><i class="fas fa-file-alt"></i>Modul Ajar</div>
+                <div onclick="switchTab('g-ujian')" class="m-item"><i class="fas fa-edit"></i>Bank Soal</div>
+                <div onclick="switchTab('g-koreksi')" class="m-item"><i class="fas fa-check-double"></i>Koreksi</div>
+                <div onclick="switchTab('g-nilai')" class="m-item"><i class="fas fa-chart-line"></i>Input Nilai</div>
+            </div>
+
+            <div id="menu-kepsek" class="hidden">
+                <div class="m-lbl">Monitoring</div>
+                <div onclick="switchTab('k-absen')" class="m-item"><i class="fas fa-user-clock"></i>Ceklok Guru</div>
+                <div onclick="switchTab('k-agenda')" class="m-item"><i class="fas fa-tasks"></i>Review Agenda</div>
+                <div onclick="switchTab('k-modul')" class="m-item"><i class="fas fa-folder"></i>Review Modul</div>
+                <div onclick="switchTab('k-rekap')" class="m-item"><i class="fas fa-database"></i>Rekap Nilai</div>
+                <div class="m-lbl">Pengaturan</div>
+                <div onclick="switchTab('k-staf')" class="m-item"><i class="fas fa-cogs"></i>Data Staf</div>
+            </div>
+        </div>
+
+        <div class="logout">
+            <button onclick="location.reload()" class="logout-btn"><i class="fas fa-power-off"></i> Keluar</button>
+        </div>
+    </div>
+
+    <!-- Main UI -->
+    <div id="main-ui" class="main hidden">
+        <div class="topbar">
+            <button id="mobile-menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+            <h4><span id="v-title-label">Dashboard</span> <span id="rombel-badge-topbar" class="badge hidden">A</span></h4>
+            <div class="topbar-right">
+                <div class="user-info">
+                    <div id="p-name">Nama</div>
+                    <div id="p-role">Role</div>
+                </div>
+                <div id="p-avatar">U</div>
+            </div>
+        </div>
+
+        <div class="container">
+            <!-- Dashboard -->
+            <div id="tab-dashboard" class="tab-content active">
+                <div class="card" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: white; text-align: center; padding: 40px 20px;">
+                    <h4 id="d-date-txt" style="opacity: 0.8; font-weight: 500; margin-bottom: 5px;">-</h4>
+                    <h1 id="d-clock-txt" style="font-size: 3.5rem; font-weight: 800; margin: 10px 0;">00:00:00</h1>
+                    <p id="p-mapel-label" style="font-size: 0.9rem; opacity: 0.7; margin-bottom: 20px;">Status: Belum Ceklok</p>
+                    <button onclick="openGps()" class="btn btn-green" style="padding: 14px 28px; font-size: 1rem;"><i class="fas fa-map-marker-alt"></i> CEKLOK SEKARANG</button>
+                </div>
+                
+                <div id="stats-kepsek" class="hidden" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px;">
+                    <div class="card" style="border-left: 4px solid var(--success); margin-bottom:0;">
+                        <h2 id="sk-absen">0</h2>
+                        <p style="font-size:0.8rem; color:var(--text-muted); font-weight:600;">Guru Hadir</p>
+                    </div>
+                    <div class="card" style="border-left: 4px solid var(--warning); margin-bottom:0;">
+                        <h2 id="sk-agenda">0</h2>
+                        <p style="font-size:0.8rem; color:var(--text-muted); font-weight:600;">Agenda Pending</p>
+                    </div>
+                    <div class="card" style="border-left: 4px solid var(--danger); margin-bottom:0;">
+                        <h2 id="sk-modul">0</h2>
+                        <p style="font-size:0.8rem; color:var(--text-muted); font-weight:600;">Modul Pending</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GURU TABS -->
+            <div id="tab-g-jadwal" class="tab-content">
+                <div class="card">
+                    <h3><i class="fas fa-calendar-day"></i> Jadwal Harian</h3>
+                    <div class="form-row">
+                        <div><label>Tanggal</label><input type="text" id="jdw-date" class="global-date-inp" readonly></div>
+                    </div>
+                    <div class="section-box">
+                        <div class="form-row" style="margin-bottom: 0;">
+                            <input type="number" id="jdw-jam" placeholder="Jam" min="1" max="8">
+                            <input type="time" id="jdw-waktu">
+                            <select id="jdw-mapel"><option>-- Mapel --</option></select>
+                            <input type="text" id="jdw-materi" placeholder="Materi">
+                            <button onclick="addScheduleRow()" class="btn btn-blue btn-xs"><i class="fas fa-plus"></i></button>
+                        </div>
+                    </div>
+                    <div id="schedule-list" class="form-row" style="max-height: 300px; overflow-y: auto;"></div>
+                    <button onclick="saveSchedule()" class="btn btn-blue" style="width: 100%;"><i class="fas fa-save"></i> Simpan Jadwal</button>
+                </div>
+            </div>
+
+            <div id="tab-g-siswa" class="tab-content">
+                <div class="card">
+                    <h3><i class="fas fa-user-graduate"></i> Data Siswa</h3>
+                    <div class="section-box" style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                        <button onclick="downloadTemplate('siswa')" class="btn btn-xs btn-outline"><i class="fas fa-download"></i> Template Excel</button>
+                        <input type="file" id="file-siswa-inp" accept=".xlsx, .xls" onchange="importExcel('siswa')" style="display:none">
+                        <button onclick="document.getElementById('file-siswa-inp').click()" class="btn btn-xs btn-blue"><i class="fas fa-upload"></i> Import</button>
+                    </div>
+                    <div class="form-row">
+                        <input type="text" id="gs-nama" placeholder="Nama">
+                        <input type="text" id="gs-user" placeholder="Username">
+                        <input type="text" id="gs-pass" placeholder="Password">
+                        <button onclick="addStudent()" class="btn btn-green btn-xs">Tambah</button>
+                    </div>
+                    <div class="table-res"><table><thead><tr><th>Nama</th><th>User</th><th>Pass</th><th>Aksi</th></tr></thead><tbody id="tbl-siswa"></tbody></table></div>
+                </div>
+            </div>
+
+            <div id="tab-g-absen" class="tab-content">
+                <div class="card">
+                    <h3><i class="fas fa-clipboard-list"></i> Absensi Harian</h3>
+                    <div class="form-row">
+                        <input type="text" class="global-date-inp" readonly style="background: white;">
+                        <button onclick="setAbsenAll('H')" class="btn btn-xs btn-green">Semua Hadir</button>
+                        <button onclick="setAbsenAll('A')" class="btn btn-xs btn-red">Semua Alpa</button>
+                    </div>
+                    <div class="table-res"><table><thead><tr><th>Nama Siswa</th><th style="width: 150px;">Status</th></tr></thead><tbody id="tbl-absen"></tbody></table></div>
+                    <button onclick="saveAbsen()" class="btn btn-green" style="width: 100%; margin-top: 15px;"><i class="fas fa-save"></i> Simpan Absen</button>
+                </div>
+            </div>
+
+            <div id="tab-g-agenda" class="tab-content">
+                <div class="card">
+                    <h3><i class="fas fa-lightbulb"></i> Agenda CP & TP</h3>
+                    <div class="form-row">
+                        <div><label>Tanggal</label><input type="text" class="global-date-inp" readonly></div>
+                        <div><label>Mata Pelajaran</label><select id="gag-mapel"></select></div>
+                    </div>
+                    <div class="section-box">
+                        <div class="form-group"><label>Elemen Pembelajaran</label>
+                            <select id="gag-elemen">
+                                <option>Pemahaman Konsep</option><option>Penerapan Prosedur</option>
+                                <option>Penalaran & Kreativitas</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>Capaian Pembelajaran (CP)</label><textarea id="gag-cp" rows="2"></textarea></div>
+                        <div class="form-group"><label>Tujuan Pembelajaran (TP)</label><textarea id="gag-tp" rows="2"></textarea></div>
+                    </div>
+                    <button onclick="submitAgenda()" class="btn btn-blue" style="width: 100%;"><i class="fas fa-paper-plane"></i> Ajukan Agenda</button>
+                </div>
+            </div>
+
+            <div id="tab-g-modul" class="tab-content">
+                <div class="card">
+                    <h3><i class="fas fa-book"></i> Modul Ajar</h3>
+                    <input type="text" id="modul-title" placeholder="Judul Modul" style="margin-bottom: 10px;">
+                    <select id="modul-mapel" style="margin-bottom: 10px;"><option>-- Mapel --</option></select>
+                    <textarea id="modul-content" rows="6" placeholder="Langkah pembelajaran..."></textarea>
+                    <button onclick="submitModul()" class="btn btn-green" style="width: 100%; margin-top: 15px;"><i class="fas fa-upload"></i> Kirim Modul</button>
+                </div>
+            </div>
+
+            <div id="tab-g-ujian" class="tab-content">
+                <div class="card">
+                    <h3><i class="fas fa-file-signature"></i> Bank Soal</h3>
+                    <div class="section-box" style="display:flex; gap:10px;">
+                        <button onclick="downloadTemplate('soal')" class="btn btn-xs btn-outline"><i class="fas fa-download"></i> Template</button>
+                        <input type="file" id="file-exam-inp" accept=".xlsx" onchange="importExcel('soal')" style="display:none">
+                        <button onclick="document.getElementById('file-exam-inp').click()" class="btn btn-xs btn-blue"><i class="fas fa-upload"></i> Import Soal</button>
+                    </div>
+                    <input type="text" id="ex-title" placeholder="Judul Ujian (cth: UH 1)" style="margin-bottom: 10px;">
+                    <div class="form-row">
+                        <select id="ex-jenis"><option>UH</option><option>STS</option><option>SAS</option></select>
+                        <select id="ex-mapel"></select>
+                    </div>
+                    <div class="section-box">
+                        <div class="form-row">
+                            <select id="ex-type" onchange="toggleExamType()"><option value="PG">PG</option><option value="ES">Essay</option></select>
+                        </div>
+                        <textarea id="ex-q" rows="2" placeholder="Pertanyaan"></textarea>
+                        <div id="pg-options" class="form-row">
+                            <input type="text" id="ex-oa" placeholder="Opsi A">
+                            <input type="text" id="ex-ob" placeholder="Opsi B">
+                            <input type="text" id="ex-oc" placeholder="Opsi C">
+                            <input type="text" id="ex-od" placeholder="Opsi D">
+                        </div>
+                        <input type="text" id="ex-ans" placeholder="Kunci Jawaban">
+                        <button onclick="addQuestion()" class="btn btn-xs btn-blue" style="width:100%; margin-top:5px;">+ Tambah Soal ke Daftar</button>
+                    </div>
+                    <div class="table-res"><table><thead><tr><th>Daftar Soal</th><th width="50">Hapus</th></tr></thead><tbody id="tbl-exam-temp"></tbody></table></div>
+                    <button onclick="publishExam()" class="btn btn-green" style="width:100%;"><i class="fas fa-paper-plane"></i> Publish Ujian</button>
+                </div>
+            </div>
+
+            <div id="tab-g-koreksi" class="tab-content">
+                <div class="card">
+                    <h3><i class="fas fa-check-circle"></i> Koreksi Jawaban</h3>
+                    <div class="form-row">
+                        <select id="kor-exam" onchange="loadExamForCorrection()"><option>-- Pilih Ujian --</option></select>
+                        <select id="kor-siswa" onchange="loadStudentAnswers()"><option>-- Pilih Siswa --</option></select>
+                    </div>
+                    <div id="kor-area" style="display:none;">
+                        <div id="kor-questions"></div>
+                        <div class="section-box" style="background: #f0fdf4; margin-top: 15px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <div><h2 id="kor-nilai" style="font-size: 2rem; margin:0;">0</h2><label style="margin:0;">Nilai Akhir</label></div>
+                                <select id="kor-status"><option value="TUNTAS">Tuntas</option><option value="REMEDIAL">Remedial</option></select>
+                            </div>
+                            <button onclick="saveCorrection()" class="btn btn-green" style="width:100%; margin-top:10px;">Simpan Nilai</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-g-nilai" class="tab-content">
+                <div class="card">
+                    <h3><i class="fas fa-award"></i> Input Nilai</h3>
+                    <select id="val-mapel" onchange="loadGradeData()" style="margin-bottom:15px;"><option>-- Pilih Mapel --</option></select>
+                    <div class="table-res">
+                        <table>
+                            <thead><tr><th>Siswa</th><th>TP</th><th>STS</th><th>SAS</th><th>Rata2</th></tr></thead>
+                            <tbody id="tbl-nilai"></tbody>
+                        </table>
+                    </div>
+                    <button onclick="saveGrades()" class="btn btn-green" style="width:100%; margin-top:15px;"><i class="fas fa-save"></i> Simpan Nilai</button>
+                </div>
+            </div>
+
+            <!-- KEPSEK TABS -->
+            <div id="tab-k-absen" class="tab-content">
+                <div class="card">
+                    <h3><i class="fas fa-users"></i> Monitor Kehadiran Guru</h3>
+                    <div class="table-res"><table><thead><tr><th>Nama</th><th>Status</th><th>Jam</th><th>Aksi</th></tr></thead><tbody id="tbl-k-absen"></tbody></table></div>
+                </div>
+            </div>
+
+            <div id="tab-k-agenda" class="tab-content">
+                <div class="card">
+                    <h3><i class="fas fa-clipboard-check"></i> Review Agenda</h3>
+                    <div class="table-res"><table><thead><tr><th>Guru</th><th>Mapel</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="tbl-k-agenda"></tbody></table></div>
+                </div>
+            </div>
+            
+            <div id="tab-k-modul" class="tab-content">
+                <div class="card">
+                    <h3><i class="fas fa-folder-open"></i> Review Modul</h3>
+                    <div class="table-res"><table><thead><tr><th>Guru</th><th>Judul</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="tbl-k-modul"></tbody></table></div>
+                </div>
+            </div>
+
+            <div id="tab-k-rekap" class="tab-content">
+                <div class="card">
+                    <h3><i class="fas fa-print"></i> Rekap Nilai</h3>
+                    <div class="form-row">
+                        <select id="rek-kelas"><option value="A">Rombel A</option><option value="B">Rombel B</option><option value="C">Rombel C</option></select>
+                        <select id="rek-mapel"></select>
+                        <button onclick="loadRekap()" class="btn btn-blue">Tampilkan</button>
+                    </div>
+                    <div id="printArea" class="table-res"><table><thead><tr><th>Nama</th><th>Nilai</th><th>Status</th></tr></thead><tbody id="tbl-k-rekap"></tbody></table></div>
+                    <button onclick="window.print()" class="btn btn-outline" style="width:100%; margin-top:10px;"><i class="fas fa-print"></i> Cetak</button>
+                </div>
+            </div>
+
+            <div id="tab-k-staf" class="tab-content">
+                <div class="card" style="background: #f0f9ff;">
+                    <h4 style="margin-bottom: 10px;">Pengaturan Koordinat Sekolah</h4>
+                    <div class="form-row">
+                        <input type="text" id="set-lat" placeholder="Latitude">
+                        <input type="text" id="set-lng" placeholder="Longitude">
+                        <button onclick="updateConfig()" class="btn btn-green btn-xs">Update</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3><i class="fas fa-user-cog"></i> Manajemen Staf</h3>
+                    <div class="form-row">
+                        <input type="text" id="st-nama" placeholder="Nama">
+                        <input type="text" id="st-user" placeholder="ID Login">
+                        <input type="text" id="st-pin" placeholder="PIN">
+                        <input type="text" id="st-rombel" placeholder="Rombel (A,B)">
+                        <button onclick="saveStaff()" class="btn btn-blue btn-xs">Simpan</button>
+                    </div>
+                    <div class="table-res"><table><thead><tr><th>Nama</th><th>ID</th><th>PIN</th><th>Aksi</th></tr></thead><tbody id="tbl-staf"></tbody></table></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+// Firebase Config
 const CFG = { 
     apiKey: "AIzaSyBDSZ5mBwxiMHem5gNBpD8lSKYqSoCFxOQ", 
     authDomain: "adminsitrasi-guru-de394.firebaseapp.com", 
@@ -615,937 +487,572 @@ const CFG = {
 firebase.initializeApp(CFG); 
 const db = firebase.database();
 
-const MAPEL_BY_LEVEL = {
-    'KELAS1': ['Matematika', 'Bahasa Indonesia', 'Pendidikan Pancasila', 'Seni Budaya', 'Bahasa Sunda'],
-    'KELAS2': ['Matematika', 'Bahasa Indonesia', 'Pendidikan Pancasila', 'Seni Budaya', 'Bahasa Sunda'],
-    'KELAS3': ['Matematika', 'Bahasa Indonesia', 'Pendidikan Pancasila', 'Seni Budaya', 'Bahasa Sunda', 'IPAS', 'Bahasa Inggris'],
-    'KELAS4': ['Matematika', 'Bahasa Indonesia', 'Pendidikan Pancasila', 'Seni Budaya', 'Bahasa Sunda', 'IPAS', 'Bahasa Inggris'],
-    'KELAS5': ['Matematika', 'Bahasa Indonesia', 'Pendidikan Pancasila', 'Seni Budaya', 'Bahasa Sunda', 'IPAS', 'Bahasa Inggris'],
-    'KELAS6': ['Matematika', 'Bahasa Indonesia', 'Pendidikan Pancasila', 'Seni Budaya', 'Bahasa Sunda', 'IPAS', 'Bahasa Inggris'],
-    'PAI': ['Pendidikan Agama Islam'],
-    'PJOK': ['Pendidikan Jasmani Olahraga Kesehatan']
-};
-
-let curU = null; 
-let sch = null;
+// Global State
+let curUser = null;
+let school = null;
 let curRombel = 'A';
 let S_COOR = { lat: -6.835, lng: 108.241 };
-let tempEx = [];
-let correctionState = { examId: null, studentId: null, answers: [] };
-let dailySchedule = [];
+let tempQuestions = [];
+let STAF_DATA = {};
+let SISWA_DATA = {};
+let curSchedule = [];
 
-window.onload = () => {
-    sch = JSON.parse(localStorage.getItem('ADM_V45_SUPREME'));
-    if(!sch) {
-        showScreen('scr-setup');
-    } else { 
-        if(sch.lat && sch.lng) {
-            S_COOR.lat = parseFloat(sch.lat);
-            S_COOR.lng = parseFloat(sch.lng);
-        }
-        initPortal(); 
-        syncCloud(); 
-    }
-};
+const MAPEL = ['Matematika', 'Bahasa Indonesia', 'IPA', 'IPS', 'PKN', 'Seni Budaya', 'PJOK', 'Bahasa Inggris', 'PAI'];
 
-function showScreen(id) {
-    document.querySelectorAll('.u-screen').forEach(s => s.classList.add('hidden'));
-    document.getElementById(id).classList.remove('hidden');
+// --- Utility Functions ---
+const $ = id => document.getElementById(id);
+const show = id => { if($(id)) $(id).classList.remove('hidden'); };
+const hide = id => { if($(id)) $(id).classList.add('hidden'); };
+
+function showToast(msg, type = 'info') {
+    const c = $('toast-container');
+    const t = document.createElement('div');
+    t.className = `toast ${type}`;
+    t.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'}"></i><span class="toast-msg">${msg}</span>`;
+    c.appendChild(t);
+    setTimeout(() => t.classList.add('show'), 10);
+    setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 3000);
 }
 
-function initPortal() {
-    showScreen('scr-login');
-    document.getElementById('v-school-name').innerText = sch.nama;
-    document.getElementById('v-school-npsn').innerText = "NPSN: " + sch.npsn;
+function distance(lat1, lon1, lat2, lon2) {
+    const R = 6371e3; const p1 = lat1 * Math.PI/180; const p2 = lat2 * Math.PI/180;
+    const dp = (lat2-lat1) * Math.PI/180; const dl = (lon2-lon1) * Math.PI/180;
+    const a = Math.sin(dp/2) * Math.sin(dp/2) + Math.cos(p1) * Math.cos(p2) * Math.sin(dl/2) * Math.sin(dl/2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+// --- Core Logic ---
+window.onload = () => {
+    school = JSON.parse(localStorage.getItem('ADM_V45_SUPREME'));
+    if(!school) { show('scr-setup'); }
+    else { 
+        if(school.lat && school.lng) { S_COOR.lat = parseFloat(school.lat); S_COOR.lng = parseFloat(school.lng); }
+        initApp(); 
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+};
+
+function updateClock() {
+    const d = new Date();
+    $('d-clock-txt').innerText = d.toLocaleTimeString('id-ID');
+    $('d-date-txt').innerText = d.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    $('clk').innerText = d.toLocaleTimeString('id-ID');
+    document.querySelectorAll('.global-date-inp').forEach(e => e.value = d.toLocaleDateString('id-ID'));
 }
 
 function saveActivation() {
-    const n = document.getElementById('reg-npsn').value; 
-    const nm = document.getElementById('reg-nama').value;
-    const lat = document.getElementById('reg-lat').value;
-    const lng = document.getElementById('reg-lng').value;
-    
-    if(!n || !nm || !lat || !lng) return showInlineAlert("⚠️ Harap isi NPSN, Nama Sekolah, dan Koordinat!");
-    
-    const schoolData = {npsn:n, nama:nm, lat:lat, lng:lng};
-    localStorage.setItem('ADM_V45_SUPREME', JSON.stringify(schoolData));
-    db.ref('schools/'+n+'/config').set({ lat: lat, lng: lng, nama: nm });
-    
+    const n = $('reg-npsn').value; const nm = $('reg-nama').value;
+    const lat = $('reg-lat').value; const lng = $('reg-lng').value;
+    if(!n || !nm || !lat || !lng) return showToast("Lengkapi data!", "error");
+    const data = {npsn: n, nama: nm, lat, lng};
+    localStorage.setItem('ADM_V45_SUPREME', JSON.stringify(data));
+    db.ref('schools/'+n+'/config').set({nama: nm, lat, lng});
     location.reload();
 }
 
-function handleLogin() {
-    const u = document.getElementById('log-u').value; 
-    const p = document.getElementById('log-p').value;
+function initApp() {
+    $('v-school-name').innerText = school.nama;
+    $('v-school-npsn').innerText = "NPSN: " + school.npsn;
+    show('scr-login');
     
-    if(!u || !p) return showInlineAlert("⚠️ Isi User ID dan PIN!");
+    // Populate Mapel Selects
+    document.querySelectorAll('#jdw-mapel, #gag-mapel, #modul-mapel, #ex-mapel, #val-mapel, #rek-mapel').forEach(s => {
+        s.innerHTML = '<option value="">-- Pilih Mapel --</option>';
+        MAPEL.forEach(m => s.innerHTML += `<option>${m}</option>`));
+    });
     
-    if(u === 'admin' && p === '12345') {
-        proceedLogin({u:'admin', n:'Kepala Sekolah', r:'KEPSEK', id:'ROOT', mapel:'SEMUA', rombel:'A,B,C'});
-        return;
-    }
-
-    if(u === 'guru1' && p === '12345') {
-        proceedLogin({u:'guru1', n:'Guru Demo', r:'KELAS1', id:'GURU1', mapel: 'Matematika', rombel: 'A,B,C'});
-        return;
-    }
-
-    let found = null;
-    for(let id in STAF_DATA) {
-        if(STAF_DATA[id].u === u && STAF_DATA[id].p === p) {
-            found = STAF_DATA[id];
-        }
-    }
-
-    if(found) {
-        proceedLogin(found);
-    }
-    else showInlineAlert("❌ Gagal Login. Periksa User & PIN!");
+    // Sync Global Data
+    db.ref('schools/'+school.npsn+'/staff').on('value', s => { STAF_DATA = s.val() || {}; renderStaffTable(); });
+    db.ref('schools/'+school.npsn+'/students').on('value', s => { SISWA_DATA = s.val() || {}; renderStudentTable(); renderAbsenTable(); });
 }
 
-function proceedLogin(user) {
-    curU = user;
-    curRombel = user.rombel ? user.rombel.split(',')[0] : 'A';
-    showScreen('main-ui');
-    document.getElementById('sidebar').classList.remove('hidden');
-    document.getElementById('p-name').innerText = user.n;
-    document.getElementById('p-role').innerText = user.r;
-    document.getElementById('p-avatar').innerText = user.n.charAt(0);
+function handleLogin() {
+    const u = $('log-u').value; const p = $('log-p').value;
     
-    const roleLabel = user.r === 'KEPSEK' ? 'KEPALA SEKOLAH' : user.r;
-    document.getElementById('p-kelas-label').innerText = roleLabel;
-    document.getElementById('p-mapel-label').innerText = `📚 ${user.mapel || 'Semua Mapel'}`;
+    // Admin Hardcode
+    if(u === 'admin' && p === '12345') return proceedLogin({u:'admin', n:'Kepala Sekolah', r:'KEPSEK', rombel:'A,B,C'});
+    if(u === 'guru1' && p === '12345') return proceedLogin({u:'guru1', n:'Guru Demo', r:'KELAS1', rombel:'A,B,C'});
 
-    if(user.r === 'KEPSEK') {
-        document.getElementById('menu-area-kepsek').classList.remove('hidden');
-        document.getElementById('k-stats-row').classList.remove('hidden');
-        document.getElementById('conf-lat').value = S_COOR.lat;
-        document.getElementById('conf-lng').value = S_COOR.lng;
+    // DB Check
+    let found = false;
+    for(let id in STAF_DATA) {
+        if(STAF_DATA[id].u === u && STAF_DATA[id].pin === p) {
+            found = true;
+            proceedLogin(STAF_DATA[id]);
+            break;
+        }
+    }
+    if(!found) showToast("Login Gagal!", "error");
+}
+
+function proceedLogin(u) {
+    curUser = u;
+    curRombel = u.rombel ? u.rombel.split(',')[0] : 'A';
+    
+    hide('scr-login');
+    show('main-ui');
+    show('sidebar');
+    
+    $('p-name').innerText = u.n;
+    $('p-role').innerText = u.r;
+    $('p-avatar').innerText = u.n.charAt(0);
+
+    if(u.r === 'KEPSEK') {
+        show('menu-kepsek');
+        $('stats-kepsek').style.display = 'grid';
+        $('set-lat').value = S_COOR.lat; $('set-lng').value = S_COOR.lng;
+        syncKepsek();
     } else {
-        document.getElementById('menu-area-guru').classList.remove('hidden');
-        const rombelList = user.rombel ? user.rombel.split(',').map(r => r.trim()) : ['A'];
-        const rombelSel = document.getElementById('rombel-selector-sidebar');
-        rombelSel.classList.remove('hidden');
-        document.querySelectorAll('.rombel-btn').forEach(btn => {
-            if(rombelList.includes(btn.dataset.rombel)) {
-                btn.style.display = 'block';
-            } else {
-                btn.style.display = 'none';
-            }
+        show('menu-guru');
+        show('rombel-selector-sidebar');
+        document.querySelectorAll('.rombel-btn').forEach(b => {
+            b.style.display = (u.rombel && u.rombel.includes(b.dataset.rombel)) ? 'block' : 'none';
         });
     }
     
-    populateMapelSelects();
-    updateRombelBadges();
+    updateRombelUI();
     switchTab('dashboard');
-    if(user.r === 'KEPSEK'){ setRekapMapelByKelas(); }
 }
 
 function selectRombel(r) {
     curRombel = r;
     document.querySelectorAll('.rombel-btn').forEach(b => b.classList.remove('active'));
     document.querySelector(`[data-rombel="${r}"]`).classList.add('active');
-    updateRombelBadges();
-    const curTab = document.querySelector('.tab-content.active');
-    if(curTab && curTab.id === 'tab-g-siswa') renderStudentTable();
-    if(curTab && curTab.id === 'tab-g-absen') renderAbsenSiswa();
-    if(curTab && curTab.id === 'tab-g-nilai') fetchSiswaNilai();
-    if(curTab && curTab.id === 'tab-g-jadwal') renderSchedule();
+    updateRombelUI();
+    
+    const tab = document.querySelector('.tab-content.active');
+    if(tab.id === 'tab-g-siswa') renderStudentTable();
+    if(tab.id === 'tab-g-absen') renderAbsenTable();
 }
 
-function updateRombelBadges() {
-    document.getElementById('rombel-badge-topbar').innerText = `ROMBEL ${curRombel}`;
-    ['siswa-rombel-label', 'absen-rombel-label', 'agenda-rombel-label', 'modul-rombel-label', 'ujian-rombel-label', 'koreksi-rombel-label', 'nilai-rombel-label', 'jadwal-rombel-label'].forEach(id => {
-        const el = document.getElementById(id);
-        if(el) el.innerText = `ROMBEL ${curRombel}`;
-    });
+function updateRombelUI() {
+    $('rombel-badge-topbar').innerText = curRombel;
+    show('rombel-badge-topbar');
 }
 
-function populateMapelSelects() {
-    let mapels = MAPEL_BY_LEVEL[curU.r] || ['Matematika', 'Bahasa Indonesia', 'Pendidikan Pancasila', 'Seni Budaya', 'Bahasa Sunda', 'IPAS', 'Bahasa Inggris', 'Pendidikan Agama Islam', 'PJOK'];
+function switchTab(id) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    show('tab-'+id);
+    $('v-title-label').innerText = id.replace('g-', '').replace('k-', '').toUpperCase();
     
-    ['gn-mapel', 'ex-mapel', 'gm-mapel', 'gag-mapel-sel', 'jdw-mapel'].forEach(id => {
-        const sel = document.getElementById(id);
-        if(sel) {
-            sel.innerHTML = '<option value="">-- Pilih Mata Pelajaran --</option>';
-            mapels.forEach(m => sel.innerHTML += `<option>${m}</option>`);
-        }
-    });
-
-    document.getElementById('jdw-kelas').innerHTML = '<option>-- Kelas --</option><option value="A">Kelas A</option><option value="B">Kelas B</option><option value="C">Kelas C</option>';
+    // Load specific data
+    if(id === 'g-jadwal') loadSchedule();
+    if(id === 'g-ujian') renderTempQuestion();
+    if(id === 'g-koreksi') loadExamDropdown();
+    if(id === 'g-nilai') loadGradeData();
 }
 
-function syncCloud() {
-    db.ref('schools/'+sch.npsn+'/config').on('value', s => {
-        const config = s.val();
-        if(config && config.lat && config.lng) {
-            S_COOR.lat = parseFloat(config.lat);
-            S_COOR.lng = parseFloat(config.lng);
-            sch.lat = config.lat;
-            sch.lng = config.lng;
-            localStorage.setItem('ADM_V45_SUPREME', JSON.stringify(sch));
-            if(curU && curU.r === 'KEPSEK') {
-                document.getElementById('conf-lat').value = S_COOR.lat;
-                document.getElementById('conf-lng').value = S_COOR.lng;
-            }
-        }
-    });
+function toggleSidebar() { $('sidebar').classList.toggle('open'); }
+function closeSidebar() { $('sidebar').classList.remove('open'); }
 
-    db.ref('schools/'+sch.npsn+'/staff').on('value', s => {
-        window.STAF_DATA = s.val() || {};
-        renderStaffTable();
-        renderAbsenMonitor();
-    });
+// --- GPS & Absen Guru ---
+function openGps() {
+    show('m-gps');
+    $('gps-status').innerHTML = '<p>Mendeteksi lokasi...</p><div class="spinner" style="margin:10px auto;"></div>';
+    $('b-ab-done').disabled = true;
     
-    db.ref('schools/'+sch.npsn+'/students').on('value', s => {
-        window.SISWA_DATA = s.val() || {};
-        renderStudentTable();
-    });
-    
-    db.ref('schools/'+sch.npsn+'/moduls').on('value', s => {
-        const data = s.val() || {};
-        if(!curU || curU.r !== 'KEPSEK') return;
-        let h = '';
-        for(let id in data) {
-            let x = data[id];
-            h += `<tr><td>${x.n}</td><td>${x.t} / ${x.m}</td><td>${x.r || '-'}</td><td><span class="badge bg-${x.st==='OK'?'ok':'pending'}">${x.st}</span></td><td><button onclick="approveModul('${id}')" class="btn btn-green btn-xs">✓ Setuju</button></td></tr>`;
-        }
-        document.getElementById('tbl-k-rev-modul-body').innerHTML = h;
-    });
-
-    db.ref('schools/'+sch.npsn+'/exams').on('value', s => {
-        const allEx = s.val() || {};
-        let h = '';
-        let examList = [];
-        for(let id in allEx) {
-            examList.push({id, data: allEx[id]});
-            h += `<tr><td>${allEx[id].title.substring(0,30)}</td><td>${allEx[id].jenis}/${allEx[id].mapel}</td><td><span class="badge bg-ok">LIVE</span></td><td><button onclick="delExam('${id}')" class="btn btn-red btn-xs">✕ Hapus</button></td></tr>`;
-        }
-        document.getElementById('tbl-ex-list').innerHTML = h;
+    navigator.geolocation.getCurrentPosition(pos => {
+        const dist = distance(pos.coords.latitude, pos.coords.longitude, S_COOR.lat, S_COOR.lng);
+        $('gps-status').innerHTML = `<h2 style="font-size:2.5rem; color:var(--primary);">${Math.round(dist)} m</h2><p style="color:var(--text-muted)">dari sekolah</p>`;
         
-        let examSel = document.getElementById('kor-exam-sel');
-        let prevSelected = examSel.value;
-        examSel.innerHTML = '<option value="">-- Pilih Ujian --</option>';
-        examList.forEach(ex => {
-            examSel.innerHTML += `<option value="${ex.id}">${ex.data.title}</option>`;
-        });
-        if(prevSelected) examSel.value = prevSelected;
-    });
+        if(dist <= 200) {
+            $('b-ab-done').disabled = false;
+            $('b-ab-done').classList.remove('btn-red'); $('b-ab-done').classList.add('btn-green');
+            $('b-ab-done').innerText = "Konfirmasi Hadir";
+        } else {
+            $('b-ab-done').disabled = false;
+            $('b-ab-done').classList.remove('btn-green'); $('b-ab-done').classList.add('btn-red');
+            $('b-ab-done').innerText = "Di Luar Radius";
+        }
+    }, err => { $('gps-status').innerHTML = '<p style="color:var(--danger)">Gagal mengakses GPS</p>'; });
+}
 
+function closeGps() { hide('m-gps'); }
+
+function execAbsen() {
+    if($('b-ab-done').innerText === "Di Luar Radius") return;
     const d = new Date().toISOString().split('T')[0];
-    db.ref('schools/'+sch.npsn+'/agendas/'+d).on('value', s => {
-        const ag = s.val() || {}; 
-        let cnt = 0; for(let i in ag) if(ag[i].st==='PENDING') cnt++;
-        document.getElementById('sk-agenda').innerText = cnt;
-        renderReviewAgenda(ag);
-    });
+    const t = new Date().toLocaleTimeString('id-ID');
+    db.ref('schools/'+school.npsn+'/attendance/'+d+'/'+curUser.u).set({ jam: t, nama: curUser.n, status: 'HADIR' })
+    .then(() => { showToast("Ceklok Berhasil!", "success"); closeGps(); });
+}
 
-    db.ref('schools/'+sch.npsn+'/schedules/'+d).on('value', s => {
-        dailySchedule = s.val() || [];
+// --- Student Management ---
+function renderStudentTable() {
+    let h = '';
+    for(let id in SISWA_DATA) {
+        if(SISWA_DATA[id].rombel !== curRombel) continue;
+        h += `<tr><td>${SISWA_DATA[id].nama}</td><td>${id}</td><td>${SISWA_DATA[id].pin || '-'}</td>
+        <td><button onclick="delData('students/${id}')" class="btn btn-xs btn-red"><i class="fas fa-trash"></i></button></td></tr>`;
+    }
+    $('tbl-siswa').innerHTML = h || '<tr><td colspan="4" style="text-align:center; color:var(--text-muted)">Tidak ada data</td></tr>';
+}
+
+function addStudent() {
+    const nama = $('gs-nama').value; const user = $('gs-user').value; const pin = $('gs-pass').value || '12345';
+    if(!nama || !user) return showToast("Isi nama & user", "error");
+    db.ref('schools/'+school.npsn+'/students/'+user).set({ nama, user, pin, rombel: curRombel })
+    .then(() => { showToast("Siswa ditambahkan", "success"); $('gs-nama').value=''; $('gs-user').value=''; });
+}
+
+function delData(path) {
+    if(confirm('Hapus data ini?')) {
+        db.ref('schools/'+school.npsn+'/'+path).remove()
+        .then(() => showToast("Data dihapus", "success"));
+    }
+}
+
+function downloadTemplate(type) {
+    let data = [];
+    if(type === 'siswa') data = [['Nama', 'User', 'PIN']];
+    if(type === 'soal') data = [['Pertanyaan', 'Tipe (PG/ES)', 'OpsiA', 'OpsiB', 'OpsiC', 'OpsiD', 'Jawaban']];
+    const ws = XLSX.utils.aoa_to_sheet(data); const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, type); XLSX.writeFile(wb, `template_${type}.xlsx`);
+}
+
+function importExcel(type) {
+    const file = event.target.files[0]; if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+        try {
+            const wb = XLSX.read(new Uint8Array(ev.target.result), {type:'array'});
+            const ws = wb.Sheets[wb.SheetNames[0]];
+            const data = XLSX.utils.sheet_to_json(ws);
+            let c = 0;
+            
+            if(type === 'siswa') {
+                data.forEach(r => {
+                    if(r.User) {
+                        db.ref('schools/'+school.npsn+'/students/'+r.User).set({ nama: r.Nama, user: r.User, pin: r.PIN || '123', rombel: curRombel });
+                        c++;
+                    }
+                });
+            } else if(type === 'soal') {
+                data.forEach(r => {
+                    if(r.Pertanyaan) {
+                        tempQuestions.push({
+                            q: r.Pertanyaan, type: r.Tipe || 'PG',
+                            opts: [r.OpsiA, r.OpsiB, r.OpsiC, r.OpsiD],
+                            ans: r.Jawaban
+                        });
+                        c++;
+                    }
+                });
+                renderTempQuestion();
+            }
+            showToast(`${c} data berhasil diimport`, "success");
+        } catch(e) { showToast("Gagal membaca file", "error"); }
+    };
+    reader.readAsArrayBuffer(file);
+    event.target.value = ''; // Reset input
+}
+
+// --- Absensi Siswa ---
+function renderAbsenTable() {
+    let h = '';
+    for(let id in SISWA_DATA) {
+        if(SISWA_DATA[id].rombel !== curRombel) continue;
+        h += `<tr><td>${SISWA_DATA[id].nama}</td>
+        <td><select class="abs-select" data-id="${id}" style="width:100%; padding:5px;">
+            <option value="H">Hadir</option><option value="S">Sakit</option>
+            <option value="I">Izin</option><option value="A">Alpa</option>
+        </select></td></tr>`;
+    }
+    $('tbl-absen').innerHTML = h || '<tr><td colspan="2" style="text-align:center">Tidak ada data</td></tr>';
+}
+
+function setAbsenAll(val) { document.querySelectorAll('.abs-select').forEach(s => s.value = val); }
+
+function saveAbsen() {
+    const d = new Date().toISOString().split('T')[0];
+    let updates = {};
+    document.querySelectorAll('.abs-select').forEach(s => { updates[s.dataset.id] = s.value; });
+    db.ref('schools/'+school.npsn+'/absen_siswa/'+d+'/'+curRombel).set({ guru: curUser.n, data: updates })
+    .then(() => showToast("Absensi tersimpan", "success"));
+}
+
+// --- Schedule ---
+function loadSchedule() {
+    const d = new Date().toISOString().split('T')[0];
+    db.ref('schools/'+school.npsn+'/schedule/'+d+'/'+curRombel).once('value', s => {
+        curSchedule = s.val() || [];
         renderSchedule();
     });
 }
 
 function addScheduleRow() {
-    const jam = document.getElementById('jdw-jam').value;
-    const waktu = document.getElementById('jdw-waktu').value;
-    const kelas = document.getElementById('jdw-kelas').value;
-    const mapel = document.getElementById('jdw-mapel').value;
-    const materi = document.getElementById('jdw-materi').value;
-
-    if(!jam || !waktu || !kelas || !mapel || !materi) {
-        showInlineAlert("⚠️ Isi semua field!");
-        return;
-    }
-
-    const newRow = {
-        jam: parseInt(jam),
-        waktu: waktu,
-        kelas: kelas,
-        mapel: mapel,
-        materi: materi,
-        catatan: ""
-    };
-
-    dailySchedule.push(newRow);
+    const jam = $('jdw-jam').value; const waktu = $('jdw-waktu').value;
+    const mapel = $('jdw-mapel').value; const materi = $('jdw-materi').value;
+    if(!jam || !mapel) return showToast("Jam & Mapel wajib", "error");
+    curSchedule.push({ jam, waktu, mapel, materi });
     renderSchedule();
-
-    document.getElementById('jdw-jam').value = '';
-    document.getElementById('jdw-waktu').value = '';
-    document.getElementById('jdw-kelas').value = '';
-    document.getElementById('jdw-mapel').value = '';
-    document.getElementById('jdw-materi').value = '';
 }
 
 function renderSchedule() {
-    const container = document.getElementById('schedule-container');
-    
-    if(!dailySchedule || dailySchedule.length === 0) {
-        container.innerHTML = '<p style="color:#64748b; font-size:0.8rem; text-align:center; padding:20px;">Belum ada jadwal. Setup di atas ↑</p>';
-        return;
-    }
-
-    const d = new Date().toISOString().split('T')[0];
-    
     let h = '';
-    dailySchedule.sort((a,b) => a.jam - b.jam).forEach((row, idx) => {
-        const jamLabel = `Jam Ke-${row.jam}`;
-        
-        let absenHTML = '<div style="font-size:0.7rem; color:#64748b;">Memproses...</div>';
-        
-        db.ref('schools/'+sch.npsn+'/absen_siswa/'+d+'/'+curRombel).once('value', snap => {
-            const absenData = snap.val() || {};
-            let absenList = '';
-            for(let siswaId in absenData.data || {}) {
-                const status = absenData.data[siswaId];
-                const statusClass = status === 'H' ? 'hadir' : 'alpa';
-                const siswaName = SISWA_DATA[siswaId] ? SISWA_DATA[siswaId].n : siswaId;
-                absenList += `<div class="sch-attendance-item ${statusClass}">${siswaName} <strong>${status}</strong></div>`;
-            }
-            if(!absenList) absenList = '<p style="font-size:0.7rem; color:#94a3b8; margin:0;">Belum ada absensi jam ini</p>';
-            
-            const elem = document.querySelector(`[data-sch-id="${idx}"] .sch-attendance`);
-            if(elem) elem.innerHTML = absenList;
-        });
-
-        h += `<div class="schedule-row" data-sch-id="${idx}">
-            <div class="sch-col"><strong>${row.jam}</strong></div>
-            <div class="sch-col">${row.waktu}</div>
-            <div class="sch-col">${row.kelas}</div>
-            <div class="sch-col-title">${row.mapel}</div>
-            <div class="sch-col" style="font-size:0.75rem; max-height:60px; overflow:hidden; color:#475569;">${row.materi}</div>
-            <div class="sch-attendance" style="display:grid; gap:4px;"></div>
-            <div style="display:flex; gap:5px;">
-                <input type="text" placeholder="Catatan..." value="${row.catatan || ''}" onchange="updateScheduleNote(${idx}, this.value)" style="flex:1; padding:6px; font-size:0.75rem; border:1px solid #e2e8f0; border-radius:6px;">
-                <button onclick="deleteScheduleRow(${idx})" class="btn btn-red btn-xs">✕</button>
-            </div>
+    curSchedule.forEach((item, i) => {
+        h += `<div class="section-box" style="display:flex; justify-content:space-between; align-items:center;">
+            <div><strong>Jam ${item.jam}</strong> (${item.waktu || '-'})<br>${item.mapel} - ${item.materi || '-'}</div>
+            <button onclick="delScheduleRow(${i})" class="btn btn-xs btn-red"><i class="fas fa-times"></i></button>
         </div>`;
     });
-    
-    container.innerHTML = h;
-    
-    dailySchedule.forEach((row, idx) => {
-        const d = new Date().toISOString().split('T')[0];
-        db.ref('schools/'+sch.npsn+'/absen_siswa/'+d+'/'+curRombel).once('value', snap => {
-            const absenData = snap.val() || {};
-            let absenList = '';
-            for(let siswaId in absenData.data || {}) {
-                const status = absenData.data[siswaId];
-                const statusClass = status === 'H' ? 'hadir' : 'alpa';
-                const siswaName = SISWA_DATA[siswaId] ? SISWA_DATA[siswaId].n : siswaId;
-                absenList += `<div class="sch-attendance-item ${statusClass}">${siswaName} <strong>${status}</strong></div>`;
-            }
-            if(!absenList) absenList = '<p style="font-size:0.7rem; color:#94a3b8; margin:0;">Belum ada absensi jam ini</p>';
-            
-            const elem = document.querySelector(`[data-sch-id="${idx}"] .sch-attendance`);
-            if(elem) elem.innerHTML = absenList;
-        });
-    });
+    $('schedule-list').innerHTML = h || '<p style="text-align:center; color:var(--text-muted); padding:10px;">Belum ada jadwal</p>';
 }
 
-function updateScheduleNote(idx, note) {
-    if(dailySchedule[idx]) dailySchedule[idx].catatan = note;
-}
+function delScheduleRow(i) { curSchedule.splice(i, 1); renderSchedule(); }
 
-function deleteScheduleRow(idx) {
-    dailySchedule.splice(idx, 1);
-    renderSchedule();
-}
-
-function saveScheduleDay() {
+function saveSchedule() {
     const d = new Date().toISOString().split('T')[0];
-    if(dailySchedule.length === 0) return showInlineAlert("⚠️ Tambah minimal 1 jadwal!");
-    db.ref('schools/'+sch.npsn+'/schedules/'+d+'/'+curRombel).set(dailySchedule)
-    .then(() => showInlineAlert("✅ Jadwal Harian Tersimpan!"));
+    db.ref('schools/'+school.npsn+'/schedule/'+d+'/'+curRombel).set(curSchedule)
+    .then(() => showToast("Jadwal disimpan", "success"));
 }
 
-function selectKompetensi(kom) {
-    document.querySelectorAll('.comp-btn').forEach(b => b.classList.remove('selected'));
-    event.target.classList.add('selected');
-    document.getElementById('gag-kompetensi').value = kom;
-}
-
-function downloadStudentTemplate() {
-    const ws = XLSX.utils.aoa_to_sheet([
-        ['Nama Lengkap', 'Username', 'Password', 'Rombel'],
-        ['Contoh Siswa A', 'siswa01', 'pass123', 'A'],
-        ['Contoh Siswa B', 'siswa02', 'pass123', 'B']
-    ]);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Siswa");
-    XLSX.writeFile(wb, "Template_Siswa_"+sch.npsn+".xlsx");
-    showInlineAlert("✅ Template Siswa Terunduh!");
-}
-
-function importSiswaExcel(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        try {
-            const workbook = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
-            const sheet = workbook.Sheets[workbook.SheetNames[0]];
-            const data = XLSX.utils.sheet_to_json(sheet);
-            
-            let count = 0;
-            data.forEach(row => {
-                if(row['Nama Lengkap'] && row.Username) {
-                    db.ref('schools/'+sch.npsn+'/students/'+row.Username).set({
-                        n: row['Nama Lengkap'],
-                        u: row.Username,
-                        p: row.Password || 'default123',
-                        r: row.Rombel || 'A'
-                    });
-                    count++;
-                }
-            });
-            
-            showInlineAlert(`✅ ${count} siswa berhasil diimport!`);
-            document.getElementById('file-siswa-inp').value = '';
-        } catch(err) {
-            showInlineAlert("❌ Gagal baca file Excel!");
-        }
-    };
-    reader.readAsArrayBuffer(file);
-}
-
-function downloadExamTemplate() {
-    try {
-        const data = [
-            ['Pertanyaan', 'Tipe Soal', 'Opsi A', 'Opsi B', 'Opsi C', 'Opsi D', 'Kunci Jawaban'],
-            ['Berapa hasil 2+2?', 'PG', '2', '3', '4', '5', 'C'],
-            ['Ibu kota Indonesia adalah...', 'PG', 'Surabaya', 'Jakarta', 'Bandung', 'Medan', 'B'],
-            ['Apa itu fotosintesis?', 'ES', '-', '-', '-', '-', 'Proses pembuatan makanan']
-        ];
-        
-        const ws = XLSX.utils.aoa_to_sheet(data);
-        ws['!cols'] = [{ wch: 35 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 25 }];
-        
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Soal");
-        XLSX.writeFile(wb, "Template_Soal_" + sch.npsn + ".xlsx");
-        
-        showInlineAlert("✅ Template Soal Terunduh!");
-    } catch(err) {
-        showInlineAlert("❌ Gagal Buat Template: " + err.message);
-    }
-}
-
-function importSoalExcel(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        try {
-            const arr = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(arr, { type: 'array' });
-            const sheet = workbook.Sheets[workbook.SheetNames[0]];
-            const rawData = XLSX.utils.sheet_to_json(sheet, { defval: '' });
-            
-            let count = 0;
-            let errors = [];
-            
-            rawData.forEach((row, idx) => {
-                const pertanyaan = row['Pertanyaan'] || '';
-                const tipe = row['Tipe Soal'] || 'PG';
-                const kunci = row['Kunci Jawaban'] || '';
-                
-                if(!pertanyaan || !kunci) {
-                    errors.push(`Baris ${idx+2}: Pertanyaan/Kunci kosong`);
-                    return;
-                }
-                
-                const soal = {
-                    q: pertanyaan.toString().trim(),
-                    ty: tipe.toString().trim() === 'ES' ? 'ES' : 'PG',
-                    ans: kunci.toString().trim()
-                };
-                
-                if(soal.ty === 'PG') {
-                    const opsiA = (row['Opsi A'] || '').toString().trim();
-                    const opsiB = (row['Opsi B'] || '').toString().trim();
-                    const opsiC = (row['Opsi C'] || '').toString().trim();
-                    const opsiD = (row['Opsi D'] || '').toString().trim();
-                    
-                    if(!opsiA || !opsiB || !opsiC || !opsiD) {
-                        errors.push(`Baris ${idx+2}: PG harus 4 opsi`);
-                        return;
-                    }
-                    
-                    soal.opts = [opsiA, opsiB, opsiC, opsiD];
-                }
-                
-                tempEx.push(soal);
-                count++;
-            });
-            
-            renderExTemp();
-            let msg = `✅ ${count} soal diimport!`;
-            if(errors.length > 0) msg += `\n⚠️ ${errors.length} baris gagal`;
-            showInlineAlert(msg);
-            document.getElementById('file-soal-inp').value = '';
-        } catch(err) {
-            showInlineAlert("❌ Gagal: " + err.message);
-            console.error(err);
-        }
-    };
-    reader.readAsArrayBuffer(file);
-}
-
-function openGps() { document.getElementById('m-gps').classList.remove('hidden'); checkLocation(); }
-function closeGps() { document.getElementById('m-gps').classList.add('hidden'); }
-
-function checkLocation() {
-    if(!navigator.geolocation) {
-        document.getElementById('t-dist').innerText = "⚠️ GPS Tidak Tersedia";
-        return;
-    }
-    
-    navigator.geolocation.getCurrentPosition(
-        pos => {
-            const dist = calcDistance(pos.coords.latitude, pos.coords.longitude, S_COOR.lat, S_COOR.lng);
-            document.getElementById('t-dist').innerText = Math.round(dist) + " meter";
-            if(dist <= 210) {
-                document.getElementById('b-ab-done').disabled = false;
-                document.getElementById('b-ab-done').innerText = "✓ HADIR SEKARANG";
-                document.getElementById('b-ab-done').style.background = "var(--success)";
-            } else {
-                document.getElementById('b-ab-done').disabled = true;
-                document.getElementById('b-ab-done').innerText = "✗ DILUAR RADIUS";
-                document.getElementById('b-ab-done').style.background = "var(--danger)";
-            }
-        },
-        err => {
-            document.getElementById('t-dist').innerText = "⚠️ GPS Gagal";
-        },
-        { timeout: 10000, enableHighAccuracy: true }
-    );
-}
-
-function execAbsen() {
-    const d = new Date().toISOString().split('T')[0];
-    const jam = new Date().toLocaleTimeString('id-id');
-    db.ref('schools/'+sch.npsn+'/absen/'+d+'/'+curU.u).set({
-        jam, guru: curU.n, st: 'HADIR', loc: 'Verified'
-    }).then(() => { 
-        showInlineAlert("✅ Ceklok Berhasil!"); 
-        closeGps(); 
-    });
-}
-
-function renderAbsenMonitor() {
-    if(!curU || curU.r !== 'KEPSEK') return;
-    const d = new Date().toISOString().split('T')[0];
-    db.ref('schools/'+sch.npsn+'/absen/'+d).on('value', s => {
-        const data = s.val() || {};
-        let h = ''; let count = 0;
-        for(let id in STAF_DATA) {
-            if(STAF_DATA[id].r === 'KEPSEK') continue;
-            const r = data[id] || {st:'BELUM', jam:'-'};
-            if(r.st==='HADIR') count++;
-            const waMsg = "Halo " + STAF_DATA[id].n + ", mohon lakukan Ceklok hari ini.";
-            h += `<tr><td>${STAF_DATA[id].n}</td><td><span class="badge bg-${r.st==='HADIR'?'ok':'pending'}">${r.st}</span></td><td>${r.jam}</td><td>${r.loc || '-'}</td>
-            <td><button onclick="sendWA('${STAF_DATA[id].wa}', '${waMsg}')" class="btn btn-red btn-xs">📱 WA</button></td></tr>`;
-        }
-        document.getElementById('tbl-k-abs').innerHTML = h;
-        document.getElementById('sk-absen').innerText = count;
-    });
-}
-
-function updateConfig() {
-    const lat = document.getElementById('conf-lat').value;
-    const lng = document.getElementById('conf-lng').value;
-    if(!lat || !lng) return showInlineAlert("⚠️ Isi koordinat!");
-    db.ref('schools/'+sch.npsn+'/config').update({ lat: lat, lng: lng })
-    .then(() => showInlineAlert("✅ Koordinat Diperbarui!"));
-}
-
-function addStudent() {
-    const n = document.getElementById('gs-nama').value;
-    const u = document.getElementById('gs-user').value;
-    const p = document.getElementById('gs-pass').value;
-    if(!n || !u) return showInlineAlert("⚠️ Isi Nama & Username!");
-    db.ref('schools/'+sch.npsn+'/students/'+u).set({n, u, p, r: curRombel});
-    showInlineAlert("✅ Siswa Terdaftar!");
-    document.getElementById('gs-nama').value = '';
-    document.getElementById('gs-user').value = '';
-    document.getElementById('gs-pass').value = '';
-}
-
-function renderStudentTable() {
-    let h = '';
-    for(let id in SISWA_DATA) {
-        if(SISWA_DATA[id].r !== curRombel) continue;
-        h += `<tr><td>${id}</td><td>${SISWA_DATA[id].n}</td><td>${SISWA_DATA[id].r}</td><td>${SISWA_DATA[id].p}</td>
-        <td><button class="btn btn-red btn-xs" onclick="delSiswa('${id}')">✕</button></td></tr>`;
-    }
-    document.getElementById('tbl-gs-list').innerHTML = h;
-}
-
-function delSiswa(id) { 
-    if(confirm('Hapus Siswa?')) db.ref('schools/'+sch.npsn+'/students/'+id).remove(); 
-}
-
-function renderAbsenSiswa() {
-    let h = '';
-    for(let id in SISWA_DATA) {
-        if(SISWA_DATA[id].r !== curRombel) continue;
-        h += `<tr><td>${SISWA_DATA[id].n}</td>
-            <td><select class="abs-sw-val" data-id="${id}"><option value="H">H</option><option value="S">S</option><option value="I">I</option><option value="A">A</option></select></td></tr>`;
-    }
-    document.getElementById('tbl-ga-list').innerHTML = h;
-}
-
-function saveAbsenSiswa() {
-    const d = new Date().toISOString().split('T')[0];
-    let updates = {};
-    document.querySelectorAll('.abs-sw-val').forEach(sel => { updates[sel.dataset.id] = sel.value; });
-    db.ref('schools/'+sch.npsn+'/absen_siswa/'+d+'/'+curRombel).set({ guru: curU.n, data: updates }).then(() => showInlineAlert("✅ Absensi Tersimpan!"));
-}
-
+// --- Agenda & Modul ---
 function submitAgenda() {
-    const mapel = document.getElementById('gag-mapel-sel').value;
-    const elemen = document.getElementById('gag-elemen').value;
-    const cp = document.getElementById('gag-cp').value; 
-    const kompetensi = document.getElementById('gag-kompetensi').value;
-    const lingkup = document.getElementById('gag-lingkup').value;
-    const tp = document.getElementById('gag-tp').value;
     const d = new Date().toISOString().split('T')[0];
-    
-    if(!mapel || !elemen || !cp || !kompetensi || !lingkup || !tp) return showInlineAlert("⚠️ Isi semua elemen!");
-    
-    db.ref('schools/'+sch.npsn+'/agendas/'+d+'/'+curU.u+'_'+curRombel).set({ 
-        n: curU.n, 
-        mapel: mapel,
-        elemen: elemen, 
-        cp: cp, 
-        kompetensi: kompetensi, 
-        lingkup: lingkup, 
-        tp: tp, 
-        st: 'PENDING',
-        r: curRombel, 
-        tgl: d 
-    }).then(() => {
-        showInlineAlert("✅ Agenda CP & TP Terkirim!"); 
-        document.getElementById('gag-cp').value = '';
-        document.getElementById('gag-elemen').value = '';
-        document.getElementById('gag-mapel-sel').value = '';
-        document.getElementById('gag-kompetensi').value = '';
-        document.getElementById('gag-lingkup').value = '';
-        document.getElementById('gag-tp').value = '';
-    });
+    const payload = {
+        mapel: $('gag-mapel').value, elemen: $('gag-elemen').value,
+        cp: $('gag-cp').value, tp: $('gag-tp').value,
+        guru: curUser.n, rombel: curRombel, tgl: d, status: 'PENDING'
+    };
+    if(!payload.mapel || !payload.tp) return showToast("Mapel & TP wajib", "error");
+    db.ref('schools/'+school.npsn+'/agenda/'+d+'/'+curUser.u+'_'+curRombel).set(payload)
+    .then(() => { showToast("Agenda dikirim", "success"); $('gag-cp').value=''; $('gag-tp').value=''; });
 }
 
 function submitModul() {
-    const t = document.getElementById('gm-title').value; const m = document.getElementById('gm-mapel').value;
-    const c = document.getElementById('gm-logic').value;
-    if(!t || !m || !c) return showInlineAlert("⚠️ Isi semua field!");
-    db.ref('schools/'+sch.npsn+'/moduls/'+Date.now()).set({ t, m, c, n: curU.n, st: 'PENDING', r: curRombel });
-    showInlineAlert("✅ Modul Dikirim!");
-    document.getElementById('gm-title').value = '';
-    document.getElementById('gm-mapel').value = '';
-    document.getElementById('gm-logic').value = '';
+    if(!$('modul-title').value || !$('modul-mapel').value) return showToast("Judul & Mapel wajib", "error");
+    db.ref('schools/'+school.npsn+'/moduls/'+Date.now()).set({
+        title: $('modul-title').value, mapel: $('modul-mapel').value, content: $('modul-content').value,
+        guru: curUser.n, rombel: curRombel, status: 'PENDING'
+    }).then(() => { showToast("Modul dikirim", "success"); $('modul-title').value=''; $('modul-content').value=''; });
 }
 
-function approveModul(id) { db.ref('schools/'+sch.npsn+'/moduls/'+id+'/st').set('OK'); showInlineAlert("✅ Modul Disetujui!"); }
-
-function toggleExType() {
-    const ty = document.getElementById('ex-type').value;
-    document.getElementById('ex-pg-ops').style.display = (ty === 'ES' ? 'none' : 'block');
+// --- Exam Logic ---
+function toggleExamType() {
+    const type = $('ex-type').value;
+    $('pg-options').style.display = type === 'PG' ? 'grid' : 'none';
 }
 
-function saveQuestion() {
-    const q = document.getElementById('ex-q').value;
-    const ty = document.getElementById('ex-type').value;
-    const ans = document.getElementById('ex-ans').value;
-    if(!q || !ans) return showInlineAlert("⚠️ Isi pertanyaan & jawaban!");
-    const itm = { q, ty, ans };
-    if(ty === 'PG') {
-        const opts = [document.getElementById('ex-oa').value, document.getElementById('ex-ob').value, document.getElementById('ex-oc').value, document.getElementById('ex-od').value];
-        if(opts.some(o => !o)) return showInlineAlert("⚠️ Isi semua opsi!");
-        itm.opts = opts;
+function addQuestion() {
+    const q = $('ex-q').value; const type = $('ex-type').value; const ans = $('ex-ans').value;
+    if(!q || !ans) return showToast("Soal & Jawaban wajib", "error");
+    
+    const obj = { q, type, ans };
+    if(type === 'PG') {
+        obj.opts = [$('ex-oa').value, $('ex-ob').value, $('ex-oc').value, $('ex-od').value];
+        if(obj.opts.some(o => !o)) return showToast("Opsi PG wajib lengkap", "error");
     }
-    tempEx.push(itm);
-    renderExTemp();
-    document.getElementById('ex-q').value = '';
-    document.getElementById('ex-ans').value = '';
-    ['ex-oa', 'ex-ob', 'ex-oc', 'ex-od'].forEach(id => document.getElementById(id).value = '');
+    
+    tempQuestions.push(obj);
+    renderTempQuestion();
+    $('ex-q').value = ''; $('ex-ans').value = '';
 }
 
-function renderExTemp() {
-    let h = ''; 
-    tempEx.forEach((x, i) => { 
-        h += `<tr><td>${x.q.substring(0, 40)}...</td><td>${x.ty}</td><td>${x.ans}</td><td><button onclick="tempEx.splice(${i},1);renderExTemp()" class="btn btn-red btn-xs">✕</button></td></tr>`; 
+function renderTempQuestion() {
+    let h = '';
+    tempQuestions.forEach((q, i) => {
+        h += `<tr><td style="font-size:0.8rem">${i+1}. ${q.q.substring(0,30)}... (${q.type})</td>
+        <td><button onclick="tempQuestions.splice(${i},1); renderTempQuestion();" class="btn btn-xs btn-red"><i class="fas fa-times"></i></button></td></tr>`;
     });
-    document.getElementById('tbl-ex-list').innerHTML = h;
+    $('tbl-exam-temp').innerHTML = h || '<tr><td colspan="2" style="text-align:center">Kosong</td></tr>';
 }
 
 function publishExam() {
-    const title = document.getElementById('ex-header').value;
-    const jenis = document.getElementById('ex-jenis').value;
-    const mapel = document.getElementById('ex-mapel').value;
-    if(!title || tempEx.length === 0) return showInlineAlert("⚠️ Isi Judul & minimal 1 soal!");
-    db.ref('schools/'+sch.npsn+'/exams/'+Date.now()).set({ title, jenis, mapel, q: tempEx, guru: curU.n, r: curRombel });
-    showInlineAlert("✅ Ujian Dipublish!"); 
-    tempEx = []; 
-    renderExTemp();
-    document.getElementById('ex-header').value = '';
+    if(!$('ex-title').value || tempQuestions.length === 0) return showToast("Judul & soal wajib", "error");
+    db.ref('schools/'+school.npsn+'/exams/'+Date.now()).set({
+        title: $('ex-title').value, jenis: $('ex-jenis').value, mapel: $('ex-mapel').value,
+        questions: tempQuestions, guru: curUser.n, rombel: curRombel
+    }).then(() => {
+        showToast("Ujian dipublish", "success");
+        tempQuestions = []; renderTempQuestion(); $('ex-title').value = '';
+    });
 }
 
-function delExam(id) { if(confirm('Hapus Ujian?')) db.ref('schools/'+sch.npsn+'/exams/'+id).remove(); }
+// --- Correction & Grades ---
+function loadExamDropdown() {
+    db.ref('schools/'+school.npsn+'/exams').once('value', s => {
+        const data = s.val() || {};
+        $('kor-exam').innerHTML = '<option value="">-- Pilih --</option>';
+        for(let id in data) { $('kor-exam').innerHTML += `<option value="${id}">${data[id].title}</option>`; }
+    });
+}
 
-function loadExamAnswers() {
-    const examId = document.getElementById('kor-exam-sel').value;
-    if(!examId) {
-        document.getElementById('kor-detail-area').style.display = 'none';
-        return;
-    }
-
-    db.ref('schools/'+sch.npsn+'/exams/'+examId).once('value', s => {
+function loadExamForCorrection() {
+    const id = $('kor-exam').value; if(!id) return;
+    db.ref('schools/'+school.npsn+'/exams/'+id).once('value', s => {
         const exam = s.val();
-        if(!exam) return;
-
-        correctionState.examId = examId;
-        document.getElementById('kor-exam-title').innerText = exam.title;
-        document.getElementById('kor-exam-info').innerText = `${exam.jenis} - ${exam.mapel} | ${exam.q.length} soal`;
-        
-        let siswaSel = document.getElementById('kor-siswa-sel');
-        siswaSel.innerHTML = '<option value="">-- Pilih Siswa --</option>';
-        for(let id in SISWA_DATA) {
-            if(SISWA_DATA[id].r === curRombel) {
-                siswaSel.innerHTML += `<option value="${id}">${SISWA_DATA[id].n}</option>`;
-            }
-        }
-
-        document.getElementById('kor-detail-area').style.display = 'block';
+        $('kor-siswa').innerHTML = '<option value="">-- Pilih --</option>';
+        for(let sid in SISWA_DATA) { if(SISWA_DATA[sid].rombel === curRombel) $('kor-siswa').innerHTML += `<option value="${sid}">${SISWA_DATA[sid].nama}</option>`; }
+        $('kor-area').style.display = 'none';
     });
 }
 
 function loadStudentAnswers() {
-    const studentId = document.getElementById('kor-siswa-sel').value;
-    if(!studentId) return;
-
-    const examId = correctionState.examId;
-    db.ref('schools/'+sch.npsn+'/exams/'+examId).once('value', s => {
+    const examId = $('kor-exam').value; const siswaId = $('kor-siswa').value;
+    if(!examId || !siswaId) return;
+    
+    db.ref('schools/'+school.npsn+'/exams/'+examId).once('value', s => {
         const exam = s.val();
-        correctionState.studentId = studentId;
-        correctionState.answers = [];
-
         let h = '';
-        exam.q.forEach((q, idx) => {
-            const qNum = idx + 1;
-            h += `<div class="correction-item">
-                <h5 style="margin:0 0 5px 0;">Soal ${qNum}: ${q.q.substring(0, 50)}...</h5>
-                <p style="font-size:0.7rem; color:#64748b; margin:0 0 10px 0;">Tipe: ${q.ty === 'PG' ? 'PG' : 'Essay'}</p>`;
-
-            if(q.ty === 'PG') {
-                h += `<div style="background:#f8fafc; padding:10px; border-radius:8px; margin:10px 0; font-size:0.8rem;">
-                    ${q.opts.map((opt, i) => `<p style="margin:4px 0;">• ${String.fromCharCode(65+i)}) ${opt}</p>`).join('')}
-                    <p style="font-weight:800; color:#10b981; margin-top:8px;">✓ Kunci: ${q.ans}</p>
-                </div>`;
-                h += `<select class="kor-jawaban" data-idx="${idx}" style="width:100%; padding:8px; margin-bottom:10px;">
-                    <option value="">Jawaban Siswa</option>
-                    <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option>
-                </select>`;
-            } else {
-                h += `<textarea class="kor-jawaban" data-idx="${idx}" rows="2" placeholder="Jawaban siswa..." style="margin-bottom:10px;"></textarea>
-                <p style="font-weight:800; font-size:0.7rem; color:#10b981;">✓ Kata Kunci: ${q.ans}</p>`;
-            }
-
-            h += `<input type="number" class="kor-nilai" data-idx="${idx}" min="0" max="10" value="10" placeholder="Nilai (0-10)" style="width:100%; padding:8px;">
+        exam.questions.forEach((q, i) => {
+            h += `<div class="section-box">
+                <p style="font-weight:600; margin-bottom:5px;">${i+1}. ${q.q}</p>
+                <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:8px;">
+                    ${q.type === 'PG' ? `Opsi: ${q.opts.join(' / ')}` : 'Essay'} <br>
+                    <strong>Kunci: ${q.ans}</strong>
+                </div>
+                <input type="number" class="grade-input" min="0" max="100" value="0" oninput="calculateFinalGrade()" style="width:80px;">
             </div>`;
         });
-
-        document.getElementById('kor-questions-area').innerHTML = h;
-        document.getElementById('kor-nilai-akhir').value = '0';
+        $('kor-questions').innerHTML = h;
+        $('kor-area').style.display = 'block';
+        calculateFinalGrade();
     });
+}
+
+function calculateFinalGrade() {
+    const inputs = document.querySelectorAll('.grade-input');
+    let total = 0;
+    inputs.forEach(i => total += parseInt(i.value) || 0);
+    const avg = inputs.length > 0 ? Math.round(total / inputs.length) : 0;
+    $('kor-nilai').innerText = avg;
+    $('kor-status').value = avg >= 75 ? 'TUNTAS' : 'REMEDIAL';
 }
 
 function saveCorrection() {
-    if(!correctionState.examId || !correctionState.studentId) return showInlineAlert("⚠️ Pilih ujian dan siswa!");
-
-    let totalNilai = 0;
-    document.querySelectorAll('.kor-nilai').forEach(inp => {
-        totalNilai += parseInt(inp.value) || 0;
-    });
-
-    const nilaiAkhir = Math.min(totalNilai, 100);
-    const status = document.getElementById('kor-status').value;
-
-    db.ref('schools/'+sch.npsn+'/corrections/'+correctionState.examId+'/'+correctionState.studentId).set({
-        siswa: SISWA_DATA[correctionState.studentId].n,
-        rombel: SISWA_DATA[correctionState.studentId].r,
-        nilaiAkhir: nilaiAkhir,
-        status: status,
-        tgl: new Date().toISOString().split('T')[0],
-        jam: new Date().toLocaleTimeString('id-id'),
-        dikoreksiOleh: curU.n
-    }).then(() => {
-        showInlineAlert(`✅ Koreksi Tersimpan!\nNilai: ${nilaiAkhir} (${status})`);
-        document.getElementById('kor-siswa-sel').value = '';
-        document.getElementById('kor-questions-area').innerHTML = '';
-    });
+    const examId = $('kor-exam').value; const siswaId = $('kor-siswa').value;
+    const nilai = $('kor-nilai').innerText; const status = $('kor-status').value;
+    const mapel = $('kor-exam').options[$('kor-exam').selectedIndex].text; // Simplified mapel
+    
+    db.ref('schools/'+school.npsn+'/grades/'+curRombel+'/'+mapel+'/'+siswaId).set({ nilai, status })
+    .then(() => showToast("Nilai disimpan", "success"));
 }
 
-function fetchSiswaNilai() {
-    const mapel = document.getElementById('gn-mapel').value;
-    if(!mapel) return;
-    db.ref('schools/'+sch.npsn+'/grades/'+curRombel+'/'+mapel).once('value', snapshot => {
-        const savedData = snapshot.val() || {};
-        let h = '';
-        for(let id in SISWA_DATA) {
-            if(SISWA_DATA[id].r !== curRombel) continue;
-            const val = savedData[id] || {tp:0, sts1:0, sts2:0, sas:0, sat:0};
-            h += `<tr><td>${SISWA_DATA[id].n}</td>
-                <td><input type="number" class="ni-tp" data-id="${id}" value="${val.tp}" style="width:100%; padding:6px;"></td>
-                <td><input type="number" class="ni-sts1" data-id="${id}" value="${val.sts1}" style="width:100%; padding:6px;"></td>
-                <td><input type="number" class="ni-sts2" data-id="${id}" value="${val.sts2}" style="width:100%; padding:6px;"></td>
-                <td><input type="number" class="ni-sas" data-id="${id}" value="${val.sas}" style="width:100%; padding:6px;"></td>
-                <td><input type="number" class="ni-sat" data-id="${id}" value="${val.sat}" style="width:100%; padding:6px;"></td></tr>`;
-        }
-        document.getElementById('tbl-gn-list').innerHTML = h;
-    });
-}
-
-function saveGrades() {
-    const mapel = document.getElementById('gn-mapel').value;
-    const updates = {};
-    document.querySelectorAll('#tbl-gn-list tr').forEach(row => {
-        const tpInp = row.querySelector('.ni-tp');
-        const id = tpInp.dataset.id;
-        updates[id] = { 
-            tp: tpInp.value, 
-            sts1: row.querySelector('.ni-sts1').value, 
-            sts2: row.querySelector('.ni-sts2').value, 
-            sas: row.querySelector('.ni-sas').value,
-            sat: row.querySelector('.ni-sat').value
-        };
-    });
-    db.ref('schools/'+sch.npsn+'/grades/'+curRombel+'/'+mapel).update(updates).then(() => showInlineAlert("✅ Nilai Tersinkron!"));
-}
-
-function renderReviewAgenda(data) {
-    if(!curU || curU.r !== 'KEPSEK') return;
-    let h = '';
-    for(let uid in data) {
-        let x = data[uid];
-        h += `<tr><td>${x.tgl}</td><td>${x.n} / ${x.mapel}</td><td>${x.r || '-'}</td><td>${x.kompetensi}</td><td>${x.tp.substring(0, 40)}...</td><td><span class="badge bg-${x.st==='OK'?'ok':'pending'}">${x.st}</span></td>
-        <td><button onclick="approveAgenda('${uid}')" class="btn btn-green btn-xs">✓ Setuju</button></td></tr>`;
-    }
-    document.getElementById('tbl-k-rev-agenda').innerHTML = h;
-}
-
-function approveAgenda(uid) {
-    const d = new Date().toISOString().split('T')[0];
-    db.ref('schools/'+sch.npsn+'/agendas/'+d+'/'+uid+'/st').set('OK');
-    showInlineAlert("✅ Agenda CP & TP Disetujui!");
-}
-
-function renderRekap() {
-    const kelas = document.getElementById('kr-kelas').value;
-    const mapel = document.getElementById('kr-mapel').value;
-    db.ref('schools/'+sch.npsn+'/grades/'+kelas+'/'+mapel).once('value', s => {
+function loadGradeData() {
+    const mapel = $('val-mapel').value; if(!mapel) return;
+    db.ref('schools/'+school.npsn+'/grades/'+curRombel+'/'+mapel).once('value', s => {
         const data = s.val() || {};
         let h = '';
         for(let id in SISWA_DATA) {
-            if(SISWA_DATA[id].kelas !== kelas) continue;
-            const n = data[id] || {tp:0, sts1:0, sts2:0, sas:0, sat:0};
-            const avg = (parseFloat(n.tp) + parseFloat(n.sts1) + parseFloat(n.sts2) + parseFloat(n.sas) + parseFloat(n.sat)) / 5;
-            h += `<tr><td>${SISWA_DATA[id].n}</td><td>${kelas}</td><td>${avg.toFixed(1)}</td>
-                <td><span class="badge ${avg >= 75 ? 'bg-ok' : 'bg-pending'}">${avg >= 75 ? 'TUNTAS' : 'REMEDIAL'}</span></td></tr>`;
+            if(SISWA_DATA[id].rombel !== curRombel) continue;
+            const g = data[id] || {tp:'', sts:'', sas:''};
+            h += `<tr>
+                <td>${SISWA_DATA[id].nama}</td>
+                <td><input type="number" class="val-in tp" data-id="${id}" value="${g.tp || ''}" style="width:50px;" onchange="calcAvg(this)"></td>
+                <td><input type="number" class="val-in sts" data-id="${id}" value="${g.sts || ''}" style="width:50px;" onchange="calcAvg(this)"></td>
+                <td><input type="number" class="val-in sas" data-id="${id}" value="${g.sas || ''}" style="width:50px;" onchange="calcAvg(this)"></td>
+                <td class="avg-${id}">-</td>
+            </tr>`;
         }
-        document.getElementById('tbl-k-rekap-body').innerHTML = h;
+        $('tbl-nilai').innerHTML = h;
+        document.querySelectorAll('.val-in').forEach(i => calcAvg(i));
     });
 }
 
-function printRapor() {
-    const content = document.getElementById('rekap-print-area').outerHTML;
-    const printWin = window.open('', '_blank');
-    printWin.document.write(`<html><head><title>Rapor</title><style>body{font-family:sans-serif;padding:20px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:10px;text-align:left}th{background:#f0f0f0}</style></head><body>${content}</body></html>`);
-    printWin.document.close();
-    printWin.print();
+function calcAvg(e) {
+    const id = e.dataset.id;
+    const row = e.closest('tr');
+    const tp = parseFloat(row.querySelector('.tp').value) || 0;
+    const sts = parseFloat(row.querySelector('.sts').value) || 0;
+    const sas = parseFloat(row.querySelector('.sas').value) || 0;
+    const avg = ((tp + sts + sas) / 3).toFixed(1);
+    row.querySelector(`.avg-${id}`).innerText = avg;
+}
+
+function saveGrades() {
+    const mapel = $('val-mapel').value; if(!mapel) return;
+    let updates = {};
+    document.querySelectorAll('#tbl-nilai tr').forEach(row => {
+        const id = row.querySelector('.tp').dataset.id;
+        if(id) updates[id] = { tp: row.querySelector('.tp').value, sts: row.querySelector('.sts').value, sas: row.querySelector('.sas').value };
+    });
+    db.ref('schools/'+school.npsn+'/grades/'+curRombel+'/'+mapel).update(updates)
+    .then(() => showToast("Nilai disimpan", "success"));
+}
+
+// --- KEPSEK FUNCTIONS ---
+function syncKepsek() {
+    db.ref('schools/'+school.npsn+'/attendance/'+new Date().toISOString().split('T')[0]).on('value', s => {
+        const data = s.val() || {}; let h = ''; let c = 0;
+        for(let id in STAF_DATA) {
+            const att = data[id] || {status: 'BELUM', jam: '-'};
+            if(att.status === 'HADIR') c++;
+            h += `<tr><td>${STAF_DATA[id].nama}</td><td><span class="badge ${att.status === 'HADIR' ? 'badge-green' : 'badge-red'}">${att.status}</span></td><td>${att.jam}</td>
+            <td><button class="btn btn-xs btn-outline" onclick="window.open('https://wa.me/${STAF_DATA[id].wa}')"><i class="fab fa-whatsapp"></i></button></td></tr>`;
+        }
+        $('tbl-k-absen').innerHTML = h;
+        $('sk-absen').innerText = c;
+    });
+
+    db.ref('schools/'+school.npsn+'/agenda').on('value', s => {
+        let pending = 0; let h = '';
+        s.forEach(dateSnap => {
+            dateSnap.forEach(itemSnap => {
+                const item = itemSnap.val();
+                if(item.status === 'PENDING') pending++;
+                h += `<tr><td>${item.guru}</td><td>${item.mapel}</td><td><span class="badge ${item.status === 'OK' ? 'badge-green' : 'badge-red'}">${item.status}</span></td>
+                <td><button class="btn btn-xs btn-green" onclick="approveItem('agenda/${dateSnap.key}/${itemSnap.key}')">✓</button></td></tr>`;
+            });
+        });
+        $('tbl-k-agenda').innerHTML = h;
+        $('sk-agenda').innerText = pending;
+    });
+    
+    db.ref('schools/'+school.npsn+'/moduls').on('value', s => {
+        let pending = 0; let h = '';
+        s.forEach(itemSnap => {
+            const item = itemSnap.val();
+            if(item.status === 'PENDING') pending++;
+            h += `<tr><td>${item.guru}</td><td>${item.title}</td><td><span class="badge ${item.status === 'OK' ? 'badge-green' : 'badge-red'}">${item.status}</span></td>
+            <td><button class="btn btn-xs btn-green" onclick="approveItem('moduls/${itemSnap.key}')">✓</button></td></tr>`;
+        });
+        $('tbl-k-modul').innerHTML = h;
+        $('sk-modul').innerText = pending;
+    });
+}
+
+function approveItem(path) {
+    db.ref('schools/'+school.npsn+'/'+path+'/status').set('OK').then(() => showToast("Disetujui", "success"));
+}
+
+function updateConfig() {
+    db.ref('schools/'+school.npsn+'/config').update({ lat: $('set-lat').value, lng: $('set-lng').value })
+    .then(() => showToast("Koordinat diupdate", "success"));
 }
 
 function saveStaff() {
-    const id = document.getElementById('ks-u').value;
-    if(!id) return showInlineAlert("⚠️ Isi ID Akun!");
-    const dat = { u: id, n: document.getElementById('ks-n').value, p: document.getElementById('ks-p').value, nip: document.getElementById('ks-nip').value, wa: document.getElementById('ks-wa').value, r: document.getElementById('ks-r').value, rombel: document.getElementById('ks-rombel').value || 'A' };
-    db.ref('schools/'+sch.npsn+'/staff/'+id).set(dat);
-    showInlineAlert("✅ Data Staf Disimpan!");
-    document.getElementById('ks-n').value = '';
-    document.getElementById('ks-nip').value = '';
-    document.getElementById('ks-u').value = '';
-    document.getElementById('ks-p').value = '';
-    document.getElementById('ks-wa').value = '';
-    document.getElementById('ks-rombel').value = '';
+    const id = $('st-user').value; if(!id) return;
+    db.ref('schools/'+school.npsn+'/staff/'+id).set({
+        nama: $('st-nama').value, u: id, pin: $('st-pin').value, rombel: $('st-rombel').value
+    }).then(() => showToast("Staf disimpan", "success"));
 }
 
 function renderStaffTable() {
-    let h = ''; 
-    for(let id in STAF_DATA) { 
-        let x = STAF_DATA[id]; 
-        h += `<tr><td>${x.n}</td><td>${x.u}</td><td>${x.p}</td><td>${x.rombel || 'SEMUA'}</td><td><button class="btn btn-red btn-xs" onclick="delStaf('${id}')">✕</button></td></tr>`; 
+    let h = '';
+    for(let id in STAF_DATA) {
+        h += `<tr><td>${STAF_DATA[id].nama}</td><td>${id}</td><td>${STAF_DATA[id].pin}</td>
+        <td><button class="btn btn-xs btn-red" onclick="delData('staff/${id}')"><i class="fas fa-trash"></i></button></td></tr>`;
     }
-    document.getElementById('tbl-ks-list').innerHTML = h;
+    $('tbl-staf').innerHTML = h;
 }
 
-function delStaf(id) { 
-    if(confirm('Hapus Staf?')) db.ref('schools/'+sch.npsn+'/staff/'+id).remove(); 
+function loadRekap() {
+    const kelas = $('rek-kelas').value; const mapel = $('rek-mapel').value;
+    db.ref('schools/'+school.npsn+'/grades/'+kelas+'/'+mapel).once('value', s => {
+        const data = s.val() || {};
+        let h = '';
+        for(let id in SISWA_DATA) {
+            if(SISWA_DATA[id].rombel !== kelas) continue;
+            const g = data[id] || {};
+            const nilai = g.nilai || 0; // Assume direct value for simplicity
+            h += `<tr><td>${SISWA_DATA[id].nama}</td><td>${nilai}</td><td><span class="badge ${nilai >= 75 ? 'badge-green' : 'badge-red'}">${nilai >= 75 ? 'Tuntas' : 'Remedial'}</span></td></tr>`;
+        }
+        $('tbl-k-rekap').innerHTML = h;
+    });
 }
 
-function setRekapMapelByKelas() {
-    const sel = document.getElementById('kr-mapel');
-    if(!sel) return;
-    sel.innerHTML = '';
-    const mapels = ['Matematika', 'Bahasa Indonesia', 'Pendidikan Pancasila', 'Seni Budaya', 'Bahasa Sunda', 'IPAS', 'Bahasa Inggris', 'Pendidikan Agama Islam', 'PJOK'];
-    mapels.forEach(m => { sel.innerHTML += `<option>${m}</option>`; });
-}
-
-function switchTab(id) {
-    if(id.startsWith('k-') && curU.r !== 'KEPSEK') return showInlineAlert("⚠️ Akses Ditolak!");
-    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-    document.getElementById('tab-'+id).classList.add('active');
-    document.getElementById('v-title-label').innerText = id.replace('g-','').replace('k-','').toUpperCase();
-    if(id === 'g-nilai') fetchSiswaNilai();
-    if(id === 'g-jadwal') renderSchedule();
-}
-
-function sendWA(num, msg) { 
-    window.open("https://wa.me/"+num+"?text="+encodeURIComponent(msg), '_blank'); 
-}
-
-function calcDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371e3; 
-    const p1 = lat1 * Math.PI/180; 
-    const p2 = lat2 * Math.PI/180;
-    const dp = (lat2-lat1) * Math.PI/180; 
-    const dl = (lon2-lon1) * Math.PI/180;
-    const a = Math.sin(dp/2) * Math.sin(dp/2) + Math.cos(p1) * Math.cos(p2) * Math.sin(dl/2) * Math.sin(dl/2);
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-}
-
-function showInlineAlert(msg) {
-    const alertBox = document.createElement('div');
-    alertBox.style.cssText = 'position:fixed;top:20px;right:20px;background:white;padding:15px 20px;border-radius:12px;box-shadow:0 8px 16px rgba(0,0,0,0.2);z-index:9999;font-weight:800;font-size:0.9rem;max-width:300px;animation:slideIn 0.3s ease-out';
-    alertBox.innerHTML = msg;
-    document.body.appendChild(alertBox);
-    setTimeout(() => alertBox.remove(), 3000);
-}
-
-setInterval(() => {
-    const d = new Date();
-    document.getElementById('d-clock-txt').innerText = d.toLocaleTimeString('id-id');
-    document.getElementById('d-date-txt').innerText = d.toLocaleDateString('id-id', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
-    document.getElementById('clk').innerText = d.toLocaleTimeString('id-id');
-    document.querySelectorAll('.global-text-date').forEach(e => e.innerText = d.toLocaleDateString('id-id'));
-    document.querySelectorAll('.global-date-inp').forEach(e => e.value = d.toLocaleDateString('id-id'));
-}, 1000);
-
-function toggleMenu() { 
-    document.getElementById('sidebar').classList.toggle('show'); 
-}
 </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cda67c7565a9f79',t:'MTc3MTA0OTQ1OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
